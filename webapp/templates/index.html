@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>음악 분류 웹</title>
+</head>
+<body>
+    <h1>음악 분류 시스템</h1>
+    <form action="{{ url_for('classify') }}" method="post" enctype="multipart/form-data">
+        <input type="file" name="audio_file" required>
+        <br><br>
+        <button type="submit" name="action" value="cnn">딥러닝 분류</button>
+        <button type="submit" name="action" value="rule">규칙 기반 분류</button>
+    </form>
+
+    {% if prediction %}
+        <h2>분류 결과</h2>
+        <pre>{{ prediction }}</pre>
+    {% endif %}
+</body>
+</html>
