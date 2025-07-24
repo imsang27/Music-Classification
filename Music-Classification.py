@@ -512,6 +512,105 @@ def run_model_tests(model, test_data_dir):
     
     return test_results
 
+# ------------------- 추가 기능 -------------------
+
+def manual_classification(audio_path, genres, emotions, input_func=input):
+    """사용자가 직접 장르와 감정을 입력하여 분류합니다."""
+    print(f"수동 분류 대상 파일: {audio_path}")
+    genre = input_func(f"장르를 선택하세요 {genres}: ")
+    emotion = input_func(f"감정을 선택하세요 {emotions}: ")
+    return {'genre': genre, 'emotion': emotion}
+
+
+def rule_based_classification(audio_path):
+    """단순 규칙 기반 분류 예시."""
+    features = extract_audio_features(audio_path)
+    tempo = features['tempo']
+
+    if tempo < 80:
+        genre = '클래식'
+    elif tempo < 110:
+        genre = '재즈'
+    elif tempo < 140:
+        genre = '팝'
+    else:
+        genre = '록'
+
+    if tempo < 80:
+        emotion = '평화로운'
+    elif tempo < 120:
+        emotion = '행복한'
+    else:
+        emotion = '열정적인'
+
+    return {'genre': genre, 'emotion': emotion}
+
+
+def train_traditional_ml_model(feature_list, labels):
+    """전통적인 머신 러닝 모델(SVM) 학습."""
+    from sklearn.svm import SVC
+    X = [
+        np.concatenate([
+            f['mfcc'],
+            f['spectral_contrast'],
+            [f['tempo']]
+        ])
+        for f in feature_list
+    ]
+    model = SVC(probability=True)
+    model.fit(X, labels)
+    return model
+
+
+def predict_traditional_ml_model(model, audio_path):
+    features = extract_audio_features(audio_path)
+    X = np.concatenate([
+        features['mfcc'],
+        features['spectral_contrast'],
+        [features['tempo']]
+    ]).reshape(1, -1)
+    return model.predict(X)[0]
+
+
+def train_lyrics_model(lyrics_list, labels):
+    """가사 분석을 위한 간단한 텍스트 분류 모델."""
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.linear_model import LogisticRegression
+
+    vectorizer = TfidfVectorizer()
+    X = vectorizer.fit_transform(lyrics_list)
+    clf = LogisticRegression(max_iter=1000)
+    clf.fit(X, labels)
+    return vectorizer, clf
+
+
+def predict_lyrics(vectorizer, model, lyrics):
+    X = vectorizer.transform([lyrics])
+    return model.predict(X)[0]
+
+
+def hybrid_classification(cnn_model, ml_model, vec, lyr_model, audio_path, lyrics,
+                          genres, emotions):
+    """딥러닝, 규칙 기반, 가사 분석을 결합한 하이브리드 분류."""
+    cnn_result = predict_music(cnn_model, audio_path, genres, emotions)
+    cnn_genre = cnn_result['genres'][0][0] if cnn_result['genres'] else None
+    cnn_emotion = cnn_result['emotions'][0][0] if cnn_result['emotions'] else None
+
+    rule_result = rule_based_classification(audio_path)
+    ml_genre = predict_traditional_ml_model(ml_model, audio_path)
+
+    votes_genre = [g for g in [cnn_genre, rule_result['genre'], ml_genre] if g]
+    final_genre = max(set(votes_genre), key=votes_genre.count)
+
+    emotion_votes = [cnn_emotion, rule_result['emotion']]
+    if lyrics and vec and lyr_model:
+        emotion_votes.append(predict_lyrics(vec, lyr_model, lyrics))
+    emotion_votes = [e for e in emotion_votes if e]
+    final_emotion = max(set(emotion_votes), key=emotion_votes.count)
+
+    return {'genre': final_genre, 'emotion': final_emotion}
+
+
 class ModelVersionControl:
     def __init__(self, version_dir='./model_versions'):
         self.version_dir = version_dir
