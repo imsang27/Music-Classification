@@ -94,36 +94,52 @@ def create_model(input_shape, num_genres, num_emotions, dropout_rate=0.5, learni
 
 # 데이터 전처리 및 모델 학습
 def train_music_classifier(data_path, genres, emotions):
-    # 데이터 제너레이터 추가
-    def data_generator(file_list, batch_size=32):
-        while True:
-            np.random.shuffle(file_list)
-            for i in range(0, len(file_list), batch_size):
-                batch_files = file_list[i:i + batch_size]
-                batch_features = []
-                batch_genres = []
-                batch_emotions = []
-                for file in batch_files:
-                    features = extract_audio_features(file)
-                    # features, genre, emotion 처리
-                    batch_features.append(features)
-                    # ... genre, emotion 추가
-                yield np.array(batch_features), [np.array(batch_genres), np.array(batch_emotions)]
-    
-    # GPU 메모리 동적 할당
-    gpus = tf.config.experimental.list_physical_devices('GPU')
-    if gpus:
-        try:
-            for gpu in gpus:
-                tf.config.experimental.set_memory_growth(gpu, True)
-        except RuntimeError as e:
-            print(e)
-    
+    X = []
+    y_genre = []
+    y_emotion = []
+
     # 데이터 로드 및 전처리
-    for i, (genre, emotion) in enumerate(zip(genres, emotions)):
-        # 여기에 각 장르와 감정별 음악 파일 로드 로직 추가
-        pass
-    
+    for genre_idx, genre in enumerate(genres):
+        genre_path = os.path.join(data_path, genre)
+        if not os.path.exists(genre_path):
+            continue
+        for file in os.listdir(genre_path):
+            if file.endswith(('.mp3', '.wav', '.m4a', '.flac')):
+                file_path = os.path.join(genre_path, file)
+                try:
+                    features = extract_audio_features(file_path)
+                    # mel_spectrogram만 CNN 입력으로 사용 (예시)
+                    mel = features['mel_spectrogram']
+                    if mel.shape[1] < 128:  # 예시: 최소 프레임 길이 보장
+                        continue
+                    mel = mel[:, :128]  # (n_mels, 128)로 자르기
+                    X.append(mel)
+                    y_genre.append(genre_idx)
+                    # 감정 레이블은 임의로 지정하거나 파일명/메타데이터에서 추출 필요
+                    y_emotion.append(0)  # 예시: 임시로 0번 감정
+                except Exception as e:
+                    print(f"특성 추출 실패: {file_path} - {e}")
+
+    X = np.array(X)
+    y_genre = np.array(y_genre)
+    y_emotion = np.array(y_emotion)
+
+    print(f"총 수집된 오디오 샘플 수: {len(X)}")
+    if len(X) == 0:
+        print("ERROR: 오디오 데이터를 하나도 불러오지 못했습니다. 데이터 경로와 폴더 구조, 파일 확장자를 확인하세요.")
+        exit()
+
+    # 차원 맞추기 (CNN 입력: (샘플수, n_mels, 프레임수, 1))
+    X = X[..., np.newaxis]
+
+    # 데이터 분할
+    X_train, X_test, y_genre_train, y_genre_test, y_emotion_train, y_emotion_test = train_test_split(
+        X, y_genre, y_emotion, test_size=0.2, random_state=42
+    )
+    X_train, X_val, y_genre_train, y_genre_val, y_emotion_train, y_emotion_val = train_test_split(
+        X_train, y_genre_train, y_emotion_train, test_size=0.2, random_state=42
+    )
+
     # 모델 생성 및 컴파일
     model = create_model(
         input_shape=(X.shape[1], X.shape[2], 1),
