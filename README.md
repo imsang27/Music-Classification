@@ -28,9 +28,10 @@
 
 ## 설치 방법
 
+프로젝트 의존성은 `requirements.txt` 파일로 관리합니다.
+
 ```bash
-# 필요한 패키지 설치
-pip install librosa numpy tensorflow scikit-learn psutil
+pip install -r requirements.txt
 ```
 
 ## 사용 방법
