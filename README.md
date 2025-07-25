@@ -16,17 +16,23 @@
 - 음악 감정 분류
 - 신뢰도 점수 제공
 
-### 3. 데이터 관리
+### 3. 링크 기반 분류 (NEW!)
+- YouTube 링크 지원
+- 직접 음악 파일 링크 지원
+- 일괄 분류 기능
+- 실시간 URL 검증
+
+### 4. 데이터 관리
 - 데이터셋 검증
 - 오디오 파일 품질 검사
 - 클래스 밸런스 모니터링
 
-### 4. 모델 관리
+### 5. 모델 관리
 - 자동 모델 백업
 - 버전 관리
 - 학습 히스토리 추적
 
-### 5. 추가 분류 기능
+### 6. 추가 분류 기능
 - 수동 분류 인터페이스
 - 규칙 기반 분류
 - 전통적인 머신 러닝 모델
@@ -54,11 +60,34 @@ model = train_music_classifier('음악_데이터_경로', genres, emotions)
 ```
 
 ### 2. 음악 분류
+
+#### 파일 기반 분류
 ```python
 # 새로운 음악 파일 분류
 result = predict_music(model, "새로운_음악.mp3", genres, emotions)
 print("장르:", result['genres'])
 print("감정:", result['emotions'])
+```
+
+#### 링크 기반 분류
+```python
+# YouTube 링크로 분류
+youtube_url = "https://youtube.com/watch?v=..."
+result = classify_music_from_url(model, youtube_url, genres, emotions)
+print("장르:", result['genres'])
+print("감정:", result['emotions'])
+print("YouTube 정보:", result['youtube_info'])
+
+# 여러 링크 일괄 분류
+urls = [
+    "https://youtube.com/watch?v=...",
+    "https://example.com/music.mp3"
+]
+results = batch_classify_urls(model, urls, genres, emotions)
+for result in results:
+    print(f"URL: {result['url']}")
+    print(f"장르: {result['genres']}")
+    print(f"감정: {result['emotions']}")
 ```
 
 ### 3. 웹 인터페이스
@@ -69,7 +98,35 @@ print("감정:", result['emotions'])
 python webapp/app.py
 ```
 
-웹 페이지에서 "딥러닝 분류"와 "규칙 기반 분류" 버튼을 눌러 원하는 방식으로 결과를 확인할 수 있습니다.
+웹 페이지에서 다음 기능들을 사용할 수 있습니다:
+
+#### 📁 파일로 분류하기
+- 음악 파일 업로드
+- AI 기반 분류
+- 규칙 기반 분류
+- 수동 분류
+
+#### 🔗 링크로 분류하기
+- YouTube 링크 입력
+- 직접 음악 파일 링크 입력
+- 실시간 URL 검증
+- AI 기반 및 규칙 기반 분류
+
+#### 📋 여러 링크 일괄 분류하기
+- 여러 링크를 한 번에 입력
+- 일괄 처리 및 결과 요약
+- JSON 파일로 결과 저장
+
+## 지원하는 링크 형식
+
+### YouTube 링크
+- `https://youtube.com/watch?v=VIDEO_ID`
+- `https://youtu.be/VIDEO_ID`
+- `https://youtube.com/embed/VIDEO_ID`
+
+### 직접 음악 파일 링크
+- `.mp3`, `.wav`, `.m4a`, `.flac`, `.ogg` 확장자 지원
+- HTTP/HTTPS 프로토콜 지원
 
 ## 시스템 요구사항
 
@@ -77,18 +134,24 @@ python webapp/app.py
 - CUDA 지원 GPU (권장)
 - 최소 8GB RAM
 - 충분한 저장 공간 (데이터셋 크기에 따라 다름)
+- 인터넷 연결 (링크 분류 기능 사용 시)
 
 ## 주의사항
 
 1. 입력 파일 형식
-   - 지원 형식: .mp3, .wav, .m4a, .flac
+   - 지원 형식: .mp3, .wav, .m4a, .flac, .ogg
    - 최대 파일 크기: 100MB
 
-2. 메모리 사용
+2. 링크 분류 제한사항
+   - YouTube 링크: yt-dlp 라이브러리 필요
+   - 일괄 분류: 최대 20개 URL
+   - 처리 시간: 링크 길이에 따라 다름
+
+3. 메모리 사용
    - 대용량 데이터셋 처리 시 메모리 사용량 모니터링 필요
    - GPU 메모리 관리 설정 확인
 
-3. 데이터셋 요구사항
+4. 데이터셋 요구사항
    - 장르당 최소 50개 이상의 샘플
    - 균형잡힌 클래스 분포 권장
    - 고품질 오디오 파일 권장
