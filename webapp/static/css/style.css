@@ -1,0 +1,194 @@
+body.white-mode {
+    background: #f7f8fa;
+    color: #222;
+}
+
+body.dark-mode {
+    background: #181c20;
+    color: #f7f8fa;
+}
+
+.center-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 40px;
+}
+
+.mode-toggle {
+    position: absolute;
+    top: 24px;
+    right: 36px;
+    z-index: 10;
+}
+
+.mode-toggle button {
+    background: #357ab8;
+    color: #fff;
+    border: none;
+    border-radius: 18px;
+    padding: 8px 22px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.mode-toggle button:hover {
+    background: #4a90e2;
+}
+
+/* White mode styles */
+body.white-mode .file-search-bar {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(74,144,226,0.08);
+}
+
+body.white-mode .file-search-bar .cta-text {
+    color: #357ab8;
+}
+
+body.white-mode .file-label {
+    background: #4a90e2;
+    color: #fff;
+}
+
+body.white-mode .file-label:hover {
+    background: #357ab8;
+}
+
+body.white-mode #file-name {
+    color: #222;
+}
+
+body.white-mode .big-btn {
+    background: #f7f8fa;
+    color: #222;
+    border: 1px solid #4a90e2;
+}
+
+body.white-mode .big-btn:hover, body.white-mode .big-btn:focus {
+    background: #f0f2f5;
+    border: 1px solid transparent;
+    box-shadow:
+        0 0 0 1px #4a90e2,
+        0 0 0 3px #b3d1f7,
+        0 0 0 5px #e3ecf8;
+}
+
+/* Dark mode styles */
+body.dark-mode .file-search-bar {
+    background: #23272f;
+    box-shadow: 0 2px 8px rgba(20,30,50,0.25);
+}
+
+body.dark-mode .file-search-bar .cta-text {
+    color: #7ec3ff;
+}
+
+body.dark-mode .file-label {
+    background: #357ab8;
+    color: #fff;
+}
+
+body.dark-mode .file-label:hover {
+    background: #4a90e2;
+}
+
+body.dark-mode #file-name {
+    color: #f7f8fa;
+}
+
+body.dark-mode .big-btn {
+    background: #222831;
+    color: #f7f8fa;
+    border: 1px solid #4a90e2;
+}
+
+body.dark-mode .big-btn:hover, body.dark-mode .big-btn:focus {
+    background: #2a313a;
+    border: 1px solid transparent;
+    box-shadow:
+        0 0 0 1px #4a90e2,
+        0 0 0 3px #357ab8,
+        0 0 0 5px #23272f;
+}
+
+/* 공통 스타일 */
+.file-search-bar {
+    display: flex;
+    align-items: center;
+    border-radius: 30px;
+    padding: 10px 24px;
+    margin-bottom: 36px;
+    min-width: 420px;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.file-search-bar .cta-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.file-search-bar .right-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.file-label {
+    font-weight: bold;
+    border-radius: 20px;
+    padding: 10px 28px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    margin-right: 0;
+    border: none;
+    transition: background 0.2s;
+}
+
+#file-name {
+    font-size: 1rem;
+    min-width: 120px;
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.button-group {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 20px;
+    width: 600px;
+    margin-bottom: 30px;
+}
+
+.big-btn {
+    font-size: 1.3rem;
+    min-width: 0;
+    width: 100%;
+    padding: 28px 0;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 
+        border-color 0.2s,
+        box-shadow 0.2s,
+        background 0.2s;
+    box-shadow: 0 0 0 0 #4a90e2, 0 0 0 0 #b3d1f7;
+}
+
+body,
+.file-search-bar,
+.file-label,
+#file-name,
+.big-btn {
+    transition: background 0.8s, color 0.8s, border-color 0.8s, box-shadow 0.3s;
+} 
