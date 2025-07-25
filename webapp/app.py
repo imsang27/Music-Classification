@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 # Try to load CNN model if available
 try:
-    from tensorflow.keras.models import load_model
+    from tensorflow.python.keras.models import load_model
     MODEL_PATH = os.path.join(os.path.dirname(__file__), '..', 'best_model.h5')
     cnn_model = load_model(MODEL_PATH) if os.path.exists(MODEL_PATH) else None
 except Exception:
