@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <title>음악 분류 웹</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
+        body.white-mode {
+            background: #f7f8fa;
+            color: #222;
+        }
+        body.dark-mode {
             background: #181c20;
             color: #f7f8fa;
         }
@@ -16,12 +18,93 @@
             align-items: center;
             margin-top: 40px;
         }
+        .mode-toggle {
+            position: absolute;
+            top: 24px;
+            right: 36px;
+            z-index: 10;
+        }
+        .mode-toggle button {
+            background: #357ab8;
+            color: #fff;
+            border: none;
+            border-radius: 18px;
+            padding: 8px 22px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .mode-toggle button:hover {
+            background: #4a90e2;
+        }
+        /* White mode styles */
+        body.white-mode .file-search-bar {
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(74,144,226,0.08);
+        }
+        body.white-mode .file-search-bar .cta-text {
+            color: #357ab8;
+        }
+        body.white-mode .file-label {
+            background: #4a90e2;
+            color: #fff;
+        }
+        body.white-mode .file-label:hover {
+            background: #357ab8;
+        }
+        body.white-mode #file-name {
+            color: #222;
+        }
+        body.white-mode .big-btn {
+            background: #f7f8fa;
+            color: #222;
+            border: 1px solid #4a90e2;
+        }
+        body.white-mode .big-btn:hover, body.white-mode .big-btn:focus {
+            background: #f0f2f5;
+            border: 1px solid transparent;
+            box-shadow:
+                0 0 0 1px #4a90e2,
+                0 0 0 3px #b3d1f7,
+                0 0 0 5px #e3ecf8;
+        }
+        /* Dark mode styles */
+        body.dark-mode .file-search-bar {
+            background: #23272f;
+            box-shadow: 0 2px 8px rgba(20,30,50,0.25);
+        }
+        body.dark-mode .file-search-bar .cta-text {
+            color: #7ec3ff;
+        }
+        body.dark-mode .file-label {
+            background: #357ab8;
+            color: #fff;
+        }
+        body.dark-mode .file-label:hover {
+            background: #4a90e2;
+        }
+        body.dark-mode #file-name {
+            color: #f7f8fa;
+        }
+        body.dark-mode .big-btn {
+            background: #222831;
+            color: #f7f8fa;
+            border: 1px solid #4a90e2;
+        }
+        body.dark-mode .big-btn:hover, body.dark-mode .big-btn:focus {
+            background: #2a313a;
+            border: 1px solid transparent;
+            box-shadow:
+                0 0 0 1px #4a90e2,
+                0 0 0 3px #357ab8,
+                0 0 0 5px #23272f;
+        }
+        /* 공통 스타일은 기존과 동일하게 유지 */
         .file-search-bar {
             display: flex;
             align-items: center;
-            background: #23272f;
             border-radius: 30px;
-            box-shadow: 0 2px 8px rgba(20,30,50,0.25);
             padding: 10px 24px;
             margin-bottom: 36px;
             min-width: 420px;
@@ -31,7 +114,6 @@
         .file-search-bar .cta-text {
             font-size: 1.1rem;
             font-weight: 500;
-            color: #7ec3ff;
             white-space: nowrap;
         }
         .file-search-bar .right-group {
@@ -40,8 +122,6 @@
             gap: 10px;
         }
         .file-label {
-            background: #357ab8;
-            color: #fff;
             font-weight: bold;
             border-radius: 20px;
             padding: 10px 28px;
@@ -51,11 +131,7 @@
             border: none;
             transition: background 0.2s;
         }
-        .file-label:hover {
-            background: #4a90e2;
-        }
         #file-name {
-            color: #f7f8fa;
             font-size: 1rem;
             min-width: 120px;
             max-width: 220px;
@@ -79,9 +155,6 @@
             width: 100%;
             padding: 28px 0;
             border-radius: 12px;
-            border: 1px solid #4a90e2;
-            background: #222831;
-            color: #f7f8fa;
             font-weight: bold;
             cursor: pointer;
             transition: 
@@ -90,18 +163,12 @@
                 background 0.2s;
             box-shadow: 0 0 0 0 #4a90e2, 0 0 0 0 #b3d1f7;
         }
-        .big-btn:hover, .big-btn:focus {
-            border: 1px solid transparent;
-            box-shadow:
-                0 0 0 1px #4a90e2,
-                0 0 0 3px #357ab8,
-                0 0 0 5px #23272f;
-            background: #2a313a;
-            outline: none;
-        }
     </style>
 </head>
-<body>
+<body class="dark-mode">
+    <div class="mode-toggle">
+        <button type="button" onclick="toggleMode()">화이트 모드</button>
+    </div>
     <div class="center-container">
         <form action="{{ url_for('classify') }}" method="post" enctype="multipart/form-data">
             <div class="file-search-bar">
@@ -131,6 +198,19 @@
             const input = document.getElementById('audio_file');
             const fileName = input.files.length > 0 ? input.files[0].name : '';
             document.getElementById('file-name').textContent = fileName;
+        }
+        function toggleMode() {
+            const body = document.body;
+            const btn = document.querySelector('.mode-toggle button');
+            if (body.classList.contains('dark-mode')) {
+                body.classList.remove('dark-mode');
+                body.classList.add('white-mode');
+                btn.textContent = '다크 모드';
+            } else {
+                body.classList.remove('white-mode');
+                body.classList.add('dark-mode');
+                btn.textContent = '화이트 모드';
+            }
         }
     </script>
 </body>
