@@ -13,6 +13,13 @@ import hashlib
 import time
 import psutil
 import matplotlib.pyplot as plt
+import requests
+import re
+import urllib.parse
+from urllib.parse import urlparse
+import tempfile
+import subprocess
+import sys
 
 # 오디오 특성을 추출하는 함수
 def extract_audio_features(audio_path, duration=60):
@@ -763,3 +770,283 @@ if __name__ == "__main__":
         print("\n통과한 검증:")
         for passed in validation_results['passed']:
             print(f"- {passed}")
+
+def validate_url(url):
+    """URL이 유효한 음악 링크인지 검증합니다."""
+    try:
+        parsed = urlparse(url)
+        if not parsed.scheme or not parsed.netloc:
+            return False, "유효하지 않은 URL 형식입니다."
+        
+        # YouTube 링크 검증
+        if 'youtube.com' in parsed.netloc or 'youtu.be' in parsed.netloc:
+            return True, "YouTube 링크"
+        
+        # Spotify 링크 검증
+        if 'spotify.com' in parsed.netloc:
+            return True, "Spotify 링크"
+        
+        # 일반 음악 파일 링크 검증
+        music_extensions = ['.mp3', '.wav', '.m4a', '.flac', '.ogg']
+        if any(parsed.path.lower().endswith(ext) for ext in music_extensions):
+            return True, "직접 음악 파일 링크"
+        
+        return False, "지원하지 않는 링크 형식입니다."
+        
+    except Exception as e:
+        return False, f"URL 검증 중 오류 발생: {str(e)}"
+
+def download_youtube_audio(url, output_path=None):
+    """YouTube 링크에서 오디오를 다운로드합니다."""
+    try:
+        if output_path is None:
+            output_path = tempfile.mktemp(suffix='.mp3')
+        
+        # yt-dlp 사용 (yt-dlp가 설치되어 있어야 함)
+        cmd = [
+            'yt-dlp',
+            '--extract-audio',
+            '--audio-format', 'mp3',
+            '--audio-quality', '0',
+            '--output', output_path,
+            url
+        ]
+        
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        
+        if result.returncode != 0:
+            raise Exception(f"YouTube 다운로드 실패: {result.stderr}")
+        
+        # 실제 다운로드된 파일 경로 찾기
+        if os.path.exists(output_path):
+            return output_path
+        else:
+            # yt-dlp가 생성한 실제 파일명 찾기
+            dir_path = os.path.dirname(output_path)
+            base_name = os.path.splitext(os.path.basename(output_path))[0]
+            for file in os.listdir(dir_path):
+                if file.startswith(base_name) and file.endswith('.mp3'):
+                    return os.path.join(dir_path, file)
+        
+        raise Exception("다운로드된 파일을 찾을 수 없습니다.")
+        
+    except FileNotFoundError:
+        raise Exception("yt-dlp가 설치되어 있지 않습니다. 'pip install yt-dlp'로 설치하세요.")
+    except Exception as e:
+        raise Exception(f"YouTube 다운로드 중 오류 발생: {str(e)}")
+
+def download_direct_audio(url, output_path=None):
+    """직접 음악 파일 링크에서 다운로드합니다."""
+    try:
+        if output_path is None:
+            output_path = tempfile.mktemp(suffix='.mp3')
+        
+        response = requests.get(url, stream=True, timeout=30)
+        response.raise_for_status()
+        
+        with open(output_path, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+        
+        return output_path
+        
+    except Exception as e:
+        raise Exception(f"직접 다운로드 중 오류 발생: {str(e)}")
+
+def extract_video_id_from_youtube(url):
+    """YouTube URL에서 비디오 ID를 추출합니다."""
+    patterns = [
+        r'(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)',
+        r'youtube\.com\/embed\/([^&\n?#]+)',
+        r'youtube\.com\/v\/([^&\n?#]+)'
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, url)
+        if match:
+            return match.group(1)
+    
+    return None
+
+def get_youtube_info(url):
+    """YouTube 비디오 정보를 가져옵니다."""
+    try:
+        video_id = extract_video_id_from_youtube(url)
+        if not video_id:
+            raise Exception("YouTube 비디오 ID를 추출할 수 없습니다.")
+        
+        # yt-dlp를 사용하여 비디오 정보 가져오기
+        cmd = ['yt-dlp', '--dump-json', url]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        
+        if result.returncode != 0:
+            raise Exception(f"YouTube 정보 가져오기 실패: {result.stderr}")
+        
+        import json
+        info = json.loads(result.stdout)
+        
+        return {
+            'title': info.get('title', 'Unknown'),
+            'duration': info.get('duration', 0),
+            'uploader': info.get('uploader', 'Unknown'),
+            'view_count': info.get('view_count', 0),
+            'description': info.get('description', '')[:200] + '...' if info.get('description') else ''
+        }
+        
+    except Exception as e:
+        return {
+            'title': 'Unknown',
+            'duration': 0,
+            'uploader': 'Unknown',
+            'view_count': 0,
+            'description': f'정보 가져오기 실패: {str(e)}'
+        }
+
+def classify_music_from_url(model, url, genres, emotions, confidence_threshold=0.5):
+    """URL을 통해 음악을 분류합니다."""
+    try:
+        # URL 검증
+        is_valid, message = validate_url(url)
+        if not is_valid:
+            raise ValueError(message)
+        
+        print(f"링크 검증 완료: {message}")
+        
+        # 임시 파일 경로 생성
+        temp_file = None
+        
+        try:
+            # 링크 타입에 따른 다운로드
+            if 'youtube.com' in url or 'youtu.be' in url:
+                print("YouTube 링크 감지됨. 오디오 다운로드 중...")
+                
+                # YouTube 정보 가져오기
+                info = get_youtube_info(url)
+                print(f"제목: {info['title']}")
+                print(f"업로더: {info['uploader']}")
+                print(f"길이: {info['duration']}초")
+                
+                temp_file = download_youtube_audio(url)
+                
+            elif 'spotify.com' in url:
+                raise ValueError("Spotify 링크는 현재 지원하지 않습니다. YouTube 링크를 사용해주세요.")
+                
+            else:
+                print("직접 음악 파일 링크 감지됨. 다운로드 중...")
+                temp_file = download_direct_audio(url)
+            
+            print(f"다운로드 완료: {temp_file}")
+            
+            # 음악 분류 실행
+            result = predict_music(model, temp_file, genres, emotions, confidence_threshold)
+            
+            # YouTube 정보 추가
+            if 'youtube.com' in url or 'youtu.be' in url:
+                result['youtube_info'] = get_youtube_info(url)
+            
+            return result
+            
+        finally:
+            # 임시 파일 정리
+            if temp_file and os.path.exists(temp_file):
+                try:
+                    os.remove(temp_file)
+                    print("임시 파일 정리 완료")
+                except:
+                    pass
+                    
+    except Exception as e:
+        raise Exception(f"링크 분류 중 오류 발생: {str(e)}")
+
+def batch_classify_urls(model, urls, genres, emotions, confidence_threshold=0.5):
+    """여러 URL을 일괄 분류합니다."""
+    results = []
+    
+    for i, url in enumerate(urls, 1):
+        try:
+            print(f"\n[{i}/{len(urls)}] 처리 중: {url}")
+            result = classify_music_from_url(model, url, genres, emotions, confidence_threshold)
+            result['url'] = url
+            result['status'] = 'success'
+            results.append(result)
+            
+        except Exception as e:
+            print(f"오류 발생: {str(e)}")
+            results.append({
+                'url': url,
+                'status': 'error',
+                'error': str(e)
+            })
+    
+    return results
+
+def create_url_classification_report(results):
+    """URL 분류 결과를 보고서 형태로 생성합니다."""
+    report = {
+        'summary': {
+            'total': len(results),
+            'success': len([r for r in results if r['status'] == 'success']),
+            'failed': len([r for r in results if r['status'] == 'error'])
+        },
+        'genre_distribution': {},
+        'emotion_distribution': {},
+        'detailed_results': results
+    }
+    
+    # 장르 및 감정 분포 계산
+    for result in results:
+        if result['status'] == 'success':
+            # 장르 분포
+            for genre, confidence in result['genres']:
+                if genre not in report['genre_distribution']:
+                    report['genre_distribution'][genre] = 0
+                report['genre_distribution'][genre] += 1
+            
+            # 감정 분포
+            for emotion, confidence in result['emotions']:
+                if emotion not in report['emotion_distribution']:
+                    report['emotion_distribution'][emotion] = 0
+                report['emotion_distribution'][emotion] += 1
+    
+    return report
+
+def save_url_classification_results(results, output_file='url_classification_results.json'):
+    """URL 분류 결과를 JSON 파일로 저장합니다."""
+    report = create_url_classification_report(results)
+    
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(report, f, ensure_ascii=False, indent=2)
+    
+    print(f"결과가 {output_file}에 저장되었습니다.")
+
+def print_url_classification_summary(results):
+    """URL 분류 결과 요약을 출력합니다."""
+    report = create_url_classification_report(results)
+    
+    print("\n" + "="*50)
+    print("URL 분류 결과 요약")
+    print("="*50)
+    print(f"총 처리된 URL: {report['summary']['total']}")
+    print(f"성공: {report['summary']['success']}")
+    print(f"실패: {report['summary']['failed']}")
+    
+    if report['genre_distribution']:
+        print("\n장르 분포:")
+        for genre, count in sorted(report['genre_distribution'].items(), key=lambda x: x[1], reverse=True):
+            print(f"  {genre}: {count}개")
+    
+    if report['emotion_distribution']:
+        print("\n감정 분포:")
+        for emotion, count in sorted(report['emotion_distribution'].items(), key=lambda x: x[1], reverse=True):
+            print(f"  {emotion}: {count}개")
+    
+    print("\n상세 결과:")
+    for i, result in enumerate(results, 1):
+        print(f"\n{i}. {result['url']}")
+        if result['status'] == 'success':
+            print(f"   장르: {', '.join([f'{g}({c:.2f})' for g, c in result['genres'][:3]])}")
+            print(f"   감정: {', '.join([f'{e}({c:.2f})' for e, c in result['emotions'][:3]])}")
+            if 'youtube_info' in result:
+                print(f"   제목: {result['youtube_info']['title']}")
+        else:
+            print(f"   오류: {result['error']}")
