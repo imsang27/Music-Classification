@@ -101,3 +101,5 @@ secrets.json
 
 # 기타
 *.swp 
+uploads/
+TODO.md
