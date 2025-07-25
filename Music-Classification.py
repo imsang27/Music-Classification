@@ -738,20 +738,20 @@ class DatasetValidator:
                     )
 
 # 사용 예시
-    validator = DatasetValidator(min_samples=50, min_duration=10)
-    validation_results = validator.validate_dataset('음악_데이터_경로', genres, emotions)
+validator = DatasetValidator(min_samples=50, min_duration=10)
+validation_results = validator.validate_dataset('음악_데이터_경로', genres, emotions)
 
-    if validation_results['errors']:
-        print("\n오류:")
-        for error in validation_results['errors']:
-            print(f"- {error}")
+if validation_results['errors']:
+    print("\n오류:")
+    for error in validation_results['errors']:
+        print(f"- {error}")
 
-    if validation_results['warnings']:
-        print("\n경고:")
-        for warning in validation_results['warnings']:
-            print(f"- {warning}")
+if validation_results['warnings']:
+    print("\n경고:")
+    for warning in validation_results['warnings']:
+        print(f"- {warning}")
 
-    if validation_results['passed']:
-        print("\n통과한 검증:")
-        for passed in validation_results['passed']:
-            print(f"- {passed}")
+if validation_results['passed']:
+    print("\n통과한 검증:")
+    for passed in validation_results['passed']:
+        print(f"- {passed}")
