@@ -20,6 +20,7 @@ from urllib.parse import urlparse
 import tempfile
 import subprocess
 import sys
+import yt_dlp
 
 # 오디오 특성을 추출하는 함수
 def extract_audio_features(audio_path, duration=60):
@@ -802,7 +803,7 @@ def download_youtube_audio(url, output_path=None):
         if output_path is None:
             output_path = tempfile.mktemp(suffix='.mp3')
         
-        # yt-dlp 사용 (yt-dlp가 설치되어 있어야 함)
+        # yt-dlp 사용
         cmd = [
             'yt-dlp',
             '--extract-audio',
