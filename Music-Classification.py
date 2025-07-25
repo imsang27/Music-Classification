@@ -275,9 +275,11 @@ def cross_validate_model(X, y_genre, y_emotion, n_splits=5):
     return np.mean(genre_scores), np.mean(emotion_scores)
 
 # 사용 예시
-genres = ['클래식', '재즈', '록', '팝']
-emotions = ['행복한', '슬픈', '평화로운', '열정적인', '차분한', '긴장된', '기쁨', '슬픔', '차분함', '신남', '분노']
-model = train_music_classifier('음악_데이터_경로', genres, emotions)
+if __name__ == "__main__":
+    genres = ['클래식', '재즈', '록', '팝']
+    emotions = ['행복한', '슬픈', '평화로운', '열정적인',
+                '차분한', '긴장된', '기쁨', '슬픔', '차분함', '신남', '분노']
+    model = train_music_classifier('음악_데이터_경로', genres, emotions)
 
 def save_model_with_metadata(model, genres, emotions, metrics, save_path):
     # 모델 저장
@@ -735,21 +737,22 @@ class DatasetValidator:
                         f"장르 '{genre}'의 샘플 수가 평균({avg_samples:.0f})의 50% 미만입니다: {count}"
                     )
 
-# 사용 예시
-validator = DatasetValidator(min_samples=50, min_duration=10)
-validation_results = validator.validate_dataset('음악_데이터_경로', genres, emotions)
+if __name__ == "__main__":
+    validator = DatasetValidator(min_samples=50, min_duration=10)
+    validation_results = validator.validate_dataset('음악_데이터_경로', genres, emotions)
 
-if validation_results['errors']:
-    print("\n오류:")
-    for error in validation_results['errors']:
-        print(f"- {error}")
+    if validation_results['errors']:
+        print("\n오류:")
+        for error in validation_results['errors']:
+            print(f"- {error}")
 
-if validation_results['warnings']:
-    print("\n경고:")
-    for warning in validation_results['warnings']:
-        print(f"- {warning}")
+    if validation_results['warnings']:
+        print("\n경고:")
+        for warning in validation_results['warnings']:
+            print(f"- {warning}")
 
-if validation_results['passed']:
-    print("\n통과한 검증:")
-    for passed in validation_results['passed']:
-        print(f"- {passed}")
+    if validation_results['passed']:
+        print("\n통과한 검증:")
+        for passed in validation_results['passed']:
+            print(f"- {passed}")
+
