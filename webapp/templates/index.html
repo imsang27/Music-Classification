@@ -24,6 +24,7 @@
             padding: 10px 24px;
             margin-bottom: 36px;
             min-width: 420px;
+            gap: 18px;
         }
         .file-label {
             background: #4a90e2;
@@ -85,12 +86,19 @@
             background: #f0f2f5;
             outline: none;
         }
+        .cta-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #357ab8;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
     <div class="center-container">
         <form action="{{ url_for('classify') }}" method="post" enctype="multipart/form-data">
             <div class="file-search-bar">
+                <span class="cta-text">음악을 찾아 분류해보세요!</span>
                 <label for="audio_file" class="file-label">파일 찾기</label>
                 <input type="file" id="audio_file" name="audio_file" required onchange="updateFileName()">
                 <span id="file-name"></span>
