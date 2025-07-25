@@ -1,7 +1,7 @@
 import librosa
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras import layers, models
+from tensorflow.python.keras import layers, models
 from sklearn.model_selection import train_test_split
 from sklearn.utils.class_weight import compute_class_weight
 from sklearn.model_selection import KFold
@@ -12,6 +12,7 @@ from datetime import datetime
 import hashlib
 import time
 import psutil
+import matplotlib.pyplot as plt
 
 # 오디오 특성을 추출하는 함수
 def extract_audio_features(audio_path, duration=60):
