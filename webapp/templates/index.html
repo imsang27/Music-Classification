@@ -24,7 +24,19 @@
             padding: 10px 24px;
             margin-bottom: 36px;
             min-width: 420px;
+            justify-content: space-between;
             gap: 18px;
+        }
+        .file-search-bar .cta-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #357ab8;
+            white-space: nowrap;
+        }
+        .file-search-bar .right-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         .file-label {
             background: #4a90e2;
@@ -34,7 +46,7 @@
             padding: 10px 28px;
             cursor: pointer;
             font-size: 1.1rem;
-            margin-right: 18px;
+            margin-right: 0;
             border: none;
             transition: background 0.2s;
         }
@@ -86,12 +98,6 @@
             background: #f0f2f5;
             outline: none;
         }
-        .cta-text {
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: #357ab8;
-            white-space: nowrap;
-        }
     </style>
 </head>
 <body>
@@ -99,9 +105,11 @@
         <form action="{{ url_for('classify') }}" method="post" enctype="multipart/form-data">
             <div class="file-search-bar">
                 <span class="cta-text">음악을 찾아 분류해보세요!</span>
-                <label for="audio_file" class="file-label">파일 찾기</label>
-                <input type="file" id="audio_file" name="audio_file" required onchange="updateFileName()">
-                <span id="file-name"></span>
+                <div class="right-group">
+                    <span id="file-name"></span>
+                    <label for="audio_file" class="file-label">파일 찾기</label>
+                    <input type="file" id="audio_file" name="audio_file" required onchange="updateFileName()">
+                </div>
             </div>
             <div class="button-group">
                 <button type="submit" class="big-btn" name="action" value="cnn">딥러닝 분류</button>
