@@ -3,19 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <title>음악 분류 웹</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        .center-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 40px;
+        }
+        .button-group {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .big-btn {
+            font-size: 1.3rem;
+            padding: 18px 36px;
+            border-radius: 10px;
+            border: none;
+            background: #4a90e2;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .big-btn:hover {
+            background: #357ab8;
+        }
+    </style>
 </head>
 <body>
-    <h1>음악 분류 시스템</h1>
-    <form action="{{ url_for('classify') }}" method="post" enctype="multipart/form-data">
-        <input type="file" name="audio_file" required>
-        <br><br>
-        <button type="submit" name="action" value="cnn">딥러닝 분류</button>
-        <button type="submit" name="action" value="rule">규칙 기반 분류</button>
-    </form>
-
-    {% if prediction %}
-        <h2>분류 결과</h2>
-        <pre>{{ prediction }}</pre>
-    {% endif %}
+    <div class="center-container">
+        <h1>음악 분류 시스템</h1>
+        <form action="{{ url_for('classify') }}" method="post" enctype="multipart/form-data">
+            <input type="file" name="audio_file" required>
+            <div class="button-group">
+                <button type="submit" class="big-btn" name="action" value="cnn">딥러닝 분류</button>
+                <button type="submit" class="big-btn" name="action" value="rule">규칙 기반 분류</button>
+                <button type="submit" class="big-btn" name="action" value="manual">수동 분류</button>
+                <button type="submit" class="big-btn" name="action" value="ml">전통 ML 분류</button>
+                <button type="submit" class="big-btn" name="action" value="lyrics">가사 기반 분류</button>
+                <button type="submit" class="big-btn" name="action" value="hybrid">하이브리드 분류</button>
+            </div>
+        </form>
+        {% if prediction %}
+            <h2>분류 결과</h2>
+            <pre>{{ prediction }}</pre>
+        {% endif %}
+    </div>
 </body>
 </html>
