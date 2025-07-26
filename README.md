@@ -21,6 +21,7 @@
 - 직접 음악 파일 링크 지원
 - 일괄 분류 기능
 - 실시간 URL 검증
+- 링크 미리보기 기능
 
 ### 4. 데이터 관리
 - 데이터셋 검증
@@ -109,7 +110,7 @@ python webapp/app.py
 #### 🔗 링크로 분류하기
 - YouTube 링크 입력
 - 직접 음악 파일 링크 입력
-- 실시간 URL 검증
+- 실시간 URL 검증 및 링크 미리보기
 - AI 기반 및 규칙 기반 분류
 
 #### 📋 여러 링크 일괄 분류하기
@@ -125,7 +126,7 @@ python webapp/app.py
 - `https://youtube.com/embed/VIDEO_ID`
 
 ### 직접 음악 파일 링크
-- `.mp3`, `.wav`, `.m4a`, `.flac`, `.ogg` 확장자 지원
+- `.mp3`, `.wav`, `.m4a`, `.flac`, `.ogg`, `.aac` 확장자 지원
 - HTTP/HTTPS 프로토콜 지원
 
 ## 시스템 요구사항
@@ -139,7 +140,7 @@ python webapp/app.py
 ## 주의사항
 
 1. 입력 파일 형식
-   - 지원 형식: .mp3, .wav, .m4a, .flac, .ogg
+   - 지원 형식: .mp3, .wav, .m4a, .flac, .ogg, .aac
    - 최대 파일 크기: 100MB
 
 2. 링크 분류 제한사항
