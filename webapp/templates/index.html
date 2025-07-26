@@ -39,9 +39,23 @@
             <form action="{{ url_for('classify_url') }}" method="post" id="url-form">
                 <div class="url-input-group">
                     <input type="url" id="url_input" name="url" placeholder="YouTube 링크나 음악 파일 링크를 입력하세요..." 
-                           required class="url-input" onchange="validateUrl()">
+                           required class="url-input" onchange="validateUrl()" onblur="getLinkPreview()">
                     <div id="url-validation" class="validation-message"></div>
                 </div>
+                
+                <!-- 링크 미리보기 -->
+                <div id="link-preview" class="link-preview" style="display: none;">
+                    <div class="preview-content">
+                        <div class="preview-header">
+                            <span id="preview-platform" class="platform-badge"></span>
+                            <button type="button" class="close-preview" onclick="hideLinkPreview()">×</button>
+                        </div>
+                        <div id="preview-info" class="preview-info">
+                            <!-- 미리보기 정보가 여기에 표시됩니다 -->
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="button-group">
                     <button type="submit" class="big-btn" name="action" value="cnn">🎵 AI로 분석하기</button>
                     <button type="submit" class="big-btn" name="action" value="rule">📋 규칙으로 분류</button>
