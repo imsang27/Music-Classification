@@ -125,5 +125,29 @@ def validate_url_api():
     except Exception as e:
         return jsonify({'valid': False, 'message': f'검증 중 오류 발생: {str(e)}'})
 
+@app.route('/api/link_preview', methods=['POST'])
+def link_preview_api():
+    """링크 미리보기 API"""
+    url = request.json.get('url', '').strip()
+    if not url:
+        return jsonify({'error': 'URL을 입력해주세요.'})
+    
+    try:
+        preview = mc.get_link_preview(url)
+        return jsonify(preview)
+    except Exception as e:
+        return jsonify({'error': f'미리보기 생성 중 오류 발생: {str(e)}'})
+
+@app.route('/api/progress/<task_id>', methods=['GET'])
+def get_progress_api(task_id):
+    """분류 진행률 조회 API"""
+    # 간단한 진행률 시뮬레이션 (실제로는 Celery나 Redis를 사용해야 함)
+    return jsonify({
+        'task_id': task_id,
+        'status': 'processing',
+        'progress': 50,
+        'message': '분류 중...'
+    })
+
 if __name__ == '__main__':
     app.run(debug=True)
