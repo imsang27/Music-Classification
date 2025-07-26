@@ -737,7 +737,7 @@ class DatasetValidator:
             genre_path = os.path.join(data_path, genre)
             if os.path.exists(genre_path):
                 sample_counts[genre] = len([f for f in os.listdir(genre_path) 
-                                          if f.endswith(('.mp3', '.wav', '.m4a', '.flac'))])
+                                          if f.endswith(('.mp3', '.wav', '.m4a', '.flac', '.ogg', '.aac'))])
         
         if sample_counts:
             avg_samples = sum(sample_counts.values()) / len(sample_counts)
@@ -763,7 +763,7 @@ def validate_url(url):
             return True, "Spotify 링크"
         
         # 일반 음악 파일 링크 검증
-        music_extensions = ['.mp3', '.wav', '.m4a', '.flac', '.ogg']
+        music_extensions = ['.mp3', '.wav', '.m4a', '.flac', '.ogg', '.aac']
         if any(parsed.path.lower().endswith(ext) for ext in music_extensions):
             return True, "직접 음악 파일 링크"
         
