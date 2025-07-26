@@ -77,6 +77,130 @@ async function validateUrl() {
     }
 }
 
+// 링크 미리보기 함수
+async function getLinkPreview() {
+    const urlInput = document.getElementById('url_input');
+    const previewDiv = document.getElementById('link-preview');
+    const platformBadge = document.getElementById('preview-platform');
+    const previewInfo = document.getElementById('preview-info');
+    const url = urlInput.value.trim();
+    
+    if (!url) {
+        hideLinkPreview();
+        return;
+    }
+    
+    // URL이 유효한지 먼저 확인
+    const validationDiv = document.getElementById('url-validation');
+    if (validationDiv.classList.contains('invalid')) {
+        hideLinkPreview();
+        return;
+    }
+    
+    try {
+        // 로딩 상태 표시
+        previewDiv.style.display = 'block';
+        platformBadge.textContent = '로딩 중...';
+        previewInfo.innerHTML = '<p>링크 정보를 가져오는 중...</p>';
+        
+        const response = await fetch('/api/link_preview', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ url: url })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            platformBadge.textContent = '오류';
+            previewInfo.innerHTML = `<p style="color: #e74c3c;">❌ ${data.error}</p>`;
+            return;
+        }
+        
+        // 플랫폼 배지 설정
+        if (data.platform) {
+            platformBadge.textContent = data.platform;
+        } else if (data.title) {
+            platformBadge.textContent = 'YouTube';
+        } else {
+            platformBadge.textContent = '음악 링크';
+        }
+        
+        // 미리보기 정보 구성
+        let infoHTML = '';
+        
+        if (data.title) {
+            infoHTML += `<h4>${data.title}</h4>`;
+        }
+        
+        if (data.uploader) {
+            infoHTML += `<p><strong>업로더:</strong> ${data.uploader}</p>`;
+        }
+        
+        if (data.duration) {
+            const minutes = Math.floor(data.duration / 60);
+            const seconds = data.duration % 60;
+            infoHTML += `<p><strong>길이:</strong> ${minutes}:${seconds.toString().padStart(2, '0')}</p>`;
+        }
+        
+        if (data.view_count) {
+            infoHTML += `<p><strong>조회수:</strong> ${data.view_count.toLocaleString()}</p>`;
+        }
+        
+        if (data.like_count) {
+            infoHTML += `<p><strong>좋아요:</strong> ${data.like_count.toLocaleString()}</p>`;
+        }
+        
+        if (data.description) {
+            infoHTML += `<p><strong>설명:</strong> ${data.description}</p>`;
+        }
+        
+        if (data.content_type) {
+            infoHTML += `<p><strong>파일 형식:</strong> ${data.content_type}</p>`;
+        }
+        
+        if (data.file_size && data.file_size !== '알 수 없음') {
+            const sizeMB = (data.file_size / (1024 * 1024)).toFixed(2);
+            infoHTML += `<p><strong>파일 크기:</strong> ${sizeMB} MB</p>`;
+        }
+        
+        if (data.tags && data.tags.length > 0) {
+            infoHTML += `<p><strong>태그:</strong> ${data.tags.join(', ')}</p>`;
+        }
+        
+        // 통계 정보
+        if (data.view_count || data.like_count || data.duration) {
+            infoHTML += '<div class="preview-stats">';
+            if (data.duration) {
+                const minutes = Math.floor(data.duration / 60);
+                const seconds = data.duration % 60;
+                infoHTML += `<span>⏱️ ${minutes}:${seconds.toString().padStart(2, '0')}</span>`;
+            }
+            if (data.view_count) {
+                infoHTML += `<span>👁️ ${data.view_count.toLocaleString()}</span>`;
+            }
+            if (data.like_count) {
+                infoHTML += `<span>👍 ${data.like_count.toLocaleString()}</span>`;
+            }
+            infoHTML += '</div>';
+        }
+        
+        previewInfo.innerHTML = infoHTML;
+        
+    } catch (error) {
+        platformBadge.textContent = '오류';
+        previewInfo.innerHTML = `<p style="color: #e74c3c;">❌ 미리보기 생성 중 오류가 발생했습니다.</p>`;
+    }
+}
+
+// 링크 미리보기 숨기기
+function hideLinkPreview() {
+    const previewDiv = document.getElementById('link-preview');
+    previewDiv.style.display = 'none';
+}
+
 // URL 폼 제출 전 검증
 function validateUrlForm() {
     const urlInput = document.getElementById('url_input');
