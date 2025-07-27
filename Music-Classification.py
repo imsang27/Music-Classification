@@ -550,27 +550,56 @@ def manual_classification(audio_path, genres, emotions, input_func=input):
 
 
 def rule_based_classification(audio_path):
-    """단순 규칙 기반 분류 예시."""
-    features = extract_audio_features(audio_path)
-    tempo = features['tempo']
-
-    if tempo < 80:
-        genre = '클래식'
-    elif tempo < 110:
-        genre = '재즈'
-    elif tempo < 140:
-        genre = '팝'
-    else:
-        genre = '록'
-
-    if tempo < 80:
-        emotion = '평화로운'
-    elif tempo < 120:
-        emotion = '행복한'
-    else:
-        emotion = '열정적인'
-
-    return {'genre': genre, 'emotion': emotion}
+    """규칙 기반 분류 - 템포와 오디오 특성을 기반으로 분류."""
+    try:
+        features = extract_audio_features(audio_path)
+        tempo = features['tempo']
+        
+        # 장르 분류 (템포 기반)
+        if tempo < 80:
+            genre = '클래식'
+            genre_confidence = 0.8
+        elif tempo < 110:
+            genre = '재즈'
+            genre_confidence = 0.7
+        elif tempo < 140:
+            genre = '팝'
+            genre_confidence = 0.75
+        else:
+            genre = '록'
+            genre_confidence = 0.8
+        
+        # 감정 분류 (템포 기반)
+        if tempo < 80:
+            emotion = '평화로운'
+            emotion_confidence = 0.8
+        elif tempo < 100:
+            emotion = '슬픈'
+            emotion_confidence = 0.7
+        elif tempo < 120:
+            emotion = '행복한'
+            emotion_confidence = 0.75
+        else:
+            emotion = '열정적인'
+            emotion_confidence = 0.8
+        
+        # 결과를 웹 인터페이스 형식에 맞게 반환
+        return {
+            'genres': [(genre, genre_confidence)],
+            'emotions': [(emotion, emotion_confidence)],
+            'tempo': tempo,
+            'method': '규칙 기반 분류'
+        }
+        
+    except Exception as e:
+        # 오류 발생 시 기본값 반환
+        return {
+            'genres': [('팝', 0.5)],
+            'emotions': [('행복한', 0.5)],
+            'tempo': 120,
+            'method': '규칙 기반 분류 (기본값)',
+            'error': f'분류 중 오류 발생: {str(e)}'
+        }
 
 
 def train_traditional_ml_model(feature_list, labels):
@@ -877,6 +906,115 @@ def get_youtube_info(url):
             'view_count': 0,
             'description': f'정보 가져오기 실패: {str(e)}'
         }
+
+def get_link_preview(url):
+    """링크의 미리보기 정보를 가져옵니다."""
+    try:
+        # URL 검증
+        is_valid, message = validate_url(url)
+        if not is_valid:
+            return {'error': message}
+        
+        # YouTube 링크 처리
+        if 'youtube.com' in url or 'youtu.be' in url:
+            try:
+                info = get_youtube_info(url)
+                return {
+                    'platform': 'YouTube',
+                    'title': info['title'],
+                    'uploader': info['uploader'],
+                    'duration': info['duration'],
+                    'view_count': info['view_count'],
+                    'description': info['description']
+                }
+            except Exception as e:
+                return {'error': f'YouTube 정보 가져오기 실패: {str(e)}'}
+        
+        # Spotify 링크 처리
+        elif 'spotify.com' in url:
+            return {
+                'platform': 'Spotify',
+                'error': 'Spotify 링크는 현재 지원하지 않습니다.'
+            }
+        
+        # 직접 음악 파일 링크 처리
+        else:
+            try:
+                # HEAD 요청으로 파일 정보 확인
+                response = requests.head(url, timeout=10)
+                response.raise_for_status()
+                
+                content_type = response.headers.get('content-type', '')
+                content_length = response.headers.get('content-length', 0)
+                
+                # 파일명 추출
+                parsed_url = urlparse(url)
+                filename = os.path.basename(parsed_url.path)
+                if not filename:
+                    filename = 'unknown'
+                
+                return {
+                    'platform': '직접 링크',
+                    'title': filename,
+                    'content_type': content_type,
+                    'file_size': int(content_length) if content_length else '알 수 없음',
+                    'url': url
+                }
+            except Exception as e:
+                return {'error': f'파일 정보 가져오기 실패: {str(e)}'}
+                
+    except Exception as e:
+        return {'error': f'미리보기 생성 중 오류 발생: {str(e)}'}
+
+def dummy_classification(url, genres, emotions):
+    """더미 분류 결과를 생성합니다 (테스트용)."""
+    import random
+    
+    # URL에서 힌트 추출
+    url_lower = url.lower()
+    
+    # URL 기반 장르 추측
+    if 'classic' in url_lower or 'classical' in url_lower:
+        genre = '클래식'
+        genre_confidence = 0.85
+    elif 'jazz' in url_lower:
+        genre = '재즈'
+        genre_confidence = 0.85
+    elif 'rock' in url_lower:
+        genre = '록'
+        genre_confidence = 0.85
+    elif 'pop' in url_lower:
+        genre = '팝'
+        genre_confidence = 0.85
+    else:
+        # 랜덤 선택
+        genre = random.choice(genres)
+        genre_confidence = random.uniform(0.6, 0.8)
+    
+    # URL 기반 감정 추측
+    if 'happy' in url_lower or 'joy' in url_lower:
+        emotion = '행복한'
+        emotion_confidence = 0.8
+    elif 'sad' in url_lower or 'melancholy' in url_lower:
+        emotion = '슬픈'
+        emotion_confidence = 0.8
+    elif 'peaceful' in url_lower or 'calm' in url_lower:
+        emotion = '평화로운'
+        emotion_confidence = 0.8
+    elif 'passionate' in url_lower or 'energetic' in url_lower:
+        emotion = '열정적인'
+        emotion_confidence = 0.8
+    else:
+        # 랜덤 선택
+        emotion = random.choice(emotions)
+        emotion_confidence = random.uniform(0.6, 0.8)
+    
+    return {
+        'genres': [(genre, genre_confidence)],
+        'emotions': [(emotion, emotion_confidence)],
+        'method': '더미 분류 (테스트용)',
+        'note': '실제 AI 모델이 없어서 테스트 결과를 생성했습니다.'
+    }
 
 def classify_music_from_url(model, url, genres, emotions, confidence_threshold=0.5):
     """URL을 통해 음악을 분류합니다."""
