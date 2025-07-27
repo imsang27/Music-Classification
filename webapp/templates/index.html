@@ -9,6 +9,18 @@
     <div class="mode-toggle">
         <button type="button" onclick="toggleMode()">화이트 모드</button>
     </div>
+    
+    <!-- 모델 상태 표시 -->
+    <div class="model-status">
+        <span class="status-label">AI 모델 상태:</span>
+        <span class="status-value {% if model_status == '로드됨' %}status-success{% else %}status-error{% endif %}">
+            {{ model_status }}
+        </span>
+        {% if model_status == '로드되지 않음' %}
+            <span class="status-note">(규칙 기반 분류만 사용 가능)</span>
+        {% endif %}
+    </div>
+    
     <div class="center-container">
         <!-- 파일 업로드 폼 -->
         <div class="form-section">
@@ -117,6 +129,15 @@
                                 <p><strong>제목:</strong> {{ prediction.youtube_info.title }}</p>
                                 <p><strong>업로더:</strong> {{ prediction.youtube_info.uploader }}</p>
                                 <p><strong>길이:</strong> {{ prediction.youtube_info.duration }}초</p>
+                            </div>
+                        {% endif %}
+                        {% if prediction.method %}
+                            <div class="result-group">
+                                <h3>🔍 분류 방법</h3>
+                                <p><strong>사용된 방법:</strong> {{ prediction.method }}</p>
+                                {% if prediction.note %}
+                                    <p><strong>참고:</strong> {{ prediction.note }}</p>
+                                {% endif %}
                             </div>
                         {% endif %}
                     </div>
