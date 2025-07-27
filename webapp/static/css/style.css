@@ -52,6 +52,67 @@ body.dark-mode {
     background: #4a90e2;
 }
 
+/* 모델 상태 스타일 */
+.model-status {
+    position: fixed;
+    top: 24px;
+    left: 36px;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-label {
+    font-weight: 500;
+    color: #ccc;
+}
+
+.status-value {
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+}
+
+.status-success {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.status-error {
+    background: rgba(244, 67, 54, 0.2);
+    color: #f44336;
+    border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+.status-note {
+    font-size: 0.8rem;
+    color: #ff9800;
+    font-style: italic;
+}
+
+/* White mode model status */
+body.white-mode .model-status {
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+body.white-mode .status-label {
+    color: #666;
+}
+
+body.white-mode .status-note {
+    color: #e65100;
+}
+
 /* 폼 섹션 스타일 */
 .form-section {
     width: 100%;
