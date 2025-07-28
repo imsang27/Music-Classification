@@ -966,55 +966,75 @@ def get_link_preview(url):
     except Exception as e:
         return {'error': f'미리보기 생성 중 오류 발생: {str(e)}'}
 
-def dummy_classification(url, genres, emotions):
-    """더미 분류 결과를 생성합니다 (테스트용)."""
+def dummy_classification(url, genres=None, emotions=None):
+    """
+    Wav2Vec2 모델이 없을 때 사용하는 더미 분류 (기존 함수 수정)
+    """
     import random
+    
+    # 기본 장르와 감정 설정
+    if genres is None:
+        genres = ['블루스', '클래식', '컨트리', '디스코', '힙합', '재즈', '메탈', '팝', '레게', '록']
+    if emotions is None:
+        emotions = ['행복한', '슬픈', '평화로운', '열정적인']
     
     # URL에서 힌트 추출
     url_lower = url.lower()
     
-    # URL 기반 장르 추측
-    if 'classic' in url_lower or 'classical' in url_lower:
+    # URL 기반 간단한 규칙
+    if any(word in url_lower for word in ['classical', 'classic', 'orchestra', 'symphony']):
         genre = '클래식'
-        genre_confidence = 0.85
-    elif 'jazz' in url_lower:
+    elif any(word in url_lower for word in ['jazz', 'smooth']):
         genre = '재즈'
-        genre_confidence = 0.85
-    elif 'rock' in url_lower:
+    elif any(word in url_lower for word in ['rock', 'guitar', 'band']):
         genre = '록'
-        genre_confidence = 0.85
-    elif 'pop' in url_lower:
+    elif any(word in url_lower for word in ['pop', 'popular']):
         genre = '팝'
-        genre_confidence = 0.85
+    elif any(word in url_lower for word in ['hip', 'rap', 'urban']):
+        genre = '힙합'
+    elif any(word in url_lower for word in ['metal', 'heavy']):
+        genre = '메탈'
+    elif any(word in url_lower for word in ['country', 'folk']):
+        genre = '컨트리'
+    elif any(word in url_lower for word in ['blues', 'soul']):
+        genre = '블루스'
+    elif any(word in url_lower for word in ['reggae', 'caribbean']):
+        genre = '레게'
+    elif any(word in url_lower for word in ['disco', 'dance']):
+        genre = '디스코'
     else:
-        # 랜덤 선택
         genre = random.choice(genres)
-        genre_confidence = random.uniform(0.6, 0.8)
     
-    # URL 기반 감정 추측
-    if 'happy' in url_lower or 'joy' in url_lower:
+    # 감정도 추측
+    if any(word in url_lower for word in ['happy', 'joy', 'upbeat']):
         emotion = '행복한'
-        emotion_confidence = 0.8
-    elif 'sad' in url_lower or 'melancholy' in url_lower:
+    elif any(word in url_lower for word in ['sad', 'melancholy', 'slow']):
         emotion = '슬픈'
-        emotion_confidence = 0.8
-    elif 'peaceful' in url_lower or 'calm' in url_lower:
+    elif any(word in url_lower for word in ['peaceful', 'calm', 'relaxing']):
         emotion = '평화로운'
-        emotion_confidence = 0.8
-    elif 'passionate' in url_lower or 'energetic' in url_lower:
+    elif any(word in url_lower for word in ['passionate', 'energetic', 'fast']):
         emotion = '열정적인'
-        emotion_confidence = 0.8
     else:
-        # 랜덤 선택
         emotion = random.choice(emotions)
-        emotion_confidence = random.uniform(0.6, 0.8)
     
-    return {
-        'genres': [(genre, genre_confidence)],
-        'emotions': [(emotion, emotion_confidence)],
-        'method': '더미 분류 (테스트용)',
-        'note': '실제 AI 모델이 없어서 테스트 결과를 생성했습니다.'
+    genre_confidence = random.uniform(0.3, 0.7)  # 낮은 신뢰도
+    emotion_confidence = random.uniform(0.3, 0.7)  # 낮은 신뢰도
+    
+    # 새로운 형식 (Wav2Vec2 스타일)
+    result = {
+        'genre': genre,
+        'confidence': genre_confidence,
+        'method': '더미 분류 (Wav2Vec2 모델 없음)',
+        'note': '실제 AI 모델이 로드되지 않아 더미 결과를 반환합니다.',
+        'url': url,
+        'success': True
     }
+    
+    # 기존 형식도 지원 (하위 호환성)
+    result['genres'] = [(genre, genre_confidence)]
+    result['emotions'] = [(emotion, emotion_confidence)]
+    
+    return result
 
 def classify_music_from_url(model, url, genres, emotions, confidence_threshold=0.5):
     """URL을 통해 음악을 분류합니다."""
@@ -1134,36 +1154,156 @@ def save_url_classification_results(results, output_file='url_classification_res
     print(f"결과가 {output_file}에 저장되었습니다.")
 
 def print_url_classification_summary(results):
-    """URL 분류 결과 요약을 출력합니다."""
-    report = create_url_classification_report(results)
+    """URL 분류 결과 요약 출력"""
+    if not results:
+        print("분류 결과가 없습니다.")
+        return
     
-    print("\n" + "="*50)
-    print("URL 분류 결과 요약")
-    print("="*50)
-    print(f"총 처리된 URL: {report['summary']['total']}")
-    print(f"성공: {report['summary']['success']}")
-    print(f"실패: {report['summary']['failed']}")
+    total = len(results)
+    successful = sum(1 for r in results if r.get('status') == 'success')
+    failed = total - successful
     
-    if report['genre_distribution']:
-        print("\n장르 분포:")
-        for genre, count in sorted(report['genre_distribution'].items(), key=lambda x: x[1], reverse=True):
-            print(f"  {genre}: {count}개")
+    print(f"\n=== URL 분류 결과 요약 ===")
+    print(f"총 URL 수: {total}")
+    print(f"성공: {successful}")
+    print(f"실패: {failed}")
     
-    if report['emotion_distribution']:
-        print("\n감정 분포:")
-        for emotion, count in sorted(report['emotion_distribution'].items(), key=lambda x: x[1], reverse=True):
-            print(f"  {emotion}: {count}개")
+    if successful > 0:
+        # 장르별 통계
+        genre_counts = {}
+        for result in results:
+            if result.get('status') == 'success' and 'genre' in result:
+                genre = result['genre']
+                genre_counts[genre] = genre_counts.get(genre, 0) + 1
+        
+        print(f"\n장르별 분포:")
+        for genre, count in sorted(genre_counts.items(), key=lambda x: x[1], reverse=True):
+            percentage = (count / successful) * 100
+            print(f"  {genre}: {count}개 ({percentage:.1f}%)")
+
+# Wav2Vec2 모델을 사용하는 새로운 함수들
+def predict_music_wav2vec2(model, processor, audio_path, confidence_threshold=0.5):
+    """
+    Wav2Vec2 모델을 사용하여 음악 분류
+    """
+    try:
+        import torch
+        import librosa
+        
+        # 오디오 파일 로드 및 전처리
+        y, sr = librosa.load(audio_path, sr=16000)  # Wav2Vec2는 16kHz 사용
+        
+        # 모델 입력 형식으로 변환
+        inputs = processor(y, sampling_rate=16000, return_tensors="pt", padding=True)
+        
+        # 예측 수행
+        with torch.no_grad():
+            outputs = model(**inputs)
+            logits = outputs.logits
+            probabilities = torch.softmax(logits, dim=-1)
+            predicted_class = torch.argmax(probabilities, dim=-1).item()
+            confidence = probabilities[0][predicted_class].item()
+        
+        # 결과 매핑
+        genre = model.config.id2label[predicted_class]
+        
+        # 한국어 장르명 매핑
+        genre_mapping = {
+            'blues': '블루스',
+            'classical': '클래식',
+            'country': '컨트리',
+            'disco': '디스코',
+            'hiphop': '힙합',
+            'jazz': '재즈',
+            'metal': '메탈',
+            'pop': '팝',
+            'reggae': '레게',
+            'rock': '록'
+        }
+        
+        korean_genre = genre_mapping.get(genre, genre)
+        
+        result = {
+            'genre': korean_genre,
+            'confidence': confidence,
+            'method': 'Wav2Vec2 (Hugging Face)',
+            'note': f'원본 장르: {genre}',
+            'success': True
+        }
+        
+        if confidence < confidence_threshold:
+            result['note'] += f' (낮은 신뢰도: {confidence:.2f})'
+        
+        return result
+        
+    except Exception as e:
+        return {
+            'error': f'Wav2Vec2 분류 중 오류 발생: {str(e)}',
+            'success': False
+        }
+
+def classify_music_from_url_wav2vec2(model, processor, url, confidence_threshold=0.5):
+    """
+    URL에서 음악을 다운로드하고 Wav2Vec2 모델로 분류
+    """
+    try:
+        # URL에서 오디오 다운로드
+        temp_file = None
+        try:
+            if 'youtube.com' in url or 'youtu.be' in url:
+                temp_file = download_youtube_audio(url)
+            else:
+                temp_file = download_direct_audio(url)
+            
+            if not temp_file or not os.path.exists(temp_file):
+                return {'error': '오디오 파일 다운로드 실패', 'success': False}
+            
+            # Wav2Vec2 모델로 분류
+            result = predict_music_wav2vec2(model, processor, temp_file, confidence_threshold)
+            result['url'] = url
+            
+            return result
+            
+        finally:
+            # 임시 파일 정리
+            if temp_file and os.path.exists(temp_file):
+                try:
+                    os.remove(temp_file)
+                except:
+                    pass
+                    
+    except Exception as e:
+        return {
+            'error': f'URL 분류 중 오류 발생: {str(e)}',
+            'url': url,
+            'success': False
+        }
+
+def batch_classify_urls_wav2vec2(model, processor, urls, confidence_threshold=0.5):
+    """
+    여러 URL을 Wav2Vec2 모델로 일괄 분류
+    """
+    results = []
     
-    print("\n상세 결과:")
-    for i, result in enumerate(results, 1):
-        print(f"\n{i}. {result['url']}")
-        if result['status'] == 'success':
-            print(f"   장르: {', '.join([f'{g}({c:.2f})' for g, c in result['genres'][:3]])}")
-            print(f"   감정: {', '.join([f'{e}({c:.2f})' for e, c in result['emotions'][:3]])}")
-            if 'youtube_info' in result:
-                print(f"   제목: {result['youtube_info']['title']}")
-        else:
-            print(f"   오류: {result['error']}")
+    for i, url in enumerate(urls):
+        try:
+            print(f"분류 중... ({i+1}/{len(urls)}): {url}")
+            
+            result = classify_music_from_url_wav2vec2(model, processor, url, confidence_threshold)
+            result['url'] = url
+            result['status'] = 'success' if result.get('success', False) else 'error'
+            
+            results.append(result)
+            
+        except Exception as e:
+            results.append({
+                'url': url,
+                'status': 'error',
+                'error': str(e),
+                'success': False
+            })
+    
+    return results
 
 # 사용 예시
 if __name__ == "__main__":
