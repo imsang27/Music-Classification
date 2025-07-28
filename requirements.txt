@@ -7,7 +7,3 @@ psutil
 Flask
 requests
 yt-dlp
-urllib3
-torch
-transformers
-accelerate
