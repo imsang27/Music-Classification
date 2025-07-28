@@ -1,13 +1,18 @@
+"""
+Flask 웹 애플리케이션
+"""
+
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 import os
-import importlib.util
-import tempfile
+import sys
 
-# Load the main classification module dynamically because of the hyphen in the filename
-MODULE_PATH = os.path.join(os.path.dirname(__file__), '..', 'Music-Classification.py')
-spec = importlib.util.spec_from_file_location('music_classification', MODULE_PATH)
-mc = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(mc)
+# 모듈 경로 추가
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+from core import *
+from models import *
+from utils import *
+from data import *
 
 app = Flask(__name__)
 
@@ -68,16 +73,16 @@ def classify():
 
     if action == 'wav2vec2' and wav2vec2_model:
         # Wav2Vec2 모델을 사용한 분류
-        result = mc.predict_music_wav2vec2(wav2vec2_model, wav2vec2_processor, file_path)
+        result = predict_music_wav2vec2(wav2vec2_model, wav2vec2_processor, file_path)
     elif action == 'wav2vec2' and not wav2vec2_model:
         # Wav2Vec2 모델이 없을 때 기존 CNN 모델 사용 (만약 있다면)
         result = {'error': 'Wav2Vec2 모델이 로드되지 않았습니다. 규칙 기반 분류를 사용하세요.'}
     elif action == 'rule':
-        result = mc.rule_based_classification(file_path)
+        result = rule_based_classification(file_path)
     elif action == 'manual':
-        result = mc.manual_classification(file_path, genres, emotions)
+        result = manual_classification(file_path, genres, emotions)
     elif action == 'ml':
-        result = mc.predict_traditional_ml_model(None, file_path)  # 모델이 없으면 오류
+        result = predict_traditional_ml_model(None, file_path)  # 모델이 없으면 오류
     elif action == 'lyrics':
         result = {'error': '가사 분석 기능은 아직 구현되지 않았습니다.'}
     elif action == 'hybrid':
@@ -98,19 +103,19 @@ def classify_url():
     try:
         if action == 'wav2vec2':
             if wav2vec2_model:
-                result = mc.classify_music_from_url_wav2vec2(wav2vec2_model, wav2vec2_processor, url)
+                result = classify_music_from_url_wav2vec2(wav2vec2_model, wav2vec2_processor, url)
             else:
                 # Wav2Vec2 모델이 없을 때 더미 분류 사용
-                result = mc.dummy_classification(url)
+                result = dummy_classification(url)
         elif action == 'rule':
             # 규칙 기반 분류는 로컬 파일만 지원하므로 임시 다운로드 후 처리
             temp_file = None
             try:
                 if 'youtube.com' in url or 'youtu.be' in url:
-                    temp_file = mc.download_youtube_audio(url)
+                    temp_file = download_youtube_audio(url)
                 else:
-                    temp_file = mc.download_direct_audio(url)
-                result = mc.rule_based_classification(temp_file)
+                    temp_file = download_direct_audio(url)
+                result = rule_based_classification(temp_file)
             finally:
                 if temp_file and os.path.exists(temp_file):
                     os.remove(temp_file)
@@ -139,13 +144,13 @@ def batch_classify():
     try:
         if action == 'wav2vec2':
             if wav2vec2_model:
-                results = mc.batch_classify_urls_wav2vec2(wav2vec2_model, wav2vec2_processor, urls)
+                results = batch_classify_urls_wav2vec2(wav2vec2_model, wav2vec2_processor, urls)
             else:
                 # Wav2Vec2 모델이 없을 때 더미 분류로 일괄 처리
                 results = []
                 for url in urls:
                     try:
-                        result = mc.dummy_classification(url)
+                        result = dummy_classification(url)
                         result['url'] = url
                         result['status'] = 'success'
                         results.append(result)
@@ -157,7 +162,7 @@ def batch_classify():
                         })
             
             # 결과 저장
-            mc.save_url_classification_results(results)
+            save_url_classification_results(results)
             
             return render_template('index.html', batch_results=results, urls=urls)
         else:
@@ -174,7 +179,7 @@ def validate_url_api():
         return jsonify({'valid': False, 'message': 'URL을 입력해주세요.'})
     
     try:
-        is_valid, message = mc.validate_url(url)
+        is_valid, message = validate_url(url)
         return jsonify({'valid': is_valid, 'message': message})
     except Exception as e:
         return jsonify({'valid': False, 'message': f'검증 중 오류 발생: {str(e)}'})
@@ -187,7 +192,7 @@ def link_preview_api():
         return jsonify({'error': 'URL을 입력해주세요.'})
     
     try:
-        preview = mc.get_link_preview(url)
+        preview = get_link_preview(url)
         return jsonify(preview)
     except Exception as e:
         return jsonify({'error': f'미리보기 생성 중 오류 발생: {str(e)}'})
