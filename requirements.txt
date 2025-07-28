@@ -9,5 +9,6 @@ requests
 yt-dlp
 urllib3
 torch
-transformers
-accelerate
+transformers==4.34.0
+huggingface_hub==0.16.4
+accelerate==0.20.3
