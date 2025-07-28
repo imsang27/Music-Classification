@@ -35,7 +35,7 @@
                     </div>
                 </div>
                 <div class="button-group">
-                    <button type="submit" class="big-btn" name="action" value="cnn">🎵 AI로 분석하기</button>
+                    <button type="submit" class="big-btn" name="action" value="wav2vec2">🎵 AI로 분석하기</button>
                     <button type="submit" class="big-btn" name="action" value="manual">✋ 직접 분류하기</button>
                     <button type="submit" class="big-btn" name="action" value="rule">📋 규칙으로 분류</button>
                     <button type="submit" class="big-btn" name="action" value="ml">🤖 머신러닝 분류</button>
@@ -69,7 +69,7 @@
                 </div>
                 
                 <div class="button-group">
-                    <button type="submit" class="big-btn" name="action" value="cnn">🎵 AI로 분석하기</button>
+                    <button type="submit" class="big-btn" name="action" value="wav2vec2">🎵 AI로 분석하기</button>
                     <button type="submit" class="big-btn" name="action" value="rule">📋 규칙으로 분류</button>
                 </div>
             </form>
@@ -84,7 +84,7 @@
                               required class="batch-textarea"></textarea>
                 </div>
                 <div class="button-group">
-                    <button type="submit" class="big-btn" name="action" value="cnn">🎵 AI로 일괄 분석하기</button>
+                    <button type="submit" class="big-btn" name="action" value="wav2vec2">🎵 AI로 일괄 분석하기</button>
                 </div>
             </form>
         </div>
@@ -103,9 +103,15 @@
                     </div>
                 {% else %}
                     <div class="prediction-result">
-                        {% if prediction.genres %}
+                        {% if prediction.genre %}
                             <div class="result-group">
                                 <h3>🎼 장르 분류</h3>
+                                <p><strong>예측 장르:</strong> {{ prediction.genre }} ({{ "%.2f"|format(prediction.confidence * 100) }}%)</p>
+                            </div>
+                        {% endif %}
+                        {% if prediction.genres %}
+                            <div class="result-group">
+                                <h3>🎼 장르 분류 (기존 형식)</h3>
                                 <ul>
                                     {% for genre, confidence in prediction.genres %}
                                         <li>{{ genre }} ({{ "%.2f"|format(confidence * 100) }}%)</li>
@@ -163,8 +169,11 @@
                             <h4>{{ loop.index }}. <a href="{{ result.url }}" target="_blank">{{ result.url }}</a></h4>
                             {% if result.status == 'success' %}
                                 <div class="result-details">
+                                    {% if result.genre %}
+                                        <p><strong>장르:</strong> {{ result.genre }} ({{ "%.1f"|format(result.confidence * 100) }}%)</p>
+                                    {% endif %}
                                     {% if result.genres %}
-                                        <p><strong>장르:</strong> 
+                                        <p><strong>장르 (기존 형식):</strong> 
                                             {% for genre, confidence in result.genres[:3] %}
                                                 {{ genre }}({{ "%.1f"|format(confidence * 100) }}%){% if not loop.last %}, {% endif %}
                                             {% endfor %}
@@ -179,6 +188,9 @@
                                     {% endif %}
                                     {% if result.youtube_info %}
                                         <p><strong>제목:</strong> {{ result.youtube_info.title }}</p>
+                                    {% endif %}
+                                    {% if result.method %}
+                                        <p><strong>방법:</strong> {{ result.method }}</p>
                                     {% endif %}
                                 </div>
                             {% else %}
