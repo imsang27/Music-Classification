@@ -240,7 +240,132 @@ function validateBatchForm() {
     return true;
 }
 
-// 폼 제출 이벤트 리스너 추가
+
+
+// 로딩 상태 표시 함수
+function showLoading(formId) {
+    const form = document.getElementById(formId);
+    if (form) {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = '처리 중...';
+        }
+    }
+}
+
+// 로딩 상태 해제 함수
+function hideLoading(formId) {
+    const form = document.getElementById(formId);
+    if (form) {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = submitBtn.getAttribute('data-original-text') || '분류하기';
+        }
+    }
+}
+
+// 페이지 로드 시 랜덤 CTA 설정
+window.addEventListener('load', setRandomCTA);
+
+// 업로드 폴더 정보 조회
+async function refreshUploadsInfo() {
+    const statsDiv = document.getElementById('uploads-stats');
+    const filesDiv = document.getElementById('uploads-files');
+    const clearBtn = document.querySelector('.clear-btn');
+    const refreshBtn = document.querySelector('.refresh-btn');
+    
+    // 로딩 상태 표시
+    statsDiv.innerHTML = '<p><span class="loading"></span>업로드 폴더 정보를 불러오는 중...</p>';
+    refreshBtn.disabled = true;
+    
+    try {
+        const response = await fetch('/get_uploads_info');
+        const data = await response.json();
+        
+        if (data.success) {
+            // 통계 정보 업데이트
+            let statsHTML = '';
+            if (data.file_count === 0) {
+                statsHTML = '<p>📁 업로드된 파일이 없습니다.</p>';
+                filesDiv.style.display = 'none';
+                clearBtn.disabled = true;
+            } else {
+                statsHTML = `
+                    <p><strong>📁 총 파일 수:</strong> ${data.file_count}개</p>
+                    <p><strong>💾 총 용량:</strong> ${data.total_size_formatted}</p>
+                `;
+                
+                // 파일 목록 표시
+                let filesHTML = '<h4>📋 파일 목록:</h4>';
+                data.files.forEach(file => {
+                    filesHTML += `
+                        <div class="file-item">
+                            <span class="file-name">${file.name}</span>
+                            <span class="file-size">${file.size_formatted}</span>
+                        </div>
+                    `;
+                });
+                filesDiv.innerHTML = filesHTML;
+                filesDiv.style.display = 'block';
+                clearBtn.disabled = false;
+            }
+            
+            statsDiv.innerHTML = statsHTML;
+        } else {
+            statsDiv.innerHTML = `<p style="color: #dc3545;">❌ ${data.message}</p>`;
+            filesDiv.style.display = 'none';
+            clearBtn.disabled = true;
+        }
+    } catch (error) {
+        statsDiv.innerHTML = '<p style="color: #dc3545;">❌ 폴더 정보 조회 중 오류가 발생했습니다.</p>';
+        filesDiv.style.display = 'none';
+        clearBtn.disabled = true;
+    } finally {
+        refreshBtn.disabled = false;
+    }
+}
+
+// 업로드 폴더 비우기
+async function clearUploads() {
+    if (!confirm('정말로 업로드 폴더의 모든 파일을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+        return;
+    }
+    
+    const clearBtn = document.querySelector('.clear-btn');
+    const originalText = clearBtn.textContent;
+    
+    // 로딩 상태 표시
+    clearBtn.disabled = true;
+    clearBtn.textContent = '🗑️ 삭제 중...';
+    
+    try {
+        const response = await fetch('/clear_uploads', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('✅ ' + data.message);
+            // 폴더 정보 새로고침
+            refreshUploadsInfo();
+        } else {
+            alert('❌ ' + data.message);
+        }
+    } catch (error) {
+        alert('❌ 폴더 정리 중 오류가 발생했습니다.');
+    } finally {
+        clearBtn.disabled = false;
+        clearBtn.textContent = originalText;
+    }
+}
+
+// 페이지 로드 시 이벤트 리스너 설정
 document.addEventListener('DOMContentLoaded', function() {
     // URL 폼 제출 검증
     const urlForm = document.getElementById('url-form');
@@ -268,31 +393,7 @@ document.addEventListener('DOMContentLoaded', function() {
         urlInput.addEventListener('input', validateUrl);
         urlInput.addEventListener('blur', validateUrl);
     }
-});
-
-// 로딩 상태 표시 함수
-function showLoading(formId) {
-    const form = document.getElementById(formId);
-    if (form) {
-        const submitBtn = form.querySelector('button[type="submit"]');
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.textContent = '처리 중...';
-        }
-    }
-}
-
-// 로딩 상태 해제 함수
-function hideLoading(formId) {
-    const form = document.getElementById(formId);
-    if (form) {
-        const submitBtn = form.querySelector('button[type="submit"]');
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = submitBtn.getAttribute('data-original-text') || '분류하기';
-        }
-    }
-}
-
-// 페이지 로드 시 랜덤 CTA 설정
-window.addEventListener('load', setRandomCTA); 
+    
+    // 페이지 로드 시 업로드 폴더 정보 조회
+    refreshUploadsInfo();
+}); 

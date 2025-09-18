@@ -675,4 +675,167 @@ body,
         top: 16px;
         right: 16px;
     }
+}
+
+/* 업로드 폴더 관리 스타일 */
+.uploads-info {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.info-label {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #4a90e2;
+}
+
+.refresh-btn {
+    background: #4a90e2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.refresh-btn:hover {
+    background: #357ab8;
+}
+
+.uploads-stats {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.uploads-stats p {
+    margin: 5px 0;
+    font-size: 0.95rem;
+}
+
+.uploads-files {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.file-item:last-child {
+    border-bottom: none;
+}
+
+.file-name {
+    font-size: 0.9rem;
+    color: #ccc;
+    flex: 1;
+    margin-right: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-size {
+    font-size: 0.8rem;
+    color: #999;
+    font-weight: 500;
+}
+
+.uploads-actions {
+    display: flex;
+    justify-content: center;
+}
+
+.clear-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.clear-btn:hover:not(:disabled) {
+    background: #c82333;
+}
+
+.clear-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* White mode 업로드 폴더 관리 */
+body.white-mode .uploads-info {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(74, 144, 226, 0.2);
+}
+
+body.white-mode .uploads-stats {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+}
+
+body.white-mode .uploads-stats p {
+    color: #333;
+}
+
+body.white-mode .uploads-files {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+}
+
+body.white-mode .file-item {
+    border-bottom: 1px solid #e9ecef;
+}
+
+body.white-mode .file-name {
+    color: #333;
+}
+
+body.white-mode .file-size {
+    color: #666;
+}
+
+/* 로딩 애니메이션 */
+.loading {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #4a90e2;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 } 

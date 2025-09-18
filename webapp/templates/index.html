@@ -89,6 +89,26 @@
             </form>
         </div>
 
+        <!-- 업로드 폴더 관리 -->
+        <div class="form-section">
+            <h3>🗂️ 업로드 폴더 관리</h3>
+            <div class="uploads-info">
+                <div class="info-header">
+                    <span class="info-label">📁 업로드된 파일 정보</span>
+                    <button type="button" class="refresh-btn" onclick="refreshUploadsInfo()">🔄 새로고침</button>
+                </div>
+                <div id="uploads-stats" class="uploads-stats">
+                    <p>로딩 중...</p>
+                </div>
+                <div id="uploads-files" class="uploads-files" style="display: none;">
+                    <!-- 파일 목록이 여기에 표시됩니다 -->
+                </div>
+                <div class="uploads-actions">
+                    <button type="button" class="clear-btn" onclick="clearUploads()" disabled>🗑️ 폴더 비우기</button>
+                </div>
+            </div>
+        </div>
+
         <!-- 분류 결과 표시 -->
         {% if prediction %}
             <div class="result-section">
