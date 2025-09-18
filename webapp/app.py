@@ -355,17 +355,16 @@ def validate_url_api():
 
 @app.route('/api/link_preview', methods=['POST'])
 def link_preview_api():
-    """링크 미리보기 API (비활성화됨)"""
+    """링크 미리보기 API (상세 정보)"""
     url = request.json.get('url', '').strip()
     if not url:
         return jsonify({'error': 'URL을 입력해주세요.'})
     
-    # 링크 미리보기 기능 비활성화 - 간단한 응답만 반환
-    return jsonify({
-        'message': '링크 미리보기 기능이 비활성화되었습니다.',
-        'url': url,
-        'status': 'disabled'
-    })
+    try:
+        preview = get_link_preview(url)
+        return jsonify(preview)
+    except Exception as e:
+        return jsonify({'error': f'미리보기 생성 중 오류 발생: {str(e)}'})
 
 @app.route('/api/progress/<task_id>', methods=['GET'])
 def get_progress_api(task_id):
