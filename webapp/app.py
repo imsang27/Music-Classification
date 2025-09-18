@@ -221,6 +221,7 @@ def progress_page(task_id):
     url = request.args.get('url', '')
     return render_template('progress.html', task_id=task_id, url=url)
 
+
 @app.route('/classify', methods=['POST'])
 def classify():
     if 'audio_file' not in request.files:
@@ -403,36 +404,48 @@ def batch_classify():
 
     action = request.form.get('action')
     
-    try:
-        if action == 'wav2vec2':
-            if wav2vec2_model:
-                # 개선된 일괄 처리 함수 사용
-                results = batch_classify_urls_wav2vec2(wav2vec2_model, wav2vec2_processor, urls)
-            else:
-                # Wav2Vec2 모델이 없을 때 더미 분류로 일괄 처리
-                results = []
-                for url in urls:
-                    try:
-                        result = dummy_classification(url)
-                        result['url'] = url
-                        result['status'] = 'success'
-                        results.append(result)
-                    except Exception as e:
-                        results.append({
-                            'url': url,
-                            'status': 'error',
-                            'error': str(e)
-                        })
+    if action == 'wav2vec2':
+        if wav2vec2_model:
+            # 고유한 작업 ID 생성
+            task_id = str(uuid.uuid4())
             
-            # 결과 저장
-            save_url_classification_results(results)
+            # 진행률 초기화
+            update_progress(task_id, 'starting', '배치 분류 작업을 시작합니다...', 0)
             
-            return render_template('index.html', batch_results=results, urls=urls)
+            # 백그라운드에서 실행
+            def run_batch_classification():
+                try:
+                    # 진행률 콜백 함수 정의
+                    def progress_callback(stage, message, progress):
+                        update_progress(task_id, stage, message, progress)
+                    
+                    results = batch_classify_urls_wav2vec2(
+                        wav2vec2_model, 
+                        wav2vec2_processor, 
+                        urls,
+                        progress_callback=progress_callback
+                    )
+                    
+                    # 결과 저장
+                    save_url_classification_results(results)
+                    save_classification_result(task_id, {'batch_results': results, 'urls': urls})
+                    
+                except Exception as e:
+                    error_result = {'error': str(e), 'success': False}
+                    update_progress(task_id, 'error', f'배치 분류 중 오류 발생: {str(e)}', 0)
+                    save_classification_result(task_id, error_result)
+            
+            # 백그라운드 스레드에서 실행
+            thread = threading.Thread(target=run_batch_classification)
+            thread.daemon = True
+            thread.start()
+            
+            # 진행률 페이지로 리다이렉트
+            return redirect(url_for('progress_page', task_id=task_id))
         else:
-            return render_template('index.html', prediction={'error': '일괄 분류는 Wav2Vec2 모델만 지원합니다.'})
-            
-    except Exception as e:
-        return render_template('index.html', prediction={'error': f'일괄 분류 중 오류 발생: {str(e)}'})
+            return render_template('index.html', prediction={'error': 'Wav2Vec2 모델이 로드되지 않았습니다.'})
+    else:
+        return render_template('index.html', prediction={'error': '일괄 분류는 Wav2Vec2 모델만 지원합니다.'})
 
 @app.route('/api/validate_url', methods=['POST'])
 def validate_url_api():

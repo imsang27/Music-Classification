@@ -279,14 +279,34 @@ function validateBatchForm() {
     
     if (!urls) {
         alert('URL 목록을 입력해주세요.');
+        urlsInput.focus();
+        return false;
+    }
+    
+    // URL 목록 파싱 및 검증
+    const urlList = urls.split(/[\n,]/).map(url => url.trim()).filter(url => url);
+    
+    if (urlList.length === 0) {
+        alert('유효한 URL이 없습니다.');
+        urlsInput.focus();
         return false;
     }
     
     // URL 개수 확인 (최대 20개)
-    const urlList = urls.split(/[\n,]/).filter(url => url.trim());
     if (urlList.length > 20) {
-        alert('최대 20개의 URL만 처리할 수 있습니다.');
-        return false;
+        if (!confirm(`많은 수의 URL이 입력되었습니다 (${urlList.length}개). 계속 진행하시겠습니까?\n처리 시간이 오래 걸릴 수 있습니다.`)) {
+            return false;
+        }
+    }
+    
+    // 각 URL 형식 검증
+    const urlPattern = /^https?:\/\/.+/;
+    for (let i = 0; i < urlList.length; i++) {
+        if (!urlPattern.test(urlList[i])) {
+            alert(`올바르지 않은 URL 형식입니다 (${i + 1}번째): ${urlList[i]}\nhttp:// 또는 https://로 시작하는 URL을 입력해주세요.`);
+            urlsInput.focus();
+            return false;
+        }
     }
     
     return true;
@@ -627,8 +647,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // 로딩 표시 활성화
-            showLoading('batch-form', '일괄 분석 중...');
+            // 로딩 표시 활성화 (배치 분류는 진행률 페이지로 이동하므로 간단한 로딩만)
+            showLoading('batch-form', '배치 분류를 시작합니다...');
         });
     }
     

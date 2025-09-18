@@ -4,17 +4,122 @@
     <meta charset="UTF-8">
     <title>음악 분류 진행률</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .batch-summary {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .batch-summary h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .summary-stats {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            margin: 10px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            min-width: 120px;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .batch-results {
+            margin-top: 20px;
+        }
+        
+        .batch-item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border-left: 4px solid #007bff;
+        }
+        
+        .batch-item.success {
+            border-left-color: #28a745;
+        }
+        
+        .batch-item.error {
+            border-left-color: #dc3545;
+        }
+        
+        .batch-item h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .batch-item h4 a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        
+        .batch-item h4 a:hover {
+            text-decoration: underline;
+        }
+        
+        .result-details {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .result-details p {
+            margin: 5px 0;
+        }
+        
+        .error-text {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .summary-stats {
+                flex-direction: column;
+            }
+            
+            .stat-item {
+                margin: 5px 0;
+            }
+        }
+    </style>
 </head>
 <body class="dark-mode">
     <div class="center-container">
         <div class="progress-container">
-            <h2>🎵 음악 분류 진행률</h2>
+            <h2 id="progress-header">🎵 음악 분류 진행률</h2>
             
             {% if url %}
             <div class="url-info">
                 <p><strong>분석 중인 링크:</strong> <a href="{{ url }}" target="_blank">{{ url }}</a></p>
             </div>
             {% endif %}
+            
+            <div id="batch-info" style="display: none;">
+                <p><strong>배치 분류 진행 중...</strong></p>
+                <p id="batch-status">여러 링크를 순차적으로 처리하고 있습니다.</p>
+            </div>
             
             <div class="progress-content">
                 <div class="progress-spinner">
@@ -74,12 +179,21 @@
             if (fill) fill.style.width = `${data.progress}%`;
             if (percentage) percentage.textContent = `${data.progress}%`;
             
+            // 배치 분류인지 확인
+            if (data.message && data.message.includes('배치 분류')) {
+                showBatchInfo();
+            }
+            
             // 단계 업데이트
             updateSteps(data.stage);
             
             // 완료되면 결과 표시
             if (data.stage === 'completed' && data.result) {
-                showResult(data.result);
+                if (data.result.batch_results) {
+                    showBatchResult(data.result);
+                } else {
+                    showResult(data.result);
+                }
             } else if (data.stage === 'error') {
                 setTimeout(() => {
                     alert('분류 중 오류가 발생했습니다.');
@@ -121,6 +235,81 @@
                         stepEl.classList.add('completed');
                     }
                 }
+            }
+        }
+        
+        function showBatchInfo() {
+            const batchInfo = document.getElementById('batch-info');
+            const header = document.getElementById('progress-header');
+            if (batchInfo) batchInfo.style.display = 'block';
+            if (header) header.textContent = '📋 배치 분류 진행률';
+        }
+        
+        function showBatchResult(result) {
+            const progressContent = document.querySelector('.progress-content');
+            if (!progressContent) return;
+            
+            // 배치 결과 HTML 생성
+            let resultHTML = '<div class="result-section">';
+            resultHTML += '<h2>📋 배치 분류 결과</h2>';
+            
+            if (result.batch_results && result.urls) {
+                const totalCount = result.batch_results.length;
+                const successCount = result.batch_results.filter(r => r.status === 'success').length;
+                const failedCount = totalCount - successCount;
+                
+                // 요약 통계
+                resultHTML += '<div class="batch-summary">';
+                resultHTML += '<h3>📊 분류 결과 요약</h3>';
+                resultHTML += '<div class="summary-stats">';
+                resultHTML += `<div class="stat-item"><div class="stat-number">${totalCount}</div><div class="stat-label">총 링크</div></div>`;
+                resultHTML += `<div class="stat-item"><div class="stat-number">${successCount}</div><div class="stat-label">성공</div></div>`;
+                resultHTML += `<div class="stat-item"><div class="stat-number">${failedCount}</div><div class="stat-label">실패</div></div>`;
+                resultHTML += '</div></div>';
+                
+                // 각 결과 항목
+                resultHTML += '<div class="batch-results">';
+                result.batch_results.forEach((item, index) => {
+                    resultHTML += `<div class="batch-item ${item.status}">`;
+                    resultHTML += `<h4>${index + 1}. <a href="${item.url}" target="_blank">${item.url}</a></h4>`;
+                    
+                    if (item.status === 'success') {
+                        resultHTML += '<div class="result-details">';
+                        if (item.genre) {
+                            resultHTML += `<p><strong>장르:</strong> ${item.genre} (${(item.confidence * 100).toFixed(1)}%)</p>`;
+                        }
+                        if (item.genres) {
+                            const topGenres = item.genres.slice(0, 3).map(g => `${g[0]}(${(g[1] * 100).toFixed(1)}%)`).join(', ');
+                            resultHTML += `<p><strong>장르 (기존 형식):</strong> ${topGenres}</p>`;
+                        }
+                        if (item.emotions) {
+                            const topEmotions = item.emotions.slice(0, 3).map(e => `${e[0]}(${(e[1] * 100).toFixed(1)}%)`).join(', ');
+                            resultHTML += `<p><strong>감정:</strong> ${topEmotions}</p>`;
+                        }
+                        if (item.youtube_info) {
+                            resultHTML += `<p><strong>제목:</strong> ${item.youtube_info.title}</p>`;
+                        }
+                        if (item.method) {
+                            resultHTML += `<p><strong>방법:</strong> ${item.method}</p>`;
+                        }
+                        resultHTML += '</div>';
+                    } else {
+                        resultHTML += `<p class="error-text">❌ ${item.error}</p>`;
+                    }
+                    resultHTML += '</div>';
+                });
+                resultHTML += '</div>';
+            }
+            
+            resultHTML += '</div>';
+            
+            // 진행률 내용을 결과로 교체
+            progressContent.innerHTML = resultHTML;
+            
+            // 돌아가기 버튼 추가
+            const actionsDiv = document.querySelector('.progress-actions');
+            if (actionsDiv) {
+                actionsDiv.innerHTML = '<button type="button" class="big-btn" onclick="goBack()">← 돌아가기</button>';
             }
         }
         

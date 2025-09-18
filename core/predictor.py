@@ -306,9 +306,9 @@ def classify_music_from_url_wav2vec2(model, processor, url, confidence_threshold
             'success': False
         }
 
-def batch_classify_urls_wav2vec2(model, processor, urls, confidence_threshold=0.5, max_duration=30):
+def batch_classify_urls_wav2vec2(model, processor, urls, confidence_threshold=0.5, max_duration=30, progress_callback=None):
     """
-    여러 URL을 Wav2Vec2 모델로 일괄 분류 (최적화된 버전)
+    여러 URL을 Wav2Vec2 모델로 일괄 분류 (최적화된 버전, 진행률 콜백 지원)
     """
     import psutil
     import gc
@@ -320,9 +320,15 @@ def batch_classify_urls_wav2vec2(model, processor, urls, confidence_threshold=0.
     print(f"배치 처리 시작 - 총 {len(urls)}개 URL")
     print(f"초기 메모리 사용량: {process.memory_info().rss / 1024 / 1024:.1f} MB")
     
+    if progress_callback:
+        progress_callback('starting', f'배치 분류를 시작합니다... 총 {len(urls)}개 URL', 0)
+    
     for i, url in enumerate(urls):
         try:
             print(f"\n분류 중... ({i+1}/{len(urls)}): {url}")
+            
+            if progress_callback:
+                progress_callback('processing', f'분류 중... ({i+1}/{len(urls)}) {url}', int((i / len(urls)) * 100))
             
             # 각 URL을 개별적으로 처리하여 메모리 문제 방지
             result = classify_music_from_url_wav2vec2(model, processor, url, confidence_threshold, max_duration)
@@ -375,5 +381,9 @@ def batch_classify_urls_wav2vec2(model, processor, urls, confidence_threshold=0.
     
     final_memory = process.memory_info().rss / 1024 / 1024
     print(f"\n배치 처리 완료 - 최종 메모리: {final_memory:.1f} MB")
+    
+    if progress_callback:
+        success_count = sum(1 for r in results if r.get('status') == 'success')
+        progress_callback('completed', f'배치 분류 완료! 성공: {success_count}/{len(urls)}개', 100)
     
     return results
