@@ -13,6 +13,14 @@ import hashlib
 import time
 import psutil
 import matplotlib.pyplot as plt
+import requests
+import re
+import urllib.parse
+from urllib.parse import urlparse
+import tempfile
+import subprocess
+import sys
+import yt_dlp
 
 # 오디오 특성을 추출하는 함수
 def extract_audio_features(audio_path, duration=60):
@@ -542,27 +550,56 @@ def manual_classification(audio_path, genres, emotions, input_func=input):
 
 
 def rule_based_classification(audio_path):
-    """단순 규칙 기반 분류 예시."""
-    features = extract_audio_features(audio_path)
-    tempo = features['tempo']
-
-    if tempo < 80:
-        genre = '클래식'
-    elif tempo < 110:
-        genre = '재즈'
-    elif tempo < 140:
-        genre = '팝'
-    else:
-        genre = '록'
-
-    if tempo < 80:
-        emotion = '평화로운'
-    elif tempo < 120:
-        emotion = '행복한'
-    else:
-        emotion = '열정적인'
-
-    return {'genre': genre, 'emotion': emotion}
+    """규칙 기반 분류 - 템포와 오디오 특성을 기반으로 분류."""
+    try:
+        features = extract_audio_features(audio_path)
+        tempo = features['tempo']
+        
+        # 장르 분류 (템포 기반)
+        if tempo < 80:
+            genre = '클래식'
+            genre_confidence = 0.8
+        elif tempo < 110:
+            genre = '재즈'
+            genre_confidence = 0.7
+        elif tempo < 140:
+            genre = '팝'
+            genre_confidence = 0.75
+        else:
+            genre = '록'
+            genre_confidence = 0.8
+        
+        # 감정 분류 (템포 기반)
+        if tempo < 80:
+            emotion = '평화로운'
+            emotion_confidence = 0.8
+        elif tempo < 100:
+            emotion = '슬픈'
+            emotion_confidence = 0.7
+        elif tempo < 120:
+            emotion = '행복한'
+            emotion_confidence = 0.75
+        else:
+            emotion = '열정적인'
+            emotion_confidence = 0.8
+        
+        # 결과를 웹 인터페이스 형식에 맞게 반환
+        return {
+            'genres': [(genre, genre_confidence)],
+            'emotions': [(emotion, emotion_confidence)],
+            'tempo': tempo,
+            'method': '규칙 기반 분류'
+        }
+        
+    except Exception as e:
+        # 오류 발생 시 기본값 반환
+        return {
+            'genres': [('팝', 0.5)],
+            'emotions': [('행복한', 0.5)],
+            'tempo': 120,
+            'method': '규칙 기반 분류 (기본값)',
+            'error': f'분류 중 오류 발생: {str(e)}'
+        }
 
 
 def train_traditional_ml_model(feature_list, labels):
@@ -729,7 +766,7 @@ class DatasetValidator:
             genre_path = os.path.join(data_path, genre)
             if os.path.exists(genre_path):
                 sample_counts[genre] = len([f for f in os.listdir(genre_path) 
-                                          if f.endswith(('.mp3', '.wav', '.m4a', '.flac'))])
+                                          if f.endswith(('.mp3', '.wav', '.m4a', '.flac', '.ogg', '.aac'))])
         
         if sample_counts:
             avg_samples = sum(sample_counts.values()) / len(sample_counts)
@@ -738,6 +775,535 @@ class DatasetValidator:
                     self.validation_results['warnings'].append(
                         f"장르 '{genre}'의 샘플 수가 평균({avg_samples:.0f})의 50% 미만입니다: {count}"
                     )
+
+def validate_url(url):
+    """URL이 유효한 음악 링크인지 검증합니다."""
+    try:
+        parsed = urlparse(url)
+        if not parsed.scheme or not parsed.netloc:
+            return False, "유효하지 않은 URL 형식입니다."
+        
+        # YouTube 링크 검증
+        if 'youtube.com' in parsed.netloc or 'youtu.be' in parsed.netloc:
+            return True, "YouTube 링크"
+        
+        # Spotify 링크 검증
+        if 'spotify.com' in parsed.netloc:
+            return True, "Spotify 링크"
+        
+        # 일반 음악 파일 링크 검증
+        music_extensions = ['.mp3', '.wav', '.m4a', '.flac', '.ogg', '.aac']
+        if any(parsed.path.lower().endswith(ext) for ext in music_extensions):
+            return True, "직접 음악 파일 링크"
+        
+        return False, "지원하지 않는 링크 형식입니다."
+        
+    except Exception as e:
+        return False, f"URL 검증 중 오류 발생: {str(e)}"
+
+def download_youtube_audio(url, output_path=None):
+    """YouTube 링크에서 오디오를 다운로드합니다."""
+    try:
+        if output_path is None:
+            output_path = tempfile.mktemp(suffix='.mp3')
+        
+        # yt-dlp 사용
+        cmd = [
+            'yt-dlp',
+            '--extract-audio',
+            '--audio-format', 'mp3',
+            '--audio-quality', '0',
+            '--output', output_path,
+            url
+        ]
+        
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        
+        if result.returncode != 0:
+            raise Exception(f"YouTube 다운로드 실패: {result.stderr}")
+        
+        # 실제 다운로드된 파일 경로 찾기
+        if os.path.exists(output_path):
+            return output_path
+        else:
+            # yt-dlp가 생성한 실제 파일명 찾기
+            dir_path = os.path.dirname(output_path)
+            base_name = os.path.splitext(os.path.basename(output_path))[0]
+            for file in os.listdir(dir_path):
+                if file.startswith(base_name) and file.endswith('.mp3'):
+                    return os.path.join(dir_path, file)
+        
+        raise Exception("다운로드된 파일을 찾을 수 없습니다.")
+        
+    except FileNotFoundError:
+        raise Exception("yt-dlp가 설치되어 있지 않습니다. 'pip install yt-dlp'로 설치하세요.")
+    except Exception as e:
+        raise Exception(f"YouTube 다운로드 중 오류 발생: {str(e)}")
+
+def download_direct_audio(url, output_path=None):
+    """직접 음악 파일 링크에서 다운로드합니다."""
+    try:
+        if output_path is None:
+            output_path = tempfile.mktemp(suffix='.mp3')
+        
+        response = requests.get(url, stream=True, timeout=30)
+        response.raise_for_status()
+        
+        with open(output_path, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+        
+        return output_path
+        
+    except Exception as e:
+        raise Exception(f"직접 다운로드 중 오류 발생: {str(e)}")
+
+def extract_video_id_from_youtube(url):
+    """YouTube URL에서 비디오 ID를 추출합니다."""
+    patterns = [
+        r'(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)',
+        r'youtube\.com\/embed\/([^&\n?#]+)',
+        r'youtube\.com\/v\/([^&\n?#]+)'
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, url)
+        if match:
+            return match.group(1)
+    
+    return None
+
+def get_youtube_info(url):
+    """YouTube 비디오 정보를 가져옵니다."""
+    try:
+        video_id = extract_video_id_from_youtube(url)
+        if not video_id:
+            raise Exception("YouTube 비디오 ID를 추출할 수 없습니다.")
+        
+        # yt-dlp를 사용하여 비디오 정보 가져오기
+        cmd = ['yt-dlp', '--dump-json', url]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        
+        if result.returncode != 0:
+            raise Exception(f"YouTube 정보 가져오기 실패: {result.stderr}")
+        
+        import json
+        info = json.loads(result.stdout)
+        
+        return {
+            'title': info.get('title', 'Unknown'),
+            'duration': info.get('duration', 0),
+            'uploader': info.get('uploader', 'Unknown'),
+            'view_count': info.get('view_count', 0),
+            'description': info.get('description', '')[:200] + '...' if info.get('description') else ''
+        }
+        
+    except Exception as e:
+        return {
+            'title': 'Unknown',
+            'duration': 0,
+            'uploader': 'Unknown',
+            'view_count': 0,
+            'description': f'정보 가져오기 실패: {str(e)}'
+        }
+
+def get_link_preview(url):
+    """링크의 미리보기 정보를 가져옵니다."""
+    try:
+        # URL 검증
+        is_valid, message = validate_url(url)
+        if not is_valid:
+            return {'error': message}
+        
+        # YouTube 링크 처리
+        if 'youtube.com' in url or 'youtu.be' in url:
+            try:
+                info = get_youtube_info(url)
+                return {
+                    'platform': 'YouTube',
+                    'title': info['title'],
+                    'uploader': info['uploader'],
+                    'duration': info['duration'],
+                    'view_count': info['view_count'],
+                    'description': info['description']
+                }
+            except Exception as e:
+                return {'error': f'YouTube 정보 가져오기 실패: {str(e)}'}
+        
+        # Spotify 링크 처리
+        elif 'spotify.com' in url:
+            return {
+                'platform': 'Spotify',
+                'error': 'Spotify 링크는 현재 지원하지 않습니다.'
+            }
+        
+        # 직접 음악 파일 링크 처리
+        else:
+            try:
+                # HEAD 요청으로 파일 정보 확인
+                response = requests.head(url, timeout=10)
+                response.raise_for_status()
+                
+                content_type = response.headers.get('content-type', '')
+                content_length = response.headers.get('content-length', 0)
+                
+                # 파일명 추출
+                parsed_url = urlparse(url)
+                filename = os.path.basename(parsed_url.path)
+                if not filename:
+                    filename = 'unknown'
+                
+                return {
+                    'platform': '직접 링크',
+                    'title': filename,
+                    'content_type': content_type,
+                    'file_size': int(content_length) if content_length else '알 수 없음',
+                    'url': url
+                }
+            except Exception as e:
+                return {'error': f'파일 정보 가져오기 실패: {str(e)}'}
+                
+    except Exception as e:
+        return {'error': f'미리보기 생성 중 오류 발생: {str(e)}'}
+
+def dummy_classification(url, genres=None, emotions=None):
+    """
+    Wav2Vec2 모델이 없을 때 사용하는 더미 분류 (기존 함수 수정)
+    """
+    import random
+    
+    # 기본 장르와 감정 설정
+    if genres is None:
+        genres = ['블루스', '클래식', '컨트리', '디스코', '힙합', '재즈', '메탈', '팝', '레게', '록']
+    if emotions is None:
+        emotions = ['행복한', '슬픈', '평화로운', '열정적인']
+    
+    # URL에서 힌트 추출
+    url_lower = url.lower()
+    
+    # URL 기반 간단한 규칙
+    if any(word in url_lower for word in ['classical', 'classic', 'orchestra', 'symphony']):
+        genre = '클래식'
+    elif any(word in url_lower for word in ['jazz', 'smooth']):
+        genre = '재즈'
+    elif any(word in url_lower for word in ['rock', 'guitar', 'band']):
+        genre = '록'
+    elif any(word in url_lower for word in ['pop', 'popular']):
+        genre = '팝'
+    elif any(word in url_lower for word in ['hip', 'rap', 'urban']):
+        genre = '힙합'
+    elif any(word in url_lower for word in ['metal', 'heavy']):
+        genre = '메탈'
+    elif any(word in url_lower for word in ['country', 'folk']):
+        genre = '컨트리'
+    elif any(word in url_lower for word in ['blues', 'soul']):
+        genre = '블루스'
+    elif any(word in url_lower for word in ['reggae', 'caribbean']):
+        genre = '레게'
+    elif any(word in url_lower for word in ['disco', 'dance']):
+        genre = '디스코'
+    else:
+        genre = random.choice(genres)
+    
+    # 감정도 추측
+    if any(word in url_lower for word in ['happy', 'joy', 'upbeat']):
+        emotion = '행복한'
+    elif any(word in url_lower for word in ['sad', 'melancholy', 'slow']):
+        emotion = '슬픈'
+    elif any(word in url_lower for word in ['peaceful', 'calm', 'relaxing']):
+        emotion = '평화로운'
+    elif any(word in url_lower for word in ['passionate', 'energetic', 'fast']):
+        emotion = '열정적인'
+    else:
+        emotion = random.choice(emotions)
+    
+    genre_confidence = random.uniform(0.3, 0.7)  # 낮은 신뢰도
+    emotion_confidence = random.uniform(0.3, 0.7)  # 낮은 신뢰도
+    
+    # 새로운 형식 (Wav2Vec2 스타일)
+    result = {
+        'genre': genre,
+        'confidence': genre_confidence,
+        'method': '더미 분류 (Wav2Vec2 모델 없음)',
+        'note': '실제 AI 모델이 로드되지 않아 더미 결과를 반환합니다.',
+        'url': url,
+        'success': True
+    }
+    
+    # 기존 형식도 지원 (하위 호환성)
+    result['genres'] = [(genre, genre_confidence)]
+    result['emotions'] = [(emotion, emotion_confidence)]
+    
+    return result
+
+def classify_music_from_url(model, url, genres, emotions, confidence_threshold=0.5):
+    """URL을 통해 음악을 분류합니다."""
+    try:
+        # URL 검증
+        is_valid, message = validate_url(url)
+        if not is_valid:
+            raise ValueError(message)
+        
+        print(f"링크 검증 완료: {message}")
+        
+        # 임시 파일 경로 생성
+        temp_file = None
+        
+        try:
+            # 링크 타입에 따른 다운로드
+            if 'youtube.com' in url or 'youtu.be' in url:
+                print("YouTube 링크 감지됨. 오디오 다운로드 중...")
+                
+                # YouTube 정보 가져오기
+                info = get_youtube_info(url)
+                print(f"제목: {info['title']}")
+                print(f"업로더: {info['uploader']}")
+                print(f"길이: {info['duration']}초")
+                
+                temp_file = download_youtube_audio(url)
+                
+            elif 'spotify.com' in url:
+                raise ValueError("Spotify 링크는 현재 지원하지 않습니다. YouTube 링크를 사용해주세요.")
+                
+            else:
+                print("직접 음악 파일 링크 감지됨. 다운로드 중...")
+                temp_file = download_direct_audio(url)
+            
+            print(f"다운로드 완료: {temp_file}")
+            
+            # 음악 분류 실행
+            result = predict_music(model, temp_file, genres, emotions, confidence_threshold)
+            
+            # YouTube 정보 추가
+            if 'youtube.com' in url or 'youtu.be' in url:
+                result['youtube_info'] = get_youtube_info(url)
+            
+            return result
+            
+        finally:
+            # 임시 파일 정리
+            if temp_file and os.path.exists(temp_file):
+                try:
+                    os.remove(temp_file)
+                    print("임시 파일 정리 완료")
+                except:
+                    pass
+                    
+    except Exception as e:
+        raise Exception(f"링크 분류 중 오류 발생: {str(e)}")
+
+def batch_classify_urls(model, urls, genres, emotions, confidence_threshold=0.5):
+    """여러 URL을 일괄 분류합니다."""
+    results = []
+    
+    for i, url in enumerate(urls, 1):
+        try:
+            print(f"\n[{i}/{len(urls)}] 처리 중: {url}")
+            result = classify_music_from_url(model, url, genres, emotions, confidence_threshold)
+            result['url'] = url
+            result['status'] = 'success'
+            results.append(result)
+            
+        except Exception as e:
+            print(f"오류 발생: {str(e)}")
+            results.append({
+                'url': url,
+                'status': 'error',
+                'error': str(e)
+            })
+    
+    return results
+
+def create_url_classification_report(results):
+    """URL 분류 결과를 보고서 형태로 생성합니다."""
+    report = {
+        'summary': {
+            'total': len(results),
+            'success': len([r for r in results if r['status'] == 'success']),
+            'failed': len([r for r in results if r['status'] == 'error'])
+        },
+        'genre_distribution': {},
+        'emotion_distribution': {},
+        'detailed_results': results
+    }
+    
+    # 장르 및 감정 분포 계산
+    for result in results:
+        if result['status'] == 'success':
+            # 장르 분포
+            for genre, confidence in result['genres']:
+                if genre not in report['genre_distribution']:
+                    report['genre_distribution'][genre] = 0
+                report['genre_distribution'][genre] += 1
+            
+            # 감정 분포
+            for emotion, confidence in result['emotions']:
+                if emotion not in report['emotion_distribution']:
+                    report['emotion_distribution'][emotion] = 0
+                report['emotion_distribution'][emotion] += 1
+    
+    return report
+
+def save_url_classification_results(results, output_file='url_classification_results.json'):
+    """URL 분류 결과를 JSON 파일로 저장합니다."""
+    report = create_url_classification_report(results)
+    
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(report, f, ensure_ascii=False, indent=2)
+    
+    print(f"결과가 {output_file}에 저장되었습니다.")
+
+def print_url_classification_summary(results):
+    """URL 분류 결과 요약 출력"""
+    if not results:
+        print("분류 결과가 없습니다.")
+        return
+    
+    total = len(results)
+    successful = sum(1 for r in results if r.get('status') == 'success')
+    failed = total - successful
+    
+    print(f"\n=== URL 분류 결과 요약 ===")
+    print(f"총 URL 수: {total}")
+    print(f"성공: {successful}")
+    print(f"실패: {failed}")
+    
+    if successful > 0:
+        # 장르별 통계
+        genre_counts = {}
+        for result in results:
+            if result.get('status') == 'success' and 'genre' in result:
+                genre = result['genre']
+                genre_counts[genre] = genre_counts.get(genre, 0) + 1
+        
+        print(f"\n장르별 분포:")
+        for genre, count in sorted(genre_counts.items(), key=lambda x: x[1], reverse=True):
+            percentage = (count / successful) * 100
+            print(f"  {genre}: {count}개 ({percentage:.1f}%)")
+
+# Wav2Vec2 모델을 사용하는 새로운 함수들
+def predict_music_wav2vec2(model, processor, audio_path, confidence_threshold=0.5):
+    """
+    Wav2Vec2 모델을 사용하여 음악 분류
+    """
+    try:
+        import torch
+        import librosa
+        
+        # 오디오 파일 로드 및 전처리
+        y, sr = librosa.load(audio_path, sr=16000)  # Wav2Vec2는 16kHz 사용
+        
+        # 모델 입력 형식으로 변환
+        inputs = processor(y, sampling_rate=16000, return_tensors="pt", padding=True)
+        
+        # 예측 수행
+        with torch.no_grad():
+            outputs = model(**inputs)
+            logits = outputs.logits
+            probabilities = torch.softmax(logits, dim=-1)
+            predicted_class = torch.argmax(probabilities, dim=-1).item()
+            confidence = probabilities[0][predicted_class].item()
+        
+        # 결과 매핑
+        genre = model.config.id2label[predicted_class]
+        
+        # 한국어 장르명 매핑
+        genre_mapping = {
+            'blues': '블루스',
+            'classical': '클래식',
+            'country': '컨트리',
+            'disco': '디스코',
+            'hiphop': '힙합',
+            'jazz': '재즈',
+            'metal': '메탈',
+            'pop': '팝',
+            'reggae': '레게',
+            'rock': '록'
+        }
+        
+        korean_genre = genre_mapping.get(genre, genre)
+        
+        result = {
+            'genre': korean_genre,
+            'confidence': confidence,
+            'method': 'Wav2Vec2 (Hugging Face)',
+            'note': f'원본 장르: {genre}',
+            'success': True
+        }
+        
+        if confidence < confidence_threshold:
+            result['note'] += f' (낮은 신뢰도: {confidence:.2f})'
+        
+        return result
+        
+    except Exception as e:
+        return {
+            'error': f'Wav2Vec2 분류 중 오류 발생: {str(e)}',
+            'success': False
+        }
+
+def classify_music_from_url_wav2vec2(model, processor, url, confidence_threshold=0.5):
+    """
+    URL에서 음악을 다운로드하고 Wav2Vec2 모델로 분류
+    """
+    try:
+        # URL에서 오디오 다운로드
+        temp_file = None
+        try:
+            if 'youtube.com' in url or 'youtu.be' in url:
+                temp_file = download_youtube_audio(url)
+            else:
+                temp_file = download_direct_audio(url)
+            
+            if not temp_file or not os.path.exists(temp_file):
+                return {'error': '오디오 파일 다운로드 실패', 'success': False}
+            
+            # Wav2Vec2 모델로 분류
+            result = predict_music_wav2vec2(model, processor, temp_file, confidence_threshold)
+            result['url'] = url
+            
+            return result
+            
+        finally:
+            # 임시 파일 정리
+            if temp_file and os.path.exists(temp_file):
+                try:
+                    os.remove(temp_file)
+                except:
+                    pass
+                    
+    except Exception as e:
+        return {
+            'error': f'URL 분류 중 오류 발생: {str(e)}',
+            'url': url,
+            'success': False
+        }
+
+def batch_classify_urls_wav2vec2(model, processor, urls, confidence_threshold=0.5):
+    """
+    여러 URL을 Wav2Vec2 모델로 일괄 분류
+    """
+    results = []
+    
+    for i, url in enumerate(urls):
+        try:
+            print(f"분류 중... ({i+1}/{len(urls)}): {url}")
+            
+            result = classify_music_from_url_wav2vec2(model, processor, url, confidence_threshold)
+            result['url'] = url
+            result['status'] = 'success' if result.get('success', False) else 'error'
+            
+            results.append(result)
+            
+        except Exception as e:
+            results.append({
+                'url': url,
+                'status': 'error',
+                'error': str(e),
+                'success': False
+            })
+    
+    return results
 
 # 사용 예시
 if __name__ == "__main__":
@@ -763,3 +1329,8 @@ if __name__ == "__main__":
         print("\n통과한 검증:")
         for passed in validation_results['passed']:
             print(f"- {passed}")
+    
+    # URL 분류 예시
+    urls = [
+        'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    ]

@@ -5,3 +5,11 @@ scikit-learn
 matplotlib
 psutil
 Flask
+requests
+yt-dlp
+urllib3
+torch
+transformers==4.34.0
+huggingface_hub==0.16.4
+accelerate==0.20.3
+ffmpeg-python
