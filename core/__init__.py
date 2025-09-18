@@ -16,6 +16,12 @@ except ImportError as e:
     
     def dummy_classification(*args, **kwargs):
         return {'error': 'predictor 모듈을 로드할 수 없습니다', 'success': False}
+    
+    def classify_music_from_url_wav2vec2(*args, **kwargs):
+        return {'error': 'predictor 모듈을 로드할 수 없습니다', 'success': False}
+    
+    def batch_classify_urls_wav2vec2(*args, **kwargs):
+        return [{'error': 'predictor 모듈을 로드할 수 없습니다', 'success': False}]
 
 __all__ = [
     'extract_audio_features',
@@ -32,4 +38,4 @@ __all__ = [
     'predict_lyrics',
     'analyze_prediction',
     'dummy_classification'
-] 
+]

@@ -20,7 +20,6 @@ def _get_download_functions():
         from utils.downloader import download_youtube_audio, download_direct_audio
         return download_youtube_audio, download_direct_audio
 
-
 def predict_music(model, audio_path, genres, emotions, confidence_threshold=0.5):
     """음악 분류 예측 함수"""
     features = extract_audio_features(audio_path)
@@ -43,7 +42,6 @@ def predict_music(model, audio_path, genres, emotions, confidence_threshold=0.5)
         'genres': sorted(genre_results, key=lambda x: x[1], reverse=True),
         'emotions': sorted(emotion_results, key=lambda x: x[1], reverse=True)
     }
-
 
 def predict_music_wav2vec2(model, processor, audio_path, confidence_threshold=0.5, max_duration=30):
     """Wav2Vec2 모델을 사용하여 음악 분류 (메모리 최적화 버전)"""
@@ -164,7 +162,6 @@ def predict_music_wav2vec2(model, processor, audio_path, confidence_threshold=0.
             'success': False
         }
 
-
 def dummy_classification(url, genres=None, emotions=None):
     """Wav2Vec2 모델이 없을 때 사용하는 더미 분류"""
     # 기본 장르와 감정 설정
@@ -231,7 +228,6 @@ def dummy_classification(url, genres=None, emotions=None):
     
     return result
 
-
 def analyze_prediction(model, audio_path, genres, emotions):
     """예측 결과 분석"""
     features = extract_audio_features(audio_path)
@@ -249,7 +245,6 @@ def analyze_prediction(model, audio_path, genres, emotions):
         'predictions': predictions,
         'feature_importance': feature_importance
     } 
-
 
 def classify_music_from_url_wav2vec2(model, processor, url, confidence_threshold=0.5):
     """
@@ -357,4 +352,4 @@ def batch_classify_urls_wav2vec2(model, processor, urls, confidence_threshold=0.
     final_memory = process.memory_info().rss / 1024 / 1024
     print(f"\n배치 처리 완료 - 최종 메모리: {final_memory:.1f} MB")
     
-    return results 
+    return results
