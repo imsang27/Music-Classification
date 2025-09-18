@@ -2,6 +2,8 @@
 음악 분류기 모듈
 """
 
+import numpy as np
+import random
 from .feature_extractor import extract_audio_features
 
 
@@ -104,4 +106,30 @@ def predict_traditional_ml_model(model, audio_path):
 def predict_lyrics(vectorizer, model, lyrics):
     """가사 분석 예측"""
     X = vectorizer.transform([lyrics])
-    return model.predict(X)[0] 
+    return model.predict(X)[0]
+
+def train_traditional_ml_model(feature_list, labels):
+    """전통적인 머신 러닝 모델(SVM) 학습"""
+    from sklearn.svm import SVC
+    X = [
+        np.concatenate([
+            f['mfcc'],
+            f['spectral_contrast'],
+            [f['tempo']]
+        ])
+        for f in feature_list
+    ]
+    model = SVC(probability=True)
+    model.fit(X, labels)
+    return model
+
+def train_lyrics_model(lyrics_list, labels):
+    """가사 분석을 위한 간단한 텍스트 분류 모델"""
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.linear_model import LogisticRegression
+
+    vectorizer = TfidfVectorizer()
+    X = vectorizer.fit_transform(lyrics_list)
+    clf = LogisticRegression(max_iter=1000)
+    clf.fit(X, labels)
+    return vectorizer, clf 
