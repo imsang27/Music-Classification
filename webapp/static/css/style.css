@@ -64,14 +64,53 @@ body.dark-mode {
     border-radius: 12px;
     padding: 12px 16px;
     font-size: 0.9rem;
+    min-width: 280px;
+}
+
+.status-header {
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.model-label-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .status-label {
     font-weight: 500;
     color: #ccc;
+}
+
+.refresh-model-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 4px 8px;
+    transition: all 0.2s;
+}
+
+.refresh-model-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    transform: rotate(180deg);
+}
+
+.refresh-model-btn:active {
+    transform: rotate(180deg) scale(0.95);
+}
+
+.status-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
 .status-value {
@@ -99,6 +138,20 @@ body.dark-mode {
     font-style: italic;
 }
 
+.status-note.success {
+    color: #4caf50;
+}
+
+.status-note.error {
+    color: #f44336;
+}
+
+.model-name {
+    font-weight: bold;
+    color: #4a90e2;
+    font-size: 0.9rem;
+}
+
 /* White mode model status */
 body.white-mode .model-status {
     background: rgba(0, 0, 0, 0.05);
@@ -111,6 +164,21 @@ body.white-mode .status-label {
 
 body.white-mode .status-note {
     color: #e65100;
+}
+
+body.white-mode .refresh-model-btn {
+    background: rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    color: #666;
+}
+
+body.white-mode .refresh-model-btn:hover {
+    background: rgba(0, 0, 0, 0.2);
+    color: #333;
+}
+
+body.white-mode .model-name {
+    color: #357ab8;
 }
 
 /* 폼 섹션 스타일 */

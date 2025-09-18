@@ -12,13 +12,21 @@
     
     <!-- 모델 상태 표시 -->
     <div class="model-status">
-        <span class="status-label">AI 모델 상태:</span>
-        <span class="status-value {% if model_status == '로드됨' %}status-success{% else %}status-error{% endif %}">
-            {{ model_status }}
-        </span>
-        {% if model_status == '로드되지 않음' %}
-            <span class="status-note">(규칙 기반 분류만 사용 가능)</span>
-        {% endif %}
+        <div class="status-header">
+            <div class="model-label-container">
+                <span class="status-label">AI 모델:</span>
+                <span id="model-name" class="model-name" style="display: none;"></span>
+            </div>
+            <button type="button" class="refresh-model-btn" onclick="checkModelStatus()" title="모델 상태 새로고침">🔄</button>
+        </div>
+        <div class="status-content">
+            <span class="status-value {% if model_status == '로드됨' %}status-success{% else %}status-error{% endif %}">
+                {{ model_status }}
+            </span>
+            {% if model_status == '로드되지 않음' %}
+                <span class="status-note">(규칙 기반 분류만 사용 가능)</span>
+            {% endif %}
+        </div>
     </div>
     
     <div class="center-container">

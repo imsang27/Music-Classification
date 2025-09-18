@@ -103,6 +103,8 @@ def clear_progress(task_id):
             del progress_tracker[task_id]
 
 # Try to load Wav2Vec2 model if available
+wav2vec2_model_name = None  # 전역 변수로 모델 이름 저장
+
 try:
     from transformers import Wav2Vec2ForSequenceClassification, Wav2Vec2FeatureExtractor
     import torch
@@ -118,25 +120,72 @@ try:
             # Set model to evaluation mode
             wav2vec2_model.eval()
             
+            # 모델 이름 저장 - models 폴더부터 경로 분석
+            wav2vec2_model_name = 'music_genres_classification'  # 기본값
+            
+            try:
+                # MODEL_PATH에서 models 폴더부터의 경로 추출
+                # 예: .../models/models--dima806--music_genres_classification/snapshots/...
+                model_path_str = str(MODEL_PATH)
+                print(f"   - 전체 모델 경로: {model_path_str}")
+                
+                # models 폴더 찾기
+                if 'models' in model_path_str:
+                    # models 폴더 이후의 경로 추출
+                    models_index = model_path_str.find('models')
+                    models_path = model_path_str[models_index:]
+                    print(f"   - models 폴더부터 경로: {models_path}")
+                    
+                    # 경로를 / 또는 \ 로 분할
+                    path_parts = models_path.replace('\\', '/').split('/')
+                    print(f"   - 경로 분할: {path_parts}")
+                    
+                    # models 폴더 다음에 오는 폴더명 찾기
+                    for i, part in enumerate(path_parts):
+                        if part == 'models' and i + 1 < len(path_parts):
+                            model_folder = path_parts[i + 1]
+                            print(f"   - 모델 폴더명: {model_folder}")
+                            
+                            # models--dima806--music_genres_classification 형태에서 마지막 부분 추출
+                            if '--' in model_folder:
+                                wav2vec2_model_name = model_folder.split('--')[-1]
+                                print(f"   - 추출된 모델명: {wav2vec2_model_name}")
+                            else:
+                                wav2vec2_model_name = model_folder
+                                print(f"   - 폴더명 그대로 사용: {wav2vec2_model_name}")
+                            break
+                else:
+                    print("   - models 폴더를 찾을 수 없음, 기본값 사용")
+                    
+            except Exception as e:
+                print(f"   - 모델명 추출 중 오류: {e}")
+                wav2vec2_model_name = 'music_genres_classification'
+            
+            print(f"   - 최종 모델명: {wav2vec2_model_name}")
+            
             # GPU 사용 가능 시 GPU로 이동
             if torch.cuda.is_available():
                 wav2vec2_model = wav2vec2_model.cuda()
                 print("✅ GPU 사용 가능 - Wav2Vec2 모델을 GPU로 이동")
             
             print("✅ Wav2Vec2 모델 로드 성공")
+            print(f"   - 모델 이름: {wav2vec2_model_name}")
             print(f"   - 지원 장르: {list(wav2vec2_model.config.id2label.values())}")
         except Exception as e:
             print(f"❌ Wav2Vec2 모델 로드 실패: {str(e)}")
             wav2vec2_model = None
             wav2vec2_processor = None
+            wav2vec2_model_name = None
     else:
         print("❌ 모델 폴더가 존재하지 않습니다: models/models--dima806--music_genres_classification")
         wav2vec2_model = None
         wav2vec2_processor = None
+        wav2vec2_model_name = None
 except Exception as e:
     print(f"❌ Transformers/PyTorch 임포트 실패: {str(e)}")
     wav2vec2_model = None
     wav2vec2_processor = None
+    wav2vec2_model_name = None
 
 @app.route('/')
 def index():
@@ -434,6 +483,39 @@ def clear_uploads():
         return jsonify({
             'success': False,
             'message': f'폴더 정리 중 오류 발생: {str(e)}'
+        })
+
+@app.route('/api/model_status', methods=['GET'])
+def get_model_status():
+    """모델 상태 조회 API"""
+    try:
+        model_loaded = wav2vec2_model is not None
+        status = "로드됨" if model_loaded else "로드되지 않음"
+        
+        # 모델 이름 결정 - 저장된 모델 이름 사용
+        model_name = wav2vec2_model_name if model_loaded else None
+        print(f"API 호출 - 모델 로드됨: {model_loaded}, 모델명: {model_name}")
+        
+        # 추가 정보
+        info = {
+            'model_loaded': model_loaded,
+            'status': status,
+            'model_type': model_name,
+            'model_name': model_name,  # 호환성을 위해 추가
+            'gpu_available': torch.cuda.is_available() if 'torch' in globals() else False
+        }
+        
+        if model_loaded and hasattr(wav2vec2_model, 'config'):
+            info['supported_genres'] = list(wav2vec2_model.config.id2label.values())
+        
+        return jsonify({
+            'success': True,
+            'model_status': info
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'모델 상태 조회 중 오류 발생: {str(e)}'
         })
 
 @app.route('/get_uploads_info', methods=['GET'])

@@ -420,6 +420,86 @@ function simulateLoadingProgress() {
     }, 2000); // 2초마다 단계 변경
 }
 
+// 모델 상태 확인 및 UI 업데이트
+async function checkModelStatus() {
+    const statusElement = document.querySelector('.status-value');
+    const statusNote = document.querySelector('.status-note');
+    const modelNameElement = document.getElementById('model-name');
+    
+    if (!statusElement) return;
+    
+    try {
+        const response = await fetch('/api/model_status');
+        const data = await response.json();
+        
+        if (data.success) {
+            const modelInfo = data.model_status;
+            
+            // 상태 텍스트 업데이트 - "로드됨" 또는 "로드되지 않음" 유지
+            if (modelInfo.model_loaded) {
+                statusElement.textContent = '로드됨';
+            } else {
+                statusElement.textContent = '로드되지 않음';
+            }
+            
+            // CSS 클래스 업데이트
+            statusElement.className = `status-value ${modelInfo.model_loaded ? 'status-success' : 'status-error'}`;
+            
+            // 모델 이름 표시
+            if (modelNameElement) {
+                if (modelInfo.model_loaded) {
+                    const modelName = modelInfo.model_type || modelInfo.model_name || 'music_genres_classification';
+                    console.log('JavaScript - 받은 모델 정보:', modelInfo);
+                    console.log('JavaScript - 사용할 모델명:', modelName);
+                    modelNameElement.textContent = modelName;
+                    modelNameElement.style.display = 'inline';
+                } else {
+                    modelNameElement.style.display = 'none';
+                }
+            }
+            
+            // 추가 정보 표시
+            if (statusNote) {
+                if (modelInfo.model_loaded) {
+                    statusNote.textContent = '(AI 모델 사용 가능)';
+                    statusNote.className = 'status-note success';
+                } else {
+                    statusNote.textContent = '(규칙 기반 분류만 사용 가능)';
+                    statusNote.className = 'status-note error';
+                }
+            }
+            
+            // 지원 장르 정보 표시 (선택사항)
+            if (modelInfo.supported_genres && modelInfo.supported_genres.length > 0) {
+                console.log('지원되는 장르:', modelInfo.supported_genres);
+            }
+            
+            // GPU 사용 가능 여부 표시 (선택사항)
+            if (modelInfo.gpu_available) {
+                console.log('GPU 사용 가능');
+            }
+            
+        } else {
+            // API 오류 시 기본 상태로 설정
+            statusElement.textContent = '확인 불가';
+            statusElement.className = 'status-value status-error';
+            if (statusNote) {
+                statusNote.textContent = '(상태 확인 중 오류 발생)';
+                statusNote.className = 'status-note error';
+            }
+        }
+    } catch (error) {
+        console.error('모델 상태 확인 중 오류:', error);
+        // 네트워크 오류 시 기본 상태로 설정
+        statusElement.textContent = '확인 불가';
+        statusElement.className = 'status-value status-error';
+        if (statusNote) {
+            statusNote.textContent = '(네트워크 오류)';
+            statusNote.className = 'status-note error';
+        }
+    }
+}
+
 // 페이지 로드 시 랜덤 CTA 설정
 window.addEventListener('load', setRandomCTA);
 
@@ -521,6 +601,9 @@ async function clearUploads() {
 
 // 페이지 로드 시 이벤트 리스너 설정
 document.addEventListener('DOMContentLoaded', function() {
+    // 페이지 로드 시 모델 상태 확인
+    checkModelStatus();
+    
     // URL 폼 제출 검증 및 로딩 표시
     const urlForm = document.getElementById('url-form');
     if (urlForm) {
