@@ -194,7 +194,17 @@
                 } else {
                     showResult(data.result);
                 }
+                // 완료 후 Server-Sent Events 연결 종료
+                if (eventSource) {
+                    eventSource.close();
+                    eventSource = null;
+                }
             } else if (data.stage === 'error') {
+                // 오류 시에도 연결 종료
+                if (eventSource) {
+                    eventSource.close();
+                    eventSource = null;
+                }
                 setTimeout(() => {
                     alert('분류 중 오류가 발생했습니다.');
                     window.location.href = '/';
@@ -309,7 +319,11 @@
             // 돌아가기 버튼 추가
             const actionsDiv = document.querySelector('.progress-actions');
             if (actionsDiv) {
+                console.log('배치 결과 - 돌아가기 버튼 생성 중...');
                 actionsDiv.innerHTML = '<button type="button" class="big-btn" onclick="goBack()">← 돌아가기</button>';
+                console.log('배치 결과 - 돌아가기 버튼 생성 완료');
+            } else {
+                console.error('배치 결과 - progress-actions 요소를 찾을 수 없습니다');
             }
         }
         
@@ -357,11 +371,26 @@
             // 돌아가기 버튼 추가
             const actionsDiv = document.querySelector('.progress-actions');
             if (actionsDiv) {
+                console.log('단일 결과 - 돌아가기 버튼 생성 중...');
                 actionsDiv.innerHTML = '<button type="button" class="big-btn" onclick="goBack()">← 돌아가기</button>';
+                console.log('단일 결과 - 돌아가기 버튼 생성 완료');
+            } else {
+                console.error('단일 결과 - progress-actions 요소를 찾을 수 없습니다');
             }
         }
         
         function goBack() {
+            console.log('돌아가기 버튼 클릭됨');
+            
+            // Server-Sent Events 연결 종료
+            if (eventSource) {
+                console.log('Server-Sent Events 연결 종료 중...');
+                eventSource.close();
+                eventSource = null;
+            }
+            
+            // 페이지 이동
+            console.log('메인 페이지로 이동 중...');
             window.location.href = '/';
         }
         
