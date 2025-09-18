@@ -305,7 +305,7 @@ function showLoading(formId, loadingText = '처리 중...') {
                 submitBtn.setAttribute('data-original-text', submitBtn.textContent);
             }
             
-            submitBtn.disabled = true;
+            // 버튼을 비활성화하지 않고 텍스트만 변경
             submitBtn.innerHTML = `
                 <span class="loading-spinner"></span>
                 ${loadingText}
@@ -636,7 +636,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const fileForm = document.querySelector('form[action*="classify"]');
     if (fileForm) {
         fileForm.addEventListener('submit', function(e) {
+            // 폼 제출을 막지 않고 로딩 표시만 활성화
             showLoading('file-form', '파일 분석 중...');
+            // 폼이 정상적으로 제출되도록 함
         });
     }
     

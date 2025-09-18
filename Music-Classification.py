@@ -284,7 +284,7 @@ def cross_validate_model(X, y_genre, y_emotion, n_splits=5):
 
 # 사용 예시
 if __name__ == "__main__":
-    genres = ['클래식', '재즈', '록', '팝']
+    genres = ['블루스', '클래식', '컨트리', '디스코', '힙합', '재즈', '메탈', '팝', '레게', '록']
     emotions = ['행복한', '슬픈', '평화로운', '열정적인',
                 '차분한', '긴장된', '기쁨', '슬픔', '차분함', '신남', '분노']
     model = train_music_classifier('음악_데이터_경로', genres, emotions)
@@ -1307,7 +1307,7 @@ def batch_classify_urls_wav2vec2(model, processor, urls, confidence_threshold=0.
 
 # 사용 예시
 if __name__ == "__main__":
-    genres = ['클래식', '재즈', '록', '팝']
+    genres = ['블루스', '클래식', '컨트리', '디스코', '힙합', '재즈', '메탈', '팝', '레게', '록']
     emotions = ['행복한', '슬픈', '평화로운', '열정적인',
                 '차분한', '긴장된', '기쁨', '슬픔', '차분함', '신남', '분노']
     model = train_music_classifier('음악_데이터_경로', genres, emotions)

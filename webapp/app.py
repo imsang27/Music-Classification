@@ -76,6 +76,10 @@ app = Flask(__name__)
 progress_tracker = {}
 progress_lock = threading.Lock()
 
+# 분류 결과 저장을 위한 전역 변수
+classification_results = {}
+results_lock = threading.Lock()
+
 def update_progress(task_id, stage, message, progress=0):
     """진행률 업데이트"""
     with progress_lock:
@@ -101,6 +105,22 @@ def clear_progress(task_id):
     with progress_lock:
         if task_id in progress_tracker:
             del progress_tracker[task_id]
+
+def save_classification_result(task_id, result):
+    """분류 결과 저장"""
+    with results_lock:
+        classification_results[task_id] = result
+
+def get_classification_result(task_id):
+    """분류 결과 조회"""
+    with results_lock:
+        return classification_results.get(task_id, None)
+
+def clear_classification_result(task_id):
+    """분류 결과 정리"""
+    with results_lock:
+        if task_id in classification_results:
+            del classification_results[task_id]
 
 # Try to load Wav2Vec2 model if available
 wav2vec2_model_name = None  # 전역 변수로 모델 이름 저장
@@ -226,9 +246,11 @@ def classify():
         shutil.copy2(original_file_path, temp_file)
         
         action = request.form.get('action')
+        print(f"DEBUG: 받은 action 값: '{action}'")  # 디버깅용
+        print(f"DEBUG: request.form 전체: {dict(request.form)}")  # 디버깅용
 
         # 기존 분류 방법들을 위한 장르와 감정 정의
-        genres = ['클래식', '재즈', '록', '팝']
+        genres = ['블루스', '클래식', '컨트리', '디스코', '힙합', '재즈', '메탈', '팝', '레게', '록']
         emotions = ['행복한', '슬픈', '평화로운', '열정적인']
 
         if action == 'wav2vec2' and wav2vec2_model:
@@ -262,7 +284,8 @@ def classify():
         elif action == 'hybrid':
             result = {'error': '통합 분류 기능은 아직 구현되지 않았습니다.'}
         else:
-            result = {'error': '선택한 기능을 사용할 수 없습니다.'}
+            print(f"DEBUG: 예상되지 않은 action 값: '{action}'")  # 디버깅용
+            result = {'error': f'선택한 기능을 사용할 수 없습니다. (action: {action})'}
 
     except Exception as e:
         result = {'error': f'파일 처리 중 오류 발생: {str(e)}'}
@@ -283,6 +306,8 @@ def classify_url():
         return render_template('index.html', prediction={'error': 'URL을 입력해주세요.'})
 
     action = request.form.get('action')
+    print(f"DEBUG: URL 분류 - 받은 action 값: '{action}'")  # 디버깅용
+    print(f"DEBUG: URL 분류 - request.form 전체: {dict(request.form)}")  # 디버깅용
     task_id = str(uuid.uuid4())
     
     try:
@@ -304,10 +329,15 @@ def classify_url():
                             url, 
                             progress_callback=progress_callback
                         )
+                        # 결과 저장
+                        save_classification_result(task_id, result)
                         return result
                     except Exception as e:
+                        error_result = {'error': str(e), 'success': False}
                         update_progress(task_id, 'error', f'분류 중 오류 발생: {str(e)}', 0)
-                        return {'error': str(e), 'success': False}
+                        # 오류 결과도 저장
+                        save_classification_result(task_id, error_result)
+                        return error_result
                 
                 # 백그라운드 스레드에서 실행
                 thread = threading.Thread(target=run_classification)
@@ -336,7 +366,8 @@ def classify_url():
                 if temp_file and os.path.exists(temp_file):
                     os.remove(temp_file)
         else:
-            result = {'error': '선택한 기능을 사용할 수 없습니다.'}
+            print(f"DEBUG: URL 분류 - 예상되지 않은 action 값: '{action}'")  # 디버깅용
+            result = {'error': f'선택한 기능을 사용할 수 없습니다. (action: {action})'}
         
         return render_template('index.html', prediction=result, url=url)
         
@@ -419,13 +450,21 @@ def link_preview_api():
 def get_progress_api(task_id):
     """분류 진행률 조회 API"""
     progress = get_progress(task_id)
-    return jsonify({
+    result = get_classification_result(task_id)
+    
+    response = {
         'task_id': task_id,
         'stage': progress['stage'],
         'message': progress['message'],
         'progress': progress['progress'],
         'timestamp': progress['timestamp']
-    })
+    }
+    
+    # 완료된 경우 결과도 포함
+    if result:
+        response['result'] = result
+    
+    return jsonify(response)
 
 @app.route('/api/progress_stream/<task_id>')
 def progress_stream(task_id):
@@ -433,6 +472,7 @@ def progress_stream(task_id):
     def generate():
         while True:
             progress = get_progress(task_id)
+            result = get_classification_result(task_id)
             
             # JSON 데이터를 SSE 형식으로 전송
             data = {
@@ -442,6 +482,10 @@ def progress_stream(task_id):
                 'progress': progress['progress'],
                 'timestamp': progress['timestamp']
             }
+            
+            # 완료된 경우 결과도 포함
+            if result:
+                data['result'] = result
             
             yield f"data: {json.dumps(data)}\n\n"
             

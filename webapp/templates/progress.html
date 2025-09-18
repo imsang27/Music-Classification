@@ -77,11 +77,9 @@
             // 단계 업데이트
             updateSteps(data.stage);
             
-            // 완료되면 결과 페이지로 이동
-            if (data.stage === 'completed') {
-                setTimeout(() => {
-                    window.location.href = '/';
-                }, 2000);
+            // 완료되면 결과 표시
+            if (data.stage === 'completed' && data.result) {
+                showResult(data.result);
             } else if (data.stage === 'error') {
                 setTimeout(() => {
                     alert('분류 중 오류가 발생했습니다.');
@@ -126,6 +124,54 @@
             }
         }
         
+        function showResult(result) {
+            const progressContent = document.querySelector('.progress-content');
+            if (!progressContent) return;
+            
+            // 결과 HTML 생성
+            let resultHTML = '<div class="result-section">';
+            resultHTML += '<h2>분류 결과</h2>';
+            
+            if (result.error) {
+                resultHTML += '<div class="error-message">';
+                resultHTML += '<h3>❌ 오류 발생</h3>';
+                resultHTML += `<p>${result.error}</p>`;
+                resultHTML += '</div>';
+            } else {
+                resultHTML += '<div class="prediction-result">';
+                
+                if (result.genre) {
+                    resultHTML += '<div class="result-group">';
+                    resultHTML += '<h3>🎼 장르 분류</h3>';
+                    resultHTML += `<p><strong>예측 장르:</strong> ${result.genre} (${(result.confidence * 100).toFixed(2)}%)</p>`;
+                    resultHTML += '</div>';
+                }
+                
+                if (result.method) {
+                    resultHTML += '<div class="result-group">';
+                    resultHTML += '<h3>🔍 분류 방법</h3>';
+                    resultHTML += `<p><strong>사용된 방법:</strong> ${result.method}</p>`;
+                    if (result.note) {
+                        resultHTML += `<p><strong>참고:</strong> ${result.note}</p>`;
+                    }
+                    resultHTML += '</div>';
+                }
+                
+                resultHTML += '</div>';
+            }
+            
+            resultHTML += '</div>';
+            
+            // 진행률 내용을 결과로 교체
+            progressContent.innerHTML = resultHTML;
+            
+            // 돌아가기 버튼 추가
+            const actionsDiv = document.querySelector('.progress-actions');
+            if (actionsDiv) {
+                actionsDiv.innerHTML = '<button type="button" class="big-btn" onclick="goBack()">← 돌아가기</button>';
+            }
+        }
+        
         function goBack() {
             window.location.href = '/';
         }
@@ -137,6 +183,7 @@
             eventSource.onmessage = function(event) {
                 try {
                     const data = JSON.parse(event.data);
+                    console.log('진행률 데이터 받음:', data);  // 디버깅용
                     updateProgress(data);
                 } catch (e) {
                     console.error('진행률 데이터 파싱 오류:', e);

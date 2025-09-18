@@ -47,54 +47,90 @@ def download_youtube_audio(url, output_path=None, audio_format='mp3', audio_qual
         if output_path is None:
             output_path = tempfile.mktemp(suffix=f'.{audio_format}')
         
-        # ffmpeg 경로 설정
+        # ffmpeg 경로 설정 (절대 경로로 변경)
         current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         ffmpeg_path = os.path.join(current_dir, 'ffmpeg-master-latest-win64-gpl', 'bin')
+        ffmpeg_path = os.path.abspath(ffmpeg_path)  # 절대 경로로 변환
+        print(f"ffmpeg 경로: {ffmpeg_path}")  # 디버깅용
         
-        # 최적화된 yt-dlp 설정 (빠른 다운로드)
+        # 단순화된 yt-dlp 설정 (디버깅용)
         cmd = [
             'yt-dlp',
             '--extract-audio',
             '--audio-format', audio_format,
-            '--audio-quality', audio_quality,
             '--ffmpeg-location', ffmpeg_path,
             '--output', output_path,
-            '--no-playlist',  # 플레이리스트 비활성화
-            '--no-warnings',  # 경고 메시지 숨김
-            '--quiet',  # 출력 최소화
-            '--no-check-certificate',  # 인증서 검사 건너뛰기
-            '--prefer-free-formats',  # 무료 포맷 선호
-            '--max-downloads', '1',  # 최대 다운로드 수 제한
-            '--socket-timeout', '30',  # 소켓 타임아웃
-            '--retries', '3',  # 재시도 횟수
+            '--no-playlist',
+            '--verbose',  # 상세한 출력
             url
         ]
         
-        # 최대 길이 제한이 있으면 추가
-        if max_duration:
-            cmd.extend(['--max-duration', str(max_duration)])
+        # 최대 길이 제한은 ffmpeg에서 처리하도록 변경
+        # max_duration 파라미터는 나중에 ffmpeg로 처리
         
         print(f"다운로드 시작: {url}")
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)  # 5분 타임아웃
+        print(f"실행 명령어: {' '.join(cmd)}")  # 디버깅용
         
-        if result.returncode != 0:
-            raise Exception(f"YouTube 다운로드 실패: {result.stderr}")
+        # 실시간 출력을 보기 위해 Popen 사용
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        stdout, stderr = process.communicate(timeout=300)
+        
+        if process.returncode != 0:
+            print(f"yt-dlp 오류 출력: {stderr}")  # 디버깅용
+            print(f"yt-dlp 표준 출력: {stdout}")  # 디버깅용
+            raise Exception(f"YouTube 다운로드 실패: {stderr}")
         
         # 실제 다운로드된 파일 경로 찾기
+        downloaded_file = None
         if os.path.exists(output_path):
-            print(f"다운로드 완료: {output_path}")
-            return output_path
+            downloaded_file = output_path
         else:
             # yt-dlp가 생성한 실제 파일명 찾기
             dir_path = os.path.dirname(output_path)
             base_name = os.path.splitext(os.path.basename(output_path))[0]
             for file in os.listdir(dir_path):
                 if file.startswith(base_name) and file.endswith(f'.{audio_format}'):
-                    found_path = os.path.join(dir_path, file)
-                    print(f"다운로드 완료: {found_path}")
-                    return found_path
+                    downloaded_file = os.path.join(dir_path, file)
+                    break
         
-        raise Exception("다운로드된 파일을 찾을 수 없습니다.")
+        if not downloaded_file or not os.path.exists(downloaded_file):
+            raise Exception("다운로드된 파일을 찾을 수 없습니다.")
+        
+        # 최대 길이 제한이 있으면 ffmpeg로 자르기
+        if max_duration and max_duration > 0:
+            try:
+                # 임시 파일 생성
+                temp_output = tempfile.mktemp(suffix=f'.{audio_format}')
+                
+                # ffmpeg로 길이 제한
+                ffmpeg_cmd = [
+                    os.path.join(ffmpeg_path, 'ffmpeg.exe'),
+                    '-i', downloaded_file,
+                    '-t', str(max_duration),  # 최대 길이
+                    '-c', 'copy',  # 재인코딩 없이 복사
+                    '-y',  # 덮어쓰기
+                    temp_output
+                ]
+                
+                print(f"길이 제한 적용 중... (최대 {max_duration}초)")
+                ffmpeg_result = subprocess.run(ffmpeg_cmd, capture_output=True, text=True, timeout=60)
+                
+                if ffmpeg_result.returncode == 0 and os.path.exists(temp_output):
+                    # 원본 파일 삭제하고 임시 파일을 최종 파일로 이동
+                    os.remove(downloaded_file)
+                    os.rename(temp_output, output_path)
+                    downloaded_file = output_path
+                    print(f"길이 제한 적용 완료: {downloaded_file}")
+                else:
+                    # ffmpeg 실패 시 원본 파일 사용
+                    print(f"길이 제한 실패, 원본 파일 사용: {ffmpeg_result.stderr}")
+                    if os.path.exists(temp_output):
+                        os.remove(temp_output)
+            except Exception as e:
+                print(f"길이 제한 중 오류 발생, 원본 파일 사용: {e}")
+        
+        print(f"다운로드 완료: {downloaded_file}")
+        return downloaded_file
         
     except FileNotFoundError:
         raise Exception("yt-dlp가 설치되어 있지 않습니다. 'pip install yt-dlp'로 설치하세요.")
