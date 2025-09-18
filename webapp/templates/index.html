@@ -25,7 +25,7 @@
         <!-- 파일 업로드 폼 -->
         <div class="form-section">
             <h3>📁 파일로 분류하기</h3>
-            <form action="{{ url_for('classify') }}" method="post" enctype="multipart/form-data">
+            <form action="{{ url_for('classify') }}" method="post" enctype="multipart/form-data" id="file-form">
                 <div class="file-search-bar">
                     <span class="cta-text" id="random-cta"></span>
                     <div class="right-group">
@@ -50,8 +50,11 @@
             <h3>🔗 링크로 분류하기</h3>
             <form action="{{ url_for('classify_url') }}" method="post" id="url-form">
                 <div class="url-input-group">
-                    <input type="url" id="url_input" name="url" placeholder="YouTube 링크나 음악 파일 링크를 입력하세요..." 
-                           required class="url-input" onchange="validateUrl()" onblur="getLinkPreview()">
+                    <div class="url-input-container">
+                        <input type="url" id="url_input" name="url" placeholder="YouTube 링크나 음악 파일 링크를 입력하세요..." 
+                               required class="url-input" onchange="validateUrl()">
+                        <button type="button" class="preview-btn" onclick="getLinkPreview()" title="링크 미리보기">👁️</button>
+                    </div>
                     <div id="url-validation" class="validation-message"></div>
                 </div>
                 

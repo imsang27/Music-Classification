@@ -246,9 +246,9 @@ def analyze_prediction(model, audio_path, genres, emotions):
         'feature_importance': feature_importance
     } 
 
-def classify_music_from_url_wav2vec2(model, processor, url, confidence_threshold=0.5):
+def classify_music_from_url_wav2vec2(model, processor, url, confidence_threshold=0.5, max_duration=30, progress_callback=None):
     """
-    URL에서 음악을 다운로드하고 Wav2Vec2 모델로 분류
+    URL에서 음악을 다운로드하고 Wav2Vec2 모델로 분류 (진행률 콜백 지원)
     """
     try:
         # 다운로드 함수들을 지연 로드
@@ -257,18 +257,34 @@ def classify_music_from_url_wav2vec2(model, processor, url, confidence_threshold
         # URL에서 오디오 다운로드
         temp_file = None
         try:
+            print(f"URL 분류 시작: {url}")
+            
+            if progress_callback:
+                progress_callback('downloading', '음악을 다운로드하는 중...', 20)
+            
             if 'youtube.com' in url or 'youtu.be' in url:
-                temp_file = download_youtube_audio(url)
+                # YouTube: 최대 30초로 제한하여 빠른 다운로드
+                temp_file = download_youtube_audio(url, max_duration=max_duration)
             else:
-                temp_file = download_direct_audio(url)
+                # 직접 링크: 최대 50MB로 제한
+                temp_file = download_direct_audio(url, max_size_mb=50)
             
             if not temp_file or not os.path.exists(temp_file):
                 return {'error': '오디오 파일 다운로드 실패', 'success': False}
             
-            # Wav2Vec2 모델로 분류
-            result = predict_music_wav2vec2(model, processor, temp_file, confidence_threshold)
+            print(f"다운로드 완료, 분류 시작: {temp_file}")
+            
+            if progress_callback:
+                progress_callback('processing', 'AI가 음악을 분석하는 중...', 60)
+            
+            # Wav2Vec2 모델로 분류 (최대 30초로 제한)
+            result = predict_music_wav2vec2(model, processor, temp_file, confidence_threshold, max_duration)
             result['url'] = url
             
+            if progress_callback:
+                progress_callback('completed', '분류가 완료되었습니다!', 100)
+            
+            print(f"분류 완료: {result.get('genre', 'Unknown')} ({result.get('confidence', 0):.2f})")
             return result
             
         finally:
@@ -276,22 +292,27 @@ def classify_music_from_url_wav2vec2(model, processor, url, confidence_threshold
             if temp_file and os.path.exists(temp_file):
                 try:
                     os.remove(temp_file)
-                except:
-                    pass
+                    print(f"임시 파일 삭제: {temp_file}")
+                except Exception as e:
+                    print(f"임시 파일 삭제 실패: {e}")
                     
     except Exception as e:
+        print(f"URL 분류 오류: {str(e)}")
+        if progress_callback:
+            progress_callback('error', f'분류 중 오류 발생: {str(e)}', 0)
         return {
             'error': f'URL 분류 중 오류 발생: {str(e)}',
             'url': url,
             'success': False
         }
 
-def batch_classify_urls_wav2vec2(model, processor, urls, confidence_threshold=0.5):
+def batch_classify_urls_wav2vec2(model, processor, urls, confidence_threshold=0.5, max_duration=30):
     """
-    여러 URL을 Wav2Vec2 모델로 일괄 분류 (메모리 최적화 버전)
+    여러 URL을 Wav2Vec2 모델로 일괄 분류 (최적화된 버전)
     """
     import psutil
     import gc
+    import time
     
     results = []
     process = psutil.Process()
@@ -304,7 +325,7 @@ def batch_classify_urls_wav2vec2(model, processor, urls, confidence_threshold=0.
             print(f"\n분류 중... ({i+1}/{len(urls)}): {url}")
             
             # 각 URL을 개별적으로 처리하여 메모리 문제 방지
-            result = classify_music_from_url_wav2vec2(model, processor, url, confidence_threshold)
+            result = classify_music_from_url_wav2vec2(model, processor, url, confidence_threshold, max_duration)
             result['url'] = url
             result['status'] = 'success' if result.get('success', False) else 'error'
             
@@ -328,8 +349,11 @@ def batch_classify_urls_wav2vec2(model, processor, urls, confidence_threshold=0.
             # 메모리 사용량이 너무 높으면 경고
             if current_memory > 2000:  # 2GB 이상
                 print("⚠️  메모리 사용량이 높습니다. 잠시 대기...")
-                import time
                 time.sleep(2)  # 2초 대기
+            
+            # 각 URL 처리 후 잠시 대기 (서버 부하 방지)
+            if i < len(urls) - 1:  # 마지막 URL이 아닌 경우
+                time.sleep(1)
                 
         except Exception as e:
             print(f"URL 처리 중 오류 발생: {url} - {str(e)}")

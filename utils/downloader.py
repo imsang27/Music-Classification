@@ -41,8 +41,8 @@ def validate_url(url, supported_platforms=None):
         return False, f"URL 검증 중 오류 발생: {str(e)}"
 
 
-def download_youtube_audio(url, output_path=None, audio_format='mp3', audio_quality='0'):
-    """YouTube 링크에서 오디오를 다운로드합니다 (형식 및 품질 옵션 포함)"""
+def download_youtube_audio(url, output_path=None, audio_format='mp3', audio_quality='0', max_duration=30):
+    """YouTube 링크에서 오디오를 다운로드합니다 (최적화된 버전)"""
     try:
         if output_path is None:
             output_path = tempfile.mktemp(suffix=f'.{audio_format}')
@@ -51,7 +51,7 @@ def download_youtube_audio(url, output_path=None, audio_format='mp3', audio_qual
         current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         ffmpeg_path = os.path.join(current_dir, 'ffmpeg-master-latest-win64-gpl', 'bin')
         
-        # yt-dlp 사용 (ffmpeg 경로 명시)
+        # 최적화된 yt-dlp 설정 (빠른 다운로드)
         cmd = [
             'yt-dlp',
             '--extract-audio',
@@ -59,16 +59,30 @@ def download_youtube_audio(url, output_path=None, audio_format='mp3', audio_qual
             '--audio-quality', audio_quality,
             '--ffmpeg-location', ffmpeg_path,
             '--output', output_path,
+            '--no-playlist',  # 플레이리스트 비활성화
+            '--no-warnings',  # 경고 메시지 숨김
+            '--quiet',  # 출력 최소화
+            '--no-check-certificate',  # 인증서 검사 건너뛰기
+            '--prefer-free-formats',  # 무료 포맷 선호
+            '--max-downloads', '1',  # 최대 다운로드 수 제한
+            '--socket-timeout', '30',  # 소켓 타임아웃
+            '--retries', '3',  # 재시도 횟수
             url
         ]
         
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        # 최대 길이 제한이 있으면 추가
+        if max_duration:
+            cmd.extend(['--max-duration', str(max_duration)])
+        
+        print(f"다운로드 시작: {url}")
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)  # 5분 타임아웃
         
         if result.returncode != 0:
             raise Exception(f"YouTube 다운로드 실패: {result.stderr}")
         
         # 실제 다운로드된 파일 경로 찾기
         if os.path.exists(output_path):
+            print(f"다운로드 완료: {output_path}")
             return output_path
         else:
             # yt-dlp가 생성한 실제 파일명 찾기
@@ -76,18 +90,22 @@ def download_youtube_audio(url, output_path=None, audio_format='mp3', audio_qual
             base_name = os.path.splitext(os.path.basename(output_path))[0]
             for file in os.listdir(dir_path):
                 if file.startswith(base_name) and file.endswith(f'.{audio_format}'):
-                    return os.path.join(dir_path, file)
+                    found_path = os.path.join(dir_path, file)
+                    print(f"다운로드 완료: {found_path}")
+                    return found_path
         
         raise Exception("다운로드된 파일을 찾을 수 없습니다.")
         
     except FileNotFoundError:
         raise Exception("yt-dlp가 설치되어 있지 않습니다. 'pip install yt-dlp'로 설치하세요.")
+    except subprocess.TimeoutExpired:
+        raise Exception("다운로드 시간이 초과되었습니다. 네트워크를 확인해주세요.")
     except Exception as e:
         raise Exception(f"YouTube 다운로드 중 오류 발생: {str(e)}")
 
 
-def download_direct_audio(url, output_path=None, timeout=30, chunk_size=8192):
-    """직접 음악 파일 링크에서 다운로드합니다 (타임아웃 및 청크 크기 옵션 포함)"""
+def download_direct_audio(url, output_path=None, timeout=30, chunk_size=8192, max_size_mb=50):
+    """직접 음악 파일 링크에서 다운로드합니다 (최적화된 버전)"""
     try:
         if output_path is None:
             # URL에서 파일 확장자 추출
@@ -97,13 +115,42 @@ def download_direct_audio(url, output_path=None, timeout=30, chunk_size=8192):
                 file_ext = '.mp3'  # 기본값
             output_path = tempfile.mktemp(suffix=file_ext)
         
+        print(f"직접 다운로드 시작: {url}")
+        
+        # 먼저 HEAD 요청으로 파일 크기 확인
+        head_response = requests.head(url, timeout=10)
+        head_response.raise_for_status()
+        
+        content_length = head_response.headers.get('content-length')
+        if content_length:
+            file_size_mb = int(content_length) / (1024 * 1024)
+            if file_size_mb > max_size_mb:
+                raise Exception(f"파일이 너무 큽니다 ({file_size_mb:.1f}MB). 최대 {max_size_mb}MB까지 지원합니다.")
+            print(f"파일 크기: {file_size_mb:.1f}MB")
+        
+        # 스트리밍 다운로드
         response = requests.get(url, stream=True, timeout=timeout)
         response.raise_for_status()
         
+        downloaded_size = 0
+        max_size_bytes = max_size_mb * 1024 * 1024
+        
         with open(output_path, 'wb') as f:
             for chunk in response.iter_content(chunk_size=chunk_size):
-                f.write(chunk)
+                if chunk:  # 빈 청크 무시
+                    f.write(chunk)
+                    downloaded_size += len(chunk)
+                    
+                    # 크기 제한 확인
+                    if downloaded_size > max_size_bytes:
+                        os.remove(output_path)
+                        raise Exception(f"파일이 너무 큽니다. 다운로드를 중단했습니다.")
+                    
+                    # 진행률 표시 (10MB마다)
+                    if downloaded_size % (10 * 1024 * 1024) == 0:
+                        print(f"다운로드 진행률: {downloaded_size / (1024 * 1024):.1f}MB")
         
+        print(f"직접 다운로드 완료: {output_path}")
         return output_path
         
     except Exception as e:

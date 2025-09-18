@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>음악 분류 진행률</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="dark-mode">
+    <div class="center-container">
+        <div class="progress-container">
+            <h2>🎵 음악 분류 진행률</h2>
+            
+            {% if url %}
+            <div class="url-info">
+                <p><strong>분석 중인 링크:</strong> <a href="{{ url }}" target="_blank">{{ url }}</a></p>
+            </div>
+            {% endif %}
+            
+            <div class="progress-content">
+                <div class="progress-spinner">
+                    <div class="loading-spinner-large"></div>
+                </div>
+                
+                <div class="progress-text">
+                    <h3 id="progress-title">분류 작업을 시작합니다...</h3>
+                    <p id="progress-message">잠시만 기다려주세요...</p>
+                </div>
+                
+                <div class="progress-bar-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <div class="progress-percentage" id="progress-percentage">0%</div>
+                </div>
+                
+                <div class="progress-steps">
+                    <div class="step" id="step-start">
+                        <span class="step-icon">🚀</span>
+                        <span class="step-text">시작</span>
+                    </div>
+                    <div class="step" id="step-download">
+                        <span class="step-icon">📥</span>
+                        <span class="step-text">다운로드</span>
+                    </div>
+                    <div class="step" id="step-process">
+                        <span class="step-icon">🔍</span>
+                        <span class="step-text">분석</span>
+                    </div>
+                    <div class="step" id="step-complete">
+                        <span class="step-icon">✅</span>
+                        <span class="step-text">완료</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="progress-actions">
+                <button type="button" class="big-btn" onclick="goBack()">← 돌아가기</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const taskId = '{{ task_id }}';
+        let eventSource = null;
+        
+        function updateProgress(data) {
+            const title = document.getElementById('progress-title');
+            const message = document.getElementById('progress-message');
+            const fill = document.getElementById('progress-fill');
+            const percentage = document.getElementById('progress-percentage');
+            
+            if (title) title.textContent = data.message;
+            if (message) message.textContent = `진행률: ${data.progress}%`;
+            if (fill) fill.style.width = `${data.progress}%`;
+            if (percentage) percentage.textContent = `${data.progress}%`;
+            
+            // 단계 업데이트
+            updateSteps(data.stage);
+            
+            // 완료되면 결과 페이지로 이동
+            if (data.stage === 'completed') {
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            } else if (data.stage === 'error') {
+                setTimeout(() => {
+                    alert('분류 중 오류가 발생했습니다.');
+                    window.location.href = '/';
+                }, 2000);
+            }
+        }
+        
+        function updateSteps(stage) {
+            const steps = {
+                'starting': 'step-start',
+                'downloading': 'step-download',
+                'processing': 'step-process',
+                'completed': 'step-complete'
+            };
+            
+            // 모든 단계 초기화
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active', 'completed');
+            });
+            
+            // 현재 단계 활성화
+            const currentStep = steps[stage];
+            if (currentStep) {
+                const stepEl = document.getElementById(currentStep);
+                if (stepEl) {
+                    stepEl.classList.add('active');
+                }
+            }
+            
+            // 이전 단계들 완료 표시
+            const stageOrder = ['starting', 'downloading', 'processing', 'completed'];
+            const currentIndex = stageOrder.indexOf(stage);
+            for (let i = 0; i < currentIndex; i++) {
+                const prevStep = steps[stageOrder[i]];
+                if (prevStep) {
+                    const stepEl = document.getElementById(prevStep);
+                    if (stepEl) {
+                        stepEl.classList.add('completed');
+                    }
+                }
+            }
+        }
+        
+        function goBack() {
+            window.location.href = '/';
+        }
+        
+        // Server-Sent Events 연결
+        function connectProgress() {
+            eventSource = new EventSource(`/api/progress_stream/${taskId}`);
+            
+            eventSource.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    updateProgress(data);
+                } catch (e) {
+                    console.error('진행률 데이터 파싱 오류:', e);
+                }
+            };
+            
+            eventSource.onerror = function(event) {
+                console.error('진행률 스트림 오류:', event);
+                // 재연결 시도
+                setTimeout(connectProgress, 5000);
+            };
+        }
+        
+        // 페이지 로드 시 연결 시작
+        document.addEventListener('DOMContentLoaded', function() {
+            connectProgress();
+        });
+        
+        // 페이지 언로드 시 연결 종료
+        window.addEventListener('beforeunload', function() {
+            if (eventSource) {
+                eventSource.close();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -77,8 +77,8 @@ async function validateUrl() {
     }
 }
 
-// 링크 미리보기 함수
-async function getLinkPreview() {
+// 링크 미리보기 함수 (간단한 정보만 표시)
+function getLinkPreview() {
     const urlInput = document.getElementById('url_input');
     const previewDiv = document.getElementById('link-preview');
     const platformBadge = document.getElementById('preview-platform');
@@ -97,102 +97,35 @@ async function getLinkPreview() {
         return;
     }
     
-    try {
-        // 로딩 상태 표시
-        previewDiv.style.display = 'block';
-        platformBadge.textContent = '로딩 중...';
-        previewInfo.innerHTML = '<p>링크 정보를 가져오는 중...</p>';
-        
-        const response = await fetch('/api/link_preview', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ url: url })
-        });
-        
-        const data = await response.json();
-        
-        if (data.error) {
-            platformBadge.textContent = '오류';
-            previewInfo.innerHTML = `<p style="color: #e74c3c;">❌ ${data.error}</p>`;
-            return;
-        }
-        
-        // 플랫폼 배지 설정
-        if (data.platform) {
-            platformBadge.textContent = data.platform;
-        } else if (data.title) {
-            platformBadge.textContent = 'YouTube';
-        } else {
-            platformBadge.textContent = '음악 링크';
-        }
-        
-        // 미리보기 정보 구성
-        let infoHTML = '';
-        
-        if (data.title) {
-            infoHTML += `<h4>${data.title}</h4>`;
-        }
-        
-        if (data.uploader) {
-            infoHTML += `<p><strong>업로더:</strong> ${data.uploader}</p>`;
-        }
-        
-        if (data.duration) {
-            const minutes = Math.floor(data.duration / 60);
-            const seconds = data.duration % 60;
-            infoHTML += `<p><strong>길이:</strong> ${minutes}:${seconds.toString().padStart(2, '0')}</p>`;
-        }
-        
-        if (data.view_count) {
-            infoHTML += `<p><strong>조회수:</strong> ${data.view_count.toLocaleString()}</p>`;
-        }
-        
-        if (data.like_count) {
-            infoHTML += `<p><strong>좋아요:</strong> ${data.like_count.toLocaleString()}</p>`;
-        }
-        
-        if (data.description) {
-            infoHTML += `<p><strong>설명:</strong> ${data.description}</p>`;
-        }
-        
-        if (data.content_type) {
-            infoHTML += `<p><strong>파일 형식:</strong> ${data.content_type}</p>`;
-        }
-        
-        if (data.file_size && data.file_size !== '알 수 없음') {
-            const sizeMB = (data.file_size / (1024 * 1024)).toFixed(2);
-            infoHTML += `<p><strong>파일 크기:</strong> ${sizeMB} MB</p>`;
-        }
-        
-        if (data.tags && data.tags.length > 0) {
-            infoHTML += `<p><strong>태그:</strong> ${data.tags.join(', ')}</p>`;
-        }
-        
-        // 통계 정보
-        if (data.view_count || data.like_count || data.duration) {
-            infoHTML += '<div class="preview-stats">';
-            if (data.duration) {
-                const minutes = Math.floor(data.duration / 60);
-                const seconds = data.duration % 60;
-                infoHTML += `<span>⏱️ ${minutes}:${seconds.toString().padStart(2, '0')}</span>`;
-            }
-            if (data.view_count) {
-                infoHTML += `<span>👁️ ${data.view_count.toLocaleString()}</span>`;
-            }
-            if (data.like_count) {
-                infoHTML += `<span>👍 ${data.like_count.toLocaleString()}</span>`;
-            }
-            infoHTML += '</div>';
-        }
-        
-        previewInfo.innerHTML = infoHTML;
-        
-    } catch (error) {
-        platformBadge.textContent = '오류';
-        previewInfo.innerHTML = `<p style="color: #e74c3c;">❌ 미리보기 생성 중 오류가 발생했습니다.</p>`;
+    // 간단한 정보만 표시 (API 호출 없음)
+    previewDiv.style.display = 'block';
+    
+    // URL에서 플랫폼 감지
+    let platform = '음악 링크';
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+        platform = 'YouTube';
+    } else if (url.includes('soundcloud.com')) {
+        platform = 'SoundCloud';
+    } else if (url.includes('spotify.com')) {
+        platform = 'Spotify';
+    } else if (url.includes('.mp3') || url.includes('.wav') || url.includes('.m4a')) {
+        platform = '오디오 파일';
     }
+    
+    platformBadge.textContent = platform;
+    
+    // 간단한 정보만 표시
+    let infoHTML = `
+        <h4>🔗 링크 정보</h4>
+        <p><strong>URL:</strong> <a href="${url}" target="_blank" style="color: #4a90e2; word-break: break-all;">${url}</a></p>
+        <p><strong>플랫폼:</strong> ${platform}</p>
+        <p><strong>상태:</strong> ✅ 유효한 링크</p>
+        <div class="preview-note">
+            <p><em>💡 이 링크로 음악 분류를 진행할 수 있습니다.</em></p>
+        </div>
+    `;
+    
+    previewInfo.innerHTML = infoHTML;
 }
 
 // 링크 미리보기 숨기기
@@ -242,14 +175,25 @@ function validateBatchForm() {
 
 
 
-// 로딩 상태 표시 함수
-function showLoading(formId) {
+// 로딩 상태 표시 함수 (개선된 버전)
+function showLoading(formId, loadingText = '처리 중...') {
     const form = document.getElementById(formId);
     if (form) {
         const submitBtn = form.querySelector('button[type="submit"]');
         if (submitBtn) {
+            // 원본 텍스트 저장
+            if (!submitBtn.getAttribute('data-original-text')) {
+                submitBtn.setAttribute('data-original-text', submitBtn.textContent);
+            }
+            
             submitBtn.disabled = true;
-            submitBtn.textContent = '처리 중...';
+            submitBtn.innerHTML = `
+                <span class="loading-spinner"></span>
+                ${loadingText}
+            `;
+            
+            // 로딩 오버레이 추가
+            addLoadingOverlay(formId);
         }
     }
 }
@@ -263,7 +207,98 @@ function hideLoading(formId) {
             submitBtn.disabled = false;
             submitBtn.textContent = submitBtn.getAttribute('data-original-text') || '분류하기';
         }
+        
+        // 로딩 오버레이 제거
+        removeLoadingOverlay(formId);
     }
+}
+
+// 로딩 오버레이 추가
+function addLoadingOverlay(formId) {
+    const form = document.getElementById(formId);
+    if (form && !form.querySelector('.loading-overlay')) {
+        const overlay = document.createElement('div');
+        overlay.className = 'loading-overlay';
+        overlay.innerHTML = `
+            <div class="loading-content">
+                <div class="loading-spinner-large"></div>
+                <div class="loading-text">
+                    <h3>음악을 분석하고 있습니다...</h3>
+                    <p id="loading-progress">링크에서 음악을 다운로드하는 중...</p>
+                    <div class="loading-steps">
+                        <div class="step active" id="step-download">
+                            <span class="step-icon">📥</span>
+                            <span class="step-text">다운로드 중</span>
+                        </div>
+                        <div class="step" id="step-process">
+                            <span class="step-icon">🔍</span>
+                            <span class="step-text">분석 중</span>
+                        </div>
+                        <div class="step" id="step-complete">
+                            <span class="step-icon">✅</span>
+                            <span class="step-text">완료</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        form.appendChild(overlay);
+        
+        // 단계별 진행 시뮬레이션
+        simulateLoadingProgress();
+    }
+}
+
+// 로딩 오버레이 제거
+function removeLoadingOverlay(formId) {
+    const form = document.getElementById(formId);
+    if (form) {
+        const overlay = form.querySelector('.loading-overlay');
+        if (overlay) {
+            overlay.remove();
+        }
+    }
+}
+
+// 로딩 진행 시뮬레이션
+function simulateLoadingProgress() {
+    const progressText = document.getElementById('loading-progress');
+    const steps = ['step-download', 'step-process', 'step-complete'];
+    const messages = [
+        '링크에서 음악을 다운로드하는 중...',
+        'AI가 음악을 분석하는 중...',
+        '분류 결과를 준비하는 중...'
+    ];
+    
+    let currentStep = 0;
+    
+    const interval = setInterval(() => {
+        if (currentStep < steps.length) {
+            // 이전 단계 비활성화
+            if (currentStep > 0) {
+                const prevStep = document.getElementById(steps[currentStep - 1]);
+                if (prevStep) {
+                    prevStep.classList.remove('active');
+                    prevStep.classList.add('completed');
+                }
+            }
+            
+            // 현재 단계 활성화
+            const currentStepEl = document.getElementById(steps[currentStep]);
+            if (currentStepEl) {
+                currentStepEl.classList.add('active');
+            }
+            
+            // 메시지 업데이트
+            if (progressText) {
+                progressText.textContent = messages[currentStep];
+            }
+            
+            currentStep++;
+        } else {
+            clearInterval(interval);
+        }
+    }, 2000); // 2초마다 단계 변경
 }
 
 // 페이지 로드 시 랜덤 CTA 설정
@@ -367,23 +402,39 @@ async function clearUploads() {
 
 // 페이지 로드 시 이벤트 리스너 설정
 document.addEventListener('DOMContentLoaded', function() {
-    // URL 폼 제출 검증
+    // URL 폼 제출 검증 및 로딩 표시
     const urlForm = document.getElementById('url-form');
     if (urlForm) {
         urlForm.addEventListener('submit', function(e) {
             if (!validateUrlForm()) {
                 e.preventDefault();
+                return;
             }
+            
+            // 로딩 표시 활성화
+            showLoading('url-form', '링크 분석 중...');
         });
     }
     
-    // 일괄 분류 폼 제출 검증
+    // 일괄 분류 폼 제출 검증 및 로딩 표시
     const batchForm = document.getElementById('batch-form');
     if (batchForm) {
         batchForm.addEventListener('submit', function(e) {
             if (!validateBatchForm()) {
                 e.preventDefault();
+                return;
             }
+            
+            // 로딩 표시 활성화
+            showLoading('batch-form', '일괄 분석 중...');
+        });
+    }
+    
+    // 파일 업로드 폼에도 로딩 표시 추가
+    const fileForm = document.querySelector('form[action*="classify"]');
+    if (fileForm) {
+        fileForm.addEventListener('submit', function(e) {
+            showLoading('file-form', '파일 분석 중...');
         });
     }
     
@@ -392,6 +443,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (urlInput) {
         urlInput.addEventListener('input', validateUrl);
         urlInput.addEventListener('blur', validateUrl);
+        // 링크 미리보기 자동 호출 비활성화 (코드는 유지)
+        // urlInput.addEventListener('blur', getLinkPreview);
     }
     
     // 페이지 로드 시 업로드 폴더 정보 조회

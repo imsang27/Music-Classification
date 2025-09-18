@@ -2,9 +2,13 @@
 Flask 웹 애플리케이션
 """
 
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, Response
 import os
 import sys
+import threading
+import time
+import uuid
+import json
 
 # 모듈 경로 추가
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -68,6 +72,36 @@ except ImportError as e:
 
 app = Flask(__name__)
 
+# 진행률 추적을 위한 전역 변수
+progress_tracker = {}
+progress_lock = threading.Lock()
+
+def update_progress(task_id, stage, message, progress=0):
+    """진행률 업데이트"""
+    with progress_lock:
+        progress_tracker[task_id] = {
+            'stage': stage,
+            'message': message,
+            'progress': progress,
+            'timestamp': time.time()
+        }
+
+def get_progress(task_id):
+    """진행률 조회"""
+    with progress_lock:
+        return progress_tracker.get(task_id, {
+            'stage': 'unknown',
+            'message': '작업을 찾을 수 없습니다.',
+            'progress': 0,
+            'timestamp': time.time()
+        })
+
+def clear_progress(task_id):
+    """진행률 정리"""
+    with progress_lock:
+        if task_id in progress_tracker:
+            del progress_tracker[task_id]
+
 # Try to load Wav2Vec2 model if available
 try:
     from transformers import Wav2Vec2ForSequenceClassification, Wav2Vec2FeatureExtractor
@@ -108,6 +142,12 @@ except Exception as e:
 def index():
     model_status = "로드됨" if wav2vec2_model else "로드되지 않음"
     return render_template('index.html', prediction=None, model_status=model_status)
+
+@app.route('/progress/<task_id>')
+def progress_page(task_id):
+    """진행률 표시 페이지"""
+    url = request.args.get('url', '')
+    return render_template('progress.html', task_id=task_id, url=url)
 
 @app.route('/classify', methods=['POST'])
 def classify():
@@ -194,11 +234,39 @@ def classify_url():
         return render_template('index.html', prediction={'error': 'URL을 입력해주세요.'})
 
     action = request.form.get('action')
+    task_id = str(uuid.uuid4())
     
     try:
+        # 진행률 초기화
+        update_progress(task_id, 'starting', '분류 작업을 시작합니다...', 0)
+        
         if action == 'wav2vec2':
             if wav2vec2_model:
-                result = classify_music_from_url_wav2vec2(wav2vec2_model, wav2vec2_processor, url)
+                # 백그라운드에서 실행
+                def run_classification():
+                    try:
+                        # 진행률 콜백 함수 정의
+                        def progress_callback(stage, message, progress):
+                            update_progress(task_id, stage, message, progress)
+                        
+                        result = classify_music_from_url_wav2vec2(
+                            wav2vec2_model, 
+                            wav2vec2_processor, 
+                            url, 
+                            progress_callback=progress_callback
+                        )
+                        return result
+                    except Exception as e:
+                        update_progress(task_id, 'error', f'분류 중 오류 발생: {str(e)}', 0)
+                        return {'error': str(e), 'success': False}
+                
+                # 백그라운드 스레드에서 실행
+                thread = threading.Thread(target=run_classification)
+                thread.daemon = True
+                thread.start()
+                
+                # 진행률 페이지로 리다이렉트
+                return redirect(url_for('progress_page', task_id=task_id, url=url))
             else:
                 # Wav2Vec2 모델이 없을 때 더미 분류 사용
                 result = dummy_classification(url)
@@ -206,11 +274,15 @@ def classify_url():
             # 규칙 기반 분류는 로컬 파일만 지원하므로 임시 다운로드 후 처리
             temp_file = None
             try:
+                update_progress(task_id, 'downloading', '음악을 다운로드하는 중...', 30)
                 if 'youtube.com' in url or 'youtu.be' in url:
                     temp_file = download_youtube_audio(url)
                 else:
                     temp_file = download_direct_audio(url)
+                
+                update_progress(task_id, 'processing', '규칙 기반으로 분류하는 중...', 70)
                 result = rule_based_classification(temp_file)
+                update_progress(task_id, 'completed', '분류가 완료되었습니다!', 100)
             finally:
                 if temp_file and os.path.exists(temp_file):
                     os.remove(temp_file)
@@ -220,6 +292,7 @@ def classify_url():
         return render_template('index.html', prediction=result, url=url)
         
     except Exception as e:
+        update_progress(task_id, 'error', f'분류 중 오류 발생: {str(e)}', 0)
         return render_template('index.html', prediction={'error': f'분류 중 오류 발생: {str(e)}'}, url=url)
 
 @app.route('/batch_classify', methods=['POST'])
@@ -282,26 +355,59 @@ def validate_url_api():
 
 @app.route('/api/link_preview', methods=['POST'])
 def link_preview_api():
-    """링크 미리보기 API"""
+    """링크 미리보기 API (비활성화됨)"""
     url = request.json.get('url', '').strip()
     if not url:
         return jsonify({'error': 'URL을 입력해주세요.'})
     
-    try:
-        preview = get_link_preview(url)
-        return jsonify(preview)
-    except Exception as e:
-        return jsonify({'error': f'미리보기 생성 중 오류 발생: {str(e)}'})
+    # 링크 미리보기 기능 비활성화 - 간단한 응답만 반환
+    return jsonify({
+        'message': '링크 미리보기 기능이 비활성화되었습니다.',
+        'url': url,
+        'status': 'disabled'
+    })
 
 @app.route('/api/progress/<task_id>', methods=['GET'])
 def get_progress_api(task_id):
     """분류 진행률 조회 API"""
-    # 간단한 진행률 시뮬레이션 (실제로는 Celery나 Redis를 사용해야 함)
+    progress = get_progress(task_id)
     return jsonify({
         'task_id': task_id,
-        'status': 'processing',
-        'progress': 50,
-        'message': '분류 중...'
+        'stage': progress['stage'],
+        'message': progress['message'],
+        'progress': progress['progress'],
+        'timestamp': progress['timestamp']
+    })
+
+@app.route('/api/progress_stream/<task_id>')
+def progress_stream(task_id):
+    """Server-Sent Events로 실시간 진행률 스트리밍"""
+    def generate():
+        while True:
+            progress = get_progress(task_id)
+            
+            # JSON 데이터를 SSE 형식으로 전송
+            data = {
+                'task_id': task_id,
+                'stage': progress['stage'],
+                'message': progress['message'],
+                'progress': progress['progress'],
+                'timestamp': progress['timestamp']
+            }
+            
+            yield f"data: {json.dumps(data)}\n\n"
+            
+            # 완료되면 종료
+            if progress['stage'] in ['completed', 'error']:
+                break
+                
+            time.sleep(0.5)  # 0.5초마다 업데이트
+    
+    return Response(generate(), mimetype='text/event-stream', headers={
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Cache-Control'
     })
 
 @app.route('/clear_uploads', methods=['POST'])
