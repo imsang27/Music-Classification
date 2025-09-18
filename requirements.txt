@@ -1,5 +1,5 @@
 librosa
-numpy
+numpy<2.0
 tensorflow
 scikit-learn
 matplotlib
