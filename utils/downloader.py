@@ -10,7 +10,6 @@ import re
 import json
 from urllib.parse import urlparse
 
-
 def validate_url(url, supported_platforms=None):
     """URL이 유효한 음악 링크인지 검증합니다 (지원 플랫폼 옵션 포함)"""
     if supported_platforms is None:
@@ -40,12 +39,15 @@ def validate_url(url, supported_platforms=None):
     except Exception as e:
         return False, f"URL 검증 중 오류 발생: {str(e)}"
 
-
 def download_youtube_audio(url, output_path=None, audio_format='mp3', audio_quality='0', max_duration=30):
-    """YouTube 링크에서 오디오를 다운로드합니다 (최적화된 버전)"""
+    """YouTube 링크에서 오디오를 다운로드합니다 (간단한 명령줄 방식)"""
+    temp_file = None
     try:
         if output_path is None:
-            output_path = tempfile.mktemp(suffix=f'.{audio_format}')
+            # NamedTemporaryFile을 사용하여 더 안전한 임시 파일 생성
+            temp_fd, temp_file = tempfile.mkstemp(suffix=f'.{audio_format}')
+            os.close(temp_fd)  # 파일 디스크립터 닫기
+            output_path = temp_file
         
         # ffmpeg 경로 설정 (절대 경로로 변경)
         current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -53,7 +55,16 @@ def download_youtube_audio(url, output_path=None, audio_format='mp3', audio_qual
         ffmpeg_path = os.path.abspath(ffmpeg_path)  # 절대 경로로 변환
         print(f"ffmpeg 경로: {ffmpeg_path}")  # 디버깅용
         
-        # 단순화된 yt-dlp 설정 (디버깅용)
+        # ffmpeg 실행 파일 존재 확인
+        ffmpeg_exe = os.path.join(ffmpeg_path, 'ffmpeg.exe')
+        ffprobe_exe = os.path.join(ffmpeg_path, 'ffprobe.exe')
+        
+        if not os.path.exists(ffmpeg_exe):
+            raise Exception(f"ffmpeg 실행 파일을 찾을 수 없습니다: {ffmpeg_exe}")
+        if not os.path.exists(ffprobe_exe):
+            raise Exception(f"ffprobe 실행 파일을 찾을 수 없습니다: {ffprobe_exe}")
+        
+        # 간단한 yt-dlp 명령어 사용
         cmd = [
             'yt-dlp',
             '--extract-audio',
@@ -61,26 +72,25 @@ def download_youtube_audio(url, output_path=None, audio_format='mp3', audio_qual
             '--ffmpeg-location', ffmpeg_path,
             '--output', output_path,
             '--no-playlist',
-            '--verbose',  # 상세한 출력
+            '--format', 'bestaudio',
+            '--force-overwrites',  # 기존 파일 덮어쓰기
+            '--no-check-certificates',
+            '--ignore-errors',
             url
         ]
         
-        # 최대 길이 제한은 ffmpeg에서 처리하도록 변경
-        # max_duration 파라미터는 나중에 ffmpeg로 처리
-        
         print(f"다운로드 시작: {url}")
-        print(f"실행 명령어: {' '.join(cmd)}")  # 디버깅용
+        print(f"실행 명령어: {' '.join(cmd)}")
         
-        # 실시간 출력을 보기 위해 Popen 사용
+        # 명령어 실행
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         stdout, stderr = process.communicate(timeout=300)
         
-        if process.returncode != 0:
-            print(f"yt-dlp 오류 출력: {stderr}")  # 디버깅용
-            print(f"yt-dlp 표준 출력: {stdout}")  # 디버깅용
-            raise Exception(f"YouTube 다운로드 실패: {stderr}")
+        print(f"yt-dlp 표준 출력: {stdout}")
+        print(f"yt-dlp 오류 출력: {stderr}")
+        print(f"yt-dlp 종료 코드: {process.returncode}")
         
-        # 실제 다운로드된 파일 경로 찾기
+        # 다운로드된 파일 찾기
         downloaded_file = None
         if os.path.exists(output_path):
             downloaded_file = output_path
@@ -88,15 +98,25 @@ def download_youtube_audio(url, output_path=None, audio_format='mp3', audio_qual
             # yt-dlp가 생성한 실제 파일명 찾기
             dir_path = os.path.dirname(output_path)
             base_name = os.path.splitext(os.path.basename(output_path))[0]
-            for file in os.listdir(dir_path):
-                if file.startswith(base_name) and file.endswith(f'.{audio_format}'):
-                    downloaded_file = os.path.join(dir_path, file)
-                    break
+            
+            if os.path.exists(dir_path):
+                for file in os.listdir(dir_path):
+                    if file.startswith(base_name) and (file.endswith(f'.{audio_format}') or file.endswith('.m4a')):
+                        downloaded_file = os.path.join(dir_path, file)
+                        break
         
         if not downloaded_file or not os.path.exists(downloaded_file):
-            raise Exception("다운로드된 파일을 찾을 수 없습니다.")
+            raise Exception(f"YouTube 다운로드 실패: 파일을 찾을 수 없습니다")
         
-        # 최대 길이 제한이 있으면 ffmpeg로 자르기
+        # 다운로드된 파일 검증
+        file_size = os.path.getsize(downloaded_file)
+        if file_size == 0:
+            os.remove(downloaded_file)
+            raise Exception("다운로드된 파일이 비어있습니다.")
+        
+        print(f"다운로드된 파일 크기: {file_size:,} bytes")
+        
+        # 길이 제한이 있으면 ffmpeg로 자르기
         if max_duration and max_duration > 0:
             try:
                 # 임시 파일 생성
@@ -104,7 +124,7 @@ def download_youtube_audio(url, output_path=None, audio_format='mp3', audio_qual
                 
                 # ffmpeg로 길이 제한
                 ffmpeg_cmd = [
-                    os.path.join(ffmpeg_path, 'ffmpeg.exe'),
+                    ffmpeg_exe,
                     '-i', downloaded_file,
                     '-t', str(max_duration),  # 최대 길이
                     '-c', 'copy',  # 재인코딩 없이 복사
@@ -138,10 +158,18 @@ def download_youtube_audio(url, output_path=None, audio_format='mp3', audio_qual
         raise Exception("다운로드 시간이 초과되었습니다. 네트워크를 확인해주세요.")
     except Exception as e:
         raise Exception(f"YouTube 다운로드 중 오류 발생: {str(e)}")
-
+    finally:
+        # 임시 파일이 생성되었지만 사용되지 않은 경우 정리
+        if temp_file and temp_file != output_path and os.path.exists(temp_file):
+            try:
+                os.remove(temp_file)
+                print(f"미사용 임시 파일 정리: {temp_file}")
+            except Exception as e:
+                print(f"임시 파일 정리 실패: {e}")
 
 def download_direct_audio(url, output_path=None, timeout=30, chunk_size=8192, max_size_mb=50):
     """직접 음악 파일 링크에서 다운로드합니다 (최적화된 버전)"""
+    temp_file = None
     try:
         if output_path is None:
             # URL에서 파일 확장자 추출
@@ -149,7 +177,11 @@ def download_direct_audio(url, output_path=None, timeout=30, chunk_size=8192, ma
             file_ext = os.path.splitext(parsed_url.path)[1]
             if not file_ext:
                 file_ext = '.mp3'  # 기본값
-            output_path = tempfile.mktemp(suffix=file_ext)
+            
+            # NamedTemporaryFile을 사용하여 더 안전한 임시 파일 생성
+            temp_fd, temp_file = tempfile.mkstemp(suffix=file_ext)
+            os.close(temp_fd)  # 파일 디스크립터 닫기
+            output_path = temp_file
         
         print(f"직접 다운로드 시작: {url}")
         
@@ -191,7 +223,14 @@ def download_direct_audio(url, output_path=None, timeout=30, chunk_size=8192, ma
         
     except Exception as e:
         raise Exception(f"직접 다운로드 중 오류 발생: {str(e)}")
-
+    finally:
+        # 임시 파일이 생성되었지만 사용되지 않은 경우 정리
+        if temp_file and temp_file != output_path and os.path.exists(temp_file):
+            try:
+                os.remove(temp_file)
+                print(f"미사용 임시 파일 정리: {temp_file}")
+            except Exception as e:
+                print(f"임시 파일 정리 실패: {e}")
 
 def extract_video_id_from_youtube(url):
     """YouTube URL에서 비디오 ID를 추출합니다"""
@@ -207,7 +246,6 @@ def extract_video_id_from_youtube(url):
             return match.group(1)
     
     return None
-
 
 def get_youtube_info(url, max_description_length=200):
     """YouTube 비디오 정보를 가져옵니다 (설명 길이 옵션 포함)"""
@@ -250,7 +288,6 @@ def get_youtube_info(url, max_description_length=200):
             'video_id': None,
             'url': url
         }
-
 
 def get_link_preview(url, max_description_length=200):
     """링크의 미리보기 정보를 가져옵니다 (설명 길이 옵션 포함)"""
@@ -314,47 +351,63 @@ def get_link_preview(url, max_description_length=200):
     except Exception as e:
         return {'error': f'미리보기 생성 중 오류 발생: {str(e)}'}
 
-
 def batch_download_audio(urls, output_dir=None, audio_format='mp3', audio_quality='0'):
-    """여러 URL에서 오디오를 배치로 다운로드"""
+    """여러 URL에서 오디오를 배치로 다운로드 (최적화된 버전)"""
     if output_dir is None:
         output_dir = tempfile.mkdtemp()
     
     results = []
+    temp_files = []  # 생성된 임시 파일들을 추적
     
-    for i, url in enumerate(urls):
-        try:
-            print(f"다운로드 중... ({i+1}/{len(urls)}): {url}")
-            
-            # URL 검증
-            is_valid, message = validate_url(url)
-            if not is_valid:
+    try:
+        for i, url in enumerate(urls):
+            try:
+                print(f"다운로드 중... ({i+1}/{len(urls)}): {url}")
+                
+                # URL 검증
+                is_valid, message = validate_url(url)
+                if not is_valid:
+                    results.append({
+                        'url': url,
+                        'success': False,
+                        'error': message
+                    })
+                    continue
+                
+                # 다운로드 실행 (임시 파일 자동 생성)
+                if 'youtube.com' in url or 'youtu.be' in url:
+                    downloaded_path = download_youtube_audio(url, None, audio_format, audio_quality)
+                else:
+                    downloaded_path = download_direct_audio(url, None)
+                
+                # 다운로드된 파일을 최종 위치로 이동
+                final_path = os.path.join(output_dir, f"audio_{i}.{audio_format}")
+                if os.path.exists(downloaded_path):
+                    os.rename(downloaded_path, final_path)
+                    temp_files.append(final_path)  # 추적 목록에 추가
+                    downloaded_path = final_path
+                
+                results.append({
+                    'url': url,
+                    'success': True,
+                    'file_path': downloaded_path
+                })
+                
+            except Exception as e:
                 results.append({
                     'url': url,
                     'success': False,
-                    'error': message
+                    'error': str(e)
                 })
-                continue
-            
-            # 다운로드 실행
-            if 'youtube.com' in url or 'youtu.be' in url:
-                output_path = os.path.join(output_dir, f"youtube_{i}.{audio_format}")
-                downloaded_path = download_youtube_audio(url, output_path, audio_format, audio_quality)
-            else:
-                output_path = os.path.join(output_dir, f"direct_{i}.mp3")
-                downloaded_path = download_direct_audio(url, output_path)
-            
-            results.append({
-                'url': url,
-                'success': True,
-                'file_path': downloaded_path
-            })
-            
-        except Exception as e:
-            results.append({
-                'url': url,
-                'success': False,
-                'error': str(e)
-            })
-    
-    return results 
+        
+        return results
+        
+    except Exception as e:
+        # 오류 발생 시 생성된 임시 파일들 정리
+        for temp_file in temp_files:
+            try:
+                if os.path.exists(temp_file):
+                    os.remove(temp_file)
+            except Exception as cleanup_error:
+                print(f"임시 파일 정리 실패: {cleanup_error}")
+        raise e

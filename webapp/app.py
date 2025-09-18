@@ -2,8 +2,11 @@
 Flask 웹 애플리케이션
 """
 
-from flask import Flask, render_template, request, redirect, url_for, jsonify, Response
+# TensorFlow oneDNN 경고 메시지 억제
 import os
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
+
+from flask import Flask, render_template, request, redirect, url_for, jsonify, Response
 import sys
 import threading
 import time
@@ -232,15 +235,18 @@ def classify():
     original_file_path = os.path.join('uploads', audio_file.filename)
     audio_file.save(original_file_path)
 
-    # 임시 파일 생성 (처리용)
+    # 임시 파일 생성 (처리용) - 최적화된 방식
     import tempfile
     import shutil
     
     temp_file = None
     try:
-        # 임시 파일 생성
-        temp_fd, temp_file = tempfile.mkstemp(suffix=os.path.splitext(audio_file.filename)[1])
-        os.close(temp_fd)
+        # NamedTemporaryFile을 사용하여 더 안전한 임시 파일 생성
+        with tempfile.NamedTemporaryFile(
+            suffix=os.path.splitext(audio_file.filename)[1], 
+            delete=False
+        ) as temp_f:
+            temp_file = temp_f.name
         
         # 원본 파일을 임시 파일로 복사
         shutil.copy2(original_file_path, temp_file)
@@ -290,12 +296,14 @@ def classify():
     except Exception as e:
         result = {'error': f'파일 처리 중 오류 발생: {str(e)}'}
     finally:
-        # 임시 파일 삭제
-        if temp_file and os.path.exists(temp_file):
+        # 임시 파일 정리 (더 안전한 방식)
+        if temp_file:
             try:
-                os.remove(temp_file)
-            except Exception as e:
-                print(f"임시 파일 삭제 실패: {str(e)}")
+                if os.path.exists(temp_file):
+                    os.remove(temp_file)
+                    print(f"파일 업로드 임시 파일 정리: {temp_file}")
+            except Exception as cleanup_error:
+                print(f"임시 파일 정리 실패: {cleanup_error}")
 
     return render_template('index.html', prediction=result)
 
@@ -355,16 +363,22 @@ def classify_url():
             try:
                 update_progress(task_id, 'downloading', '음악을 다운로드하는 중...', 30)
                 if 'youtube.com' in url or 'youtu.be' in url:
-                    temp_file = download_youtube_audio(url)
+                    temp_file = download_youtube_audio(url, max_duration=30)  # 길이 제한으로 최적화
                 else:
-                    temp_file = download_direct_audio(url)
+                    temp_file = download_direct_audio(url, max_size_mb=50)  # 크기 제한으로 최적화
                 
                 update_progress(task_id, 'processing', '규칙 기반으로 분류하는 중...', 70)
                 result = rule_based_classification(temp_file)
                 update_progress(task_id, 'completed', '분류가 완료되었습니다!', 100)
             finally:
-                if temp_file and os.path.exists(temp_file):
-                    os.remove(temp_file)
+                # 임시 파일 정리 (더 안전한 방식)
+                if temp_file:
+                    try:
+                        if os.path.exists(temp_file):
+                            os.remove(temp_file)
+                            print(f"규칙 기반 분류 임시 파일 정리: {temp_file}")
+                    except Exception as cleanup_error:
+                        print(f"임시 파일 정리 실패: {cleanup_error}")
         else:
             print(f"DEBUG: URL 분류 - 예상되지 않은 action 값: '{action}'")  # 디버깅용
             result = {'error': f'선택한 기능을 사용할 수 없습니다. (action: {action})'}
