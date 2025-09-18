@@ -1,15 +1,33 @@
-librosa
+# Core audio processing
+librosa>=0.10.0
 numpy<2.0
-tensorflow
-scikit-learn
-matplotlib
-psutil
-Flask
-requests
-yt-dlp
-urllib3
-torch
+soundfile>=0.12.0
+
+# Machine Learning & Deep Learning
+tensorflow>=2.10.0
+scikit-learn>=1.1.0
+torch>=1.12.0
 transformers==4.34.0
 huggingface_hub==0.16.4
 accelerate==0.20.3
-ffmpeg-python
+
+# Visualization
+matplotlib>=3.5.0
+
+# System monitoring
+psutil>=5.9.0
+
+# Web framework
+Flask>=2.2.0
+
+# HTTP requests
+requests>=2.28.0
+urllib3>=1.26.0
+
+# Audio downloading
+yt-dlp>=2023.1.6
+
+# Audio processing
+ffmpeg-python>=0.2.0
+
+# Note: Built-in modules (tempfile, subprocess, json, os, sys, threading, time, uuid, re, hashlib, gc, datetime) are included with Python
