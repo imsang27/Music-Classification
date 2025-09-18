@@ -102,7 +102,6 @@ secrets.json
 # 기타
 *.swp 
 uploads/
-TODO.md
 Load model directly.py
 models/
 ffmpeg-master-latest-win64-gpl/
