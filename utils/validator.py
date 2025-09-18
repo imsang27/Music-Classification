@@ -4,6 +4,8 @@
 
 import os
 import librosa
+import shutil
+from datetime import datetime, timedelta
 
 
 def validate_dataset(data_path, genres, emotions):
@@ -111,3 +113,76 @@ class DatasetValidator:
                     self.validation_results['warnings'].append(
                         f"장르 '{genre}'의 샘플 수가 평균({avg_samples:.0f})의 50% 미만입니다: {count}"
                     ) 
+
+def cleanup_uploads_folder(max_age_hours=24):
+    """
+    uploads 폴더에서 오래된 파일들을 정리합니다
+    
+    Args:
+        max_age_hours (int): 파일 보관 시간 (시간 단위, 기본값: 24시간)
+    """
+    uploads_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'uploads')
+    
+    if not os.path.exists(uploads_dir):
+        return
+    
+    cutoff_time = datetime.now() - timedelta(hours=max_age_hours)
+    removed_count = 0
+    
+    try:
+        for filename in os.listdir(uploads_dir):
+            file_path = os.path.join(uploads_dir, filename)
+            
+            # 파일의 수정 시간 확인
+            file_mtime = datetime.fromtimestamp(os.path.getmtime(file_path))
+            
+            if file_mtime < cutoff_time:
+                try:
+                    os.remove(file_path)
+                    removed_count += 1
+                    print(f"오래된 파일 삭제: {filename}")
+                except Exception as e:
+                    print(f"파일 삭제 실패 {filename}: {str(e)}")
+        
+        if removed_count > 0:
+            print(f"총 {removed_count}개의 오래된 파일을 정리했습니다.")
+        else:
+            print("정리할 오래된 파일이 없습니다.")
+            
+    except Exception as e:
+        print(f"uploads 폴더 정리 중 오류 발생: {str(e)}")
+
+
+def cleanup_all_uploads():
+    """uploads 폴더의 모든 파일을 삭제합니다"""
+    uploads_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'uploads')
+    
+    if not os.path.exists(uploads_dir):
+        print("uploads 폴더가 존재하지 않습니다.")
+        return
+    
+    try:
+        shutil.rmtree(uploads_dir)
+        print("uploads 폴더의 모든 파일을 삭제했습니다.")
+    except Exception as e:
+        print(f"uploads 폴더 삭제 중 오류 발생: {str(e)}")
+
+
+def get_uploads_folder_size():
+    """uploads 폴더의 크기를 반환합니다 (MB 단위)"""
+    uploads_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'uploads')
+    
+    if not os.path.exists(uploads_dir):
+        return 0
+    
+    total_size = 0
+    try:
+        for dirpath, dirnames, filenames in os.walk(uploads_dir):
+            for filename in filenames:
+                file_path = os.path.join(dirpath, filename)
+                total_size += os.path.getsize(file_path)
+        
+        return round(total_size / (1024 * 1024), 2)  # MB 단위로 변환
+    except Exception as e:
+        print(f"폴더 크기 계산 중 오류 발생: {str(e)}")
+        return 0 
