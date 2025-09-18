@@ -2,8 +2,9 @@
 음악 분류기 모듈
 """
 
+import numpy as np
+import random
 from .feature_extractor import extract_audio_features
-
 
 def rule_based_classification(audio_path):
     """규칙 기반 분류 - 템포와 오디오 특성을 기반으로 분류"""
@@ -57,14 +58,12 @@ def rule_based_classification(audio_path):
             'error': f'분류 중 오류 발생: {str(e)}'
         }
 
-
 def manual_classification(audio_path, genres, emotions, input_func=input):
     """사용자가 직접 장르와 감정을 입력하여 분류합니다"""
     print(f"수동 분류 대상 파일: {audio_path}")
     genre = input_func(f"장르를 선택하세요 {genres}: ")
     emotion = input_func(f"감정을 선택하세요 {emotions}: ")
     return {'genre': genre, 'emotion': emotion}
-
 
 def hybrid_classification(cnn_model, ml_model, vec, lyr_model, audio_path, lyrics,
                           genres, emotions):
@@ -89,7 +88,6 @@ def hybrid_classification(cnn_model, ml_model, vec, lyr_model, audio_path, lyric
 
     return {'genre': final_genre, 'emotion': final_emotion}
 
-
 def predict_traditional_ml_model(model, audio_path):
     """전통적인 머신 러닝 모델 예측"""
     features = extract_audio_features(audio_path)
@@ -100,8 +98,33 @@ def predict_traditional_ml_model(model, audio_path):
     ]).reshape(1, -1)
     return model.predict(X)[0]
 
-
 def predict_lyrics(vectorizer, model, lyrics):
     """가사 분석 예측"""
     X = vectorizer.transform([lyrics])
-    return model.predict(X)[0] 
+    return model.predict(X)[0]
+
+def train_traditional_ml_model(feature_list, labels):
+    """전통적인 머신 러닝 모델(SVM) 학습"""
+    from sklearn.svm import SVC
+    X = [
+        np.concatenate([
+            f['mfcc'],
+            f['spectral_contrast'],
+            [f['tempo']]
+        ])
+        for f in feature_list
+    ]
+    model = SVC(probability=True)
+    model.fit(X, labels)
+    return model
+
+def train_lyrics_model(lyrics_list, labels):
+    """가사 분석을 위한 간단한 텍스트 분류 모델"""
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.linear_model import LogisticRegression
+
+    vectorizer = TfidfVectorizer()
+    X = vectorizer.fit_transform(lyrics_list)
+    clf = LogisticRegression(max_iter=1000)
+    clf.fit(X, labels)
+    return vectorizer, clf
