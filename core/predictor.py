@@ -325,10 +325,10 @@ def batch_classify_urls_wav2vec2(model, processor, urls, confidence_threshold=0.
     
     for i, url in enumerate(urls):
         try:
-            print(f"\n분류 중... ({i+1}/{len(urls)}): {url}")
+            print(f"\n분류 중... ({i}/{len(urls)}): {url}")
             
             if progress_callback:
-                progress_callback('processing', f'분류 중... ({i+1}/{len(urls)}) {url}', int((i / len(urls)) * 100))
+                progress_callback('processing', f'분류 중... ({i}/{len(urls)}) {url}', int((i / len(urls)) * 100))
             
             # 각 URL을 개별적으로 처리하여 메모리 문제 방지
             result = classify_music_from_url_wav2vec2(model, processor, url, confidence_threshold, max_duration)
