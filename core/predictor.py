@@ -66,29 +66,13 @@ def predict_music_wav2vec2(model, processor, audio_path, confidence_threshold=0.
         print(f"초기 메모리 사용량: {initial_memory['rss']:.1f} MB")
         
         # 오디오 파일 로드 및 전처리 (메모리 효율적)
-        # 여러 방법으로 시도하여 안정성 향상
-        y, sr = None, None
-        
-        # 방법 1: ffmpeg 사용
+        # 안정적인 기본 방식 사용
         try:
-            y, sr = librosa.load(audio_path, sr=16000, duration=max_duration, res_type='ffmpeg')
-            print("ffmpeg를 사용하여 오디오 로드 성공")
-        except Exception as e1:
-            print(f"ffmpeg 로드 실패: {e1}")
-            
-            # 방법 2: 기본 방식 (PySoundFile)
-            try:
-                y, sr = librosa.load(audio_path, sr=16000, duration=max_duration)
-                print("기본 방식으로 오디오 로드 성공")
-            except Exception as e2:
-                print(f"기본 방식 로드 실패: {e2}")
-                
-                # 방법 3: scipy 사용
-                try:
-                    y, sr = librosa.load(audio_path, sr=16000, duration=max_duration, res_type='scipy')
-                    print("scipy를 사용하여 오디오 로드 성공")
-                except Exception as e3:
-                    return {'error': f'오디오 파일을 로드할 수 없습니다. 시도한 방법들: ffmpeg({e1}), 기본({e2}), scipy({e3})', 'success': False}
+            y, sr = librosa.load(audio_path, sr=16000, duration=max_duration)
+            print("오디오 로드 성공")
+        except Exception as e:
+            print(f"오디오 로드 실패: {e}")
+            return {'error': f'오디오 파일을 로드할 수 없습니다: {str(e)}', 'success': False}
         
         if y is None or len(y) == 0:
             return {'error': '오디오 파일에서 유효한 오디오 데이터를 찾을 수 없습니다.', 'success': False}
