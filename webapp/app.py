@@ -6,6 +6,10 @@ Flask 웹 애플리케이션
 import os
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
+# matplotlib 백엔드를 비인터랙티브로 설정 (메모리 누수 방지)
+import matplotlib
+matplotlib.use('Agg')  # 비인터랙티브 백엔드 사용
+
 from flask import Flask, render_template, request, redirect, url_for, jsonify, Response
 import sys
 import threading
