@@ -50,12 +50,28 @@ def predict_music_wav2vec2(model, processor, audio_path, confidence_threshold=0.
         import librosa
         from utils.memory_optimizer import monitor_memory_usage, optimize_memory_usage
         
+        # 파일 존재 및 크기 검증
+        if not os.path.exists(audio_path):
+            return {'error': '오디오 파일을 찾을 수 없습니다.', 'success': False}
+        
+        file_size = os.path.getsize(audio_path)
+        if file_size == 0:
+            return {'error': '빈 오디오 파일입니다.', 'success': False}
+        
+        if file_size > 100 * 1024 * 1024:  # 100MB 제한
+            return {'error': '파일 크기가 너무 큽니다 (최대 100MB).', 'success': False}
+        
         # 메모리 사용량 모니터링
         initial_memory = monitor_memory_usage()
         print(f"초기 메모리 사용량: {initial_memory['rss']:.1f} MB")
         
         # 오디오 파일 로드 및 전처리 (메모리 효율적)
-        y, sr = librosa.load(audio_path, sr=16000, duration=max_duration)
+        # PySoundFile 대신 ffmpeg 사용하여 안정성 향상
+        try:
+            y, sr = librosa.load(audio_path, sr=16000, duration=max_duration, res_type='ffmpeg')
+        except Exception as e:
+            print(f"ffmpeg 로드 실패, 기본 방식으로 재시도: {e}")
+            y, sr = librosa.load(audio_path, sr=16000, duration=max_duration)
         
         # 오디오 길이 검증 및 조정
         min_length = 16000  # 최소 1초 (16kHz * 1초)
@@ -111,6 +127,15 @@ def predict_music_wav2vec2(model, processor, audio_path, confidence_threshold=0.
             del outputs, logits, probabilities
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
+        
+        # 추가 메모리 정리
+        del inputs, y
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        
+        # 가비지 컬렉션 강제 실행
+        import gc
+        gc.collect()
         
         # 최종 메모리 사용량 체크
         final_memory = monitor_memory_usage()
