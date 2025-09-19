@@ -23,85 +23,19 @@ function setRandomCTA() {
 
 function updateFileName() {
     const input = document.getElementById('audio_file');
-    const fileName = input.files.length > 0 ? input.files[0].name : '';
-    document.getElementById('file-name').textContent = fileName;
-}
-
-// 다중 파일 업로드 관련 함수들
-function updateMultipleFileNames() {
-    const input = document.getElementById('audio_files');
     const files = input.files;
-    const fileNamesElement = document.getElementById('multiple-file-names');
-    const selectedFilesList = document.getElementById('selected-files-list');
-    const filesContainer = document.getElementById('files-container');
     
     if (files.length === 0) {
-        fileNamesElement.textContent = '';
-        selectedFilesList.style.display = 'none';
+        document.getElementById('file-name').textContent = '';
         return;
     }
     
-    // 파일 개수 표시
+    // 파일 개수에 따라 표시 방식 변경
     if (files.length === 1) {
-        fileNamesElement.textContent = files[0].name;
+        document.getElementById('file-name').textContent = files[0].name;
     } else {
-        fileNamesElement.textContent = `${files.length}개 파일 선택됨`;
+        document.getElementById('file-name').textContent = `${files.length}개 파일 선택됨`;
     }
-    
-    // 선택된 파일 목록 표시
-    selectedFilesList.style.display = 'block';
-    
-    // 파일 목록 HTML 생성
-    let filesHTML = '';
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const fileSize = formatFileSize(file.size);
-        filesHTML += `
-            <div class="file-item" data-index="${i}">
-                <div class="file-info">
-                    <span class="file-icon">🎵</span>
-                    <div class="file-details">
-                        <span class="file-name">${file.name}</span>
-                        <span class="file-size">${fileSize}</span>
-                    </div>
-                </div>
-                <button type="button" class="remove-file-btn" onclick="removeFile(${i})" title="파일 제거">×</button>
-            </div>
-        `;
-    }
-    
-    filesContainer.innerHTML = filesHTML;
-}
-
-function removeFile(index) {
-    const input = document.getElementById('audio_files');
-    const dt = new DataTransfer();
-    
-    // 선택된 인덱스가 아닌 파일들만 유지
-    for (let i = 0; i < input.files.length; i++) {
-        if (i !== index) {
-            dt.items.add(input.files[i]);
-        }
-    }
-    
-    input.files = dt.files;
-    updateMultipleFileNames();
-}
-
-function clearSelectedFiles() {
-    const input = document.getElementById('audio_files');
-    input.value = '';
-    updateMultipleFileNames();
-}
-
-function formatFileSize(bytes) {
-    if (bytes === 0) return '0 B';
-    
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
 
 function toggleMode() {
@@ -389,48 +323,6 @@ function validateBatchForm() {
     return true;
 }
 
-// 다중 파일 폼 제출 전 검증
-function validateMultipleFileForm() {
-    const filesInput = document.getElementById('audio_files');
-    const files = filesInput.files;
-    
-    if (files.length === 0) {
-        alert('분류할 음악 파일을 선택해주세요.');
-        filesInput.focus();
-        return false;
-    }
-    
-    // 파일 개수 제한 (최대 10개)
-    if (files.length > 10) {
-        if (!confirm(`많은 수의 파일이 선택되었습니다 (${files.length}개). 계속 진행하시겠습니까?\n처리 시간이 오래 걸릴 수 있습니다.`)) {
-            return false;
-        }
-    }
-    
-    // 파일 크기 제한 (각 파일 최대 50MB)
-    const maxFileSize = 50 * 1024 * 1024; // 50MB
-    for (let i = 0; i < files.length; i++) {
-        if (files[i].size > maxFileSize) {
-            alert(`파일 크기가 너무 큽니다 (${i + 1}번째): ${files[i].name}\n최대 50MB까지 업로드 가능합니다.`);
-            return false;
-        }
-    }
-    
-    // 파일 형식 검증
-    const allowedTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/m4a', 'audio/ogg', 'audio/flac'];
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const isValidType = allowedTypes.some(type => file.type === type) || 
-                           /\.(mp3|wav|m4a|ogg|flac)$/i.test(file.name);
-        
-        if (!isValidType) {
-            alert(`지원하지 않는 파일 형식입니다 (${i + 1}번째): ${file.name}\n지원 형식: MP3, WAV, M4A, OGG, FLAC`);
-            return false;
-        }
-    }
-    
-    return true;
-}
 
 
 
@@ -782,19 +674,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // 다중 파일 업로드 폼 제출 검증 및 로딩 표시
-    const multipleFileForm = document.getElementById('multiple-file-form');
-    if (multipleFileForm) {
-        multipleFileForm.addEventListener('submit', function(e) {
-            if (!validateMultipleFileForm()) {
-                e.preventDefault();
-                return;
-            }
-            
-            // 로딩 표시 활성화
-            showLoading('multiple-file-form', '여러 파일 분석 중...');
-        });
-    }
     
     // URL 입력 시 실시간 검증 및 기본 정보 표시
     const urlInput = document.getElementById('url_input');

@@ -39,7 +39,7 @@
                     <div class="right-group">
                         <span id="file-name"></span>
                         <label for="audio_file" class="file-label">음악 찾기</label>
-                        <input type="file" id="audio_file" name="audio_file" required onchange="updateFileName()">
+                        <input type="file" id="audio_file" name="audio_file" multiple accept="audio/*" required onchange="updateFileName()">
                     </div>
                 </div>
                 <div class="button-group">
@@ -53,37 +53,6 @@
             </form>
         </div>
 
-        <!-- 다중 파일 업로드 폼 -->
-        <div class="form-section">
-            <h3>📁 여러 파일로 분류하기</h3>
-            <form action="{{ url_for('classify_multiple') }}" method="post" enctype="multipart/form-data" id="multiple-file-form">
-                <div class="file-search-bar">
-                    <span class="cta-text" id="multiple-cta">여러 음악 파일을 선택하고 분류해보세요! 🎵</span>
-                    <div class="right-group">
-                        <span id="multiple-file-names"></span>
-                        <label for="audio_files" class="file-label">음악들 찾기</label>
-                        <input type="file" id="audio_files" name="audio_files" multiple accept="audio/*" required onchange="updateMultipleFileNames()">
-                    </div>
-                </div>
-                
-                <!-- 선택된 파일 목록 표시 -->
-                <div id="selected-files-list" class="selected-files-list" style="display: none;">
-                    <h4>📋 선택된 파일들:</h4>
-                    <div id="files-container" class="files-container">
-                        <!-- 선택된 파일들이 여기에 표시됩니다 -->
-                    </div>
-                    <div class="files-actions">
-                        <button type="button" class="clear-files-btn" onclick="clearSelectedFiles()">🗑️ 모든 파일 제거</button>
-                        <button type="button" class="add-more-btn" onclick="document.getElementById('audio_files').click()">➕ 더 추가하기</button>
-                    </div>
-                </div>
-                
-                <div class="button-group">
-                    <button type="submit" class="big-btn" name="action" value="wav2vec2">🎵 AI로 일괄 분석하기</button>
-                    <button type="submit" class="big-btn" name="action" value="rule">📋 규칙으로 일괄 분류</button>
-                </div>
-            </form>
-        </div>
 
         <!-- URL 링크 폼 -->
         <div class="form-section">
@@ -214,53 +183,6 @@
             </div>
         {% endif %}
 
-        <!-- 다중 파일 분류 결과 표시 -->
-        {% if multiple_predictions %}
-            <div class="result-section">
-                <h2>다중 파일 분류 결과</h2>
-                <div class="multiple-results-summary">
-                    <p><strong>총 처리된 파일:</strong> {{ multiple_predictions|length }}개</p>
-                    {% set success_count = multiple_predictions|selectattr('success', 'equalto', true)|list|length %}
-                    {% set failed_count = multiple_predictions|length - success_count %}
-                    <p><strong>성공:</strong> {{ success_count }}개</p>
-                    <p><strong>실패:</strong> {{ failed_count }}개</p>
-                </div>
-                
-                <div class="multiple-results-list">
-                    {% for result in multiple_predictions %}
-                        <div class="multiple-result-item {% if result.success %}success{% else %}error{% endif %}">
-                            <h4>{{ loop.index }}. {{ result.filename }}</h4>
-                            {% if result.success %}
-                                <div class="result-details">
-                                    {% if result.genre %}
-                                        <p><strong>장르:</strong> {{ result.genre }} ({{ "%.1f"|format(result.confidence * 100) }}%)</p>
-                                    {% endif %}
-                                    {% if result.genres %}
-                                        <p><strong>장르 (기존 형식):</strong> 
-                                            {% for genre, confidence in result.genres[:3] %}
-                                                {{ genre }}({{ "%.1f"|format(confidence * 100) }}%){% if not loop.last %}, {% endif %}
-                                            {% endfor %}
-                                        </p>
-                                    {% endif %}
-                                    {% if result.emotions %}
-                                        <p><strong>감정:</strong> 
-                                            {% for emotion, confidence in result.emotions[:3] %}
-                                                {{ emotion }}({{ "%.1f"|format(confidence * 100) }}%){% if not loop.last %}, {% endif %}
-                                            {% endfor %}
-                                        </p>
-                                    {% endif %}
-                                    {% if result.method %}
-                                        <p><strong>방법:</strong> {{ result.method }}</p>
-                                    {% endif %}
-                                </div>
-                            {% else %}
-                                <p class="error-text">❌ {{ result.error }}</p>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        {% endif %}
 
         <!-- 일괄 분류 결과 표시 -->
         {% if batch_results %}

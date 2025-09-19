@@ -227,236 +227,236 @@ def classify():
     if 'audio_file' not in request.files:
         return redirect(url_for('index'))
 
-    audio_file = request.files['audio_file']
-    if audio_file.filename == '':
+    files = request.files.getlist('audio_file')
+    if not files or all(file.filename == '' for file in files):
         return redirect(url_for('index'))
 
-    # 업로드 폴더에 원본 파일 저장
-    os.makedirs('uploads', exist_ok=True)
-    original_file_path = os.path.join('uploads', audio_file.filename)
-    audio_file.save(original_file_path)
-
-    # 임시 파일 생성 (처리용) - 최적화된 방식
-    import tempfile
-    import shutil
-    
-    temp_file = None
-    try:
-        # NamedTemporaryFile을 사용하여 더 안전한 임시 파일 생성
-        with tempfile.NamedTemporaryFile(
-            suffix=os.path.splitext(audio_file.filename)[1], 
-            delete=False
-        ) as temp_f:
-            temp_file = temp_f.name
-        
-        # 원본 파일을 임시 파일로 복사
-        shutil.copy2(original_file_path, temp_file)
-        
-        action = request.form.get('action')
-        print(f"DEBUG: 받은 action 값: '{action}'")  # 디버깅용
-        print(f"DEBUG: request.form 전체: {dict(request.form)}")  # 디버깅용
-
-        # 기존 분류 방법들을 위한 장르와 감정 정의
-        genres = ['블루스', '클래식', '컨트리', '디스코', '힙합', '재즈', '메탈', '팝', '레게', '록']
-        emotions = ['행복한', '슬픈', '평화로운', '열정적인']
-
-        if action == 'wav2vec2' and wav2vec2_model:
-            # Wav2Vec2 모델을 사용한 분류 (임시 파일 사용, 메모리 최적화)
-            try:
-                # 메모리 사용량 모니터링
-                initial_memory = monitor_memory_usage()
-                print(f"웹앱 분류 시작 - 메모리: {initial_memory['rss']:.1f} MB")
-                
-                result = predict_music_wav2vec2(wav2vec2_model, wav2vec2_processor, temp_file)
-                
-                # 메모리 정리
-                optimize_memory_usage()
-                
-                final_memory = monitor_memory_usage()
-                print(f"웹앱 분류 완료 - 메모리: {final_memory['rss']:.1f} MB")
-                
-            except Exception as e:
-                result = {'error': f'Wav2Vec2 분류 중 오류 발생: {str(e)}', 'success': False}
-        elif action == 'wav2vec2' and not wav2vec2_model:
-            # Wav2Vec2 모델이 없을 때 기존 CNN 모델 사용 (만약 있다면)
-            result = {'error': 'Wav2Vec2 모델이 로드되지 않았습니다. 규칙 기반 분류를 사용하세요.'}
-        elif action == 'rule':
-            result = rule_based_classification(temp_file)
-        elif action == 'manual':
-            result = manual_classification(temp_file, genres, emotions)
-        elif action == 'ml':
-            result = {'error': '전통적인 ML 모델 기능은 아직 구현되지 않았습니다.'}
-        elif action == 'lyrics':
-            result = {'error': '가사 분석 기능은 아직 구현되지 않았습니다.'}
-        elif action == 'hybrid':
-            result = {'error': '통합 분류 기능은 아직 구현되지 않았습니다.'}
-        else:
-            print(f"DEBUG: 예상되지 않은 action 값: '{action}'")  # 디버깅용
-            result = {'error': f'선택한 기능을 사용할 수 없습니다. (action: {action})'}
-
-    except Exception as e:
-        result = {'error': f'파일 처리 중 오류 발생: {str(e)}'}
-    finally:
-        # 임시 파일 정리 (더 안전한 방식)
-        if temp_file:
-            try:
-                if os.path.exists(temp_file):
-                    os.remove(temp_file)
-                    print(f"파일 업로드 임시 파일 정리: {temp_file}")
-            except Exception as cleanup_error:
-                print(f"임시 파일 정리 실패: {cleanup_error}")
-
-    return render_template('index.html', prediction=result)
-
-@app.route('/classify_multiple', methods=['POST'])
-def classify_multiple():
-    """다중 파일 분류 처리 (백그라운드 처리)"""
-    if 'audio_files' not in request.files:
-        return render_template('index.html', multiple_predictions=[{'error': '파일이 선택되지 않았습니다.', 'success': False}])
-
-    files = request.files.getlist('audio_files')
-    if not files or all(file.filename == '' for file in files):
-        return render_template('index.html', multiple_predictions=[{'error': '파일이 선택되지 않았습니다.', 'success': False}])
-
     action = request.form.get('action')
-    print(f"DEBUG: 다중 파일 분류 - 받은 action 값: '{action}'")
-    print(f"DEBUG: 다중 파일 분류 - 파일 개수: {len(files)}")
+    print(f"DEBUG: 받은 action 값: '{action}'")
+    print(f"DEBUG: 파일 개수: {len(files)}")
 
-    # 고유한 작업 ID 생성
-    task_id = str(uuid.uuid4())
-    
-    # 진행률 초기화
-    update_progress(task_id, 'starting', '다중 파일 분류 작업을 시작합니다...', 0)
-    
-    # 백그라운드에서 실행
-    def run_multiple_classification():
+    # 단일 파일인 경우 기존 방식으로 처리
+    if len(files) == 1:
+        audio_file = files[0]
+        
+        # 업로드 폴더에 원본 파일 저장
+        os.makedirs('uploads', exist_ok=True)
+        original_file_path = os.path.join('uploads', audio_file.filename)
+        audio_file.save(original_file_path)
+
+        # 임시 파일 생성 (처리용) - 최적화된 방식
+        import tempfile
+        import shutil
+        
+        temp_file = None
         try:
-            # 업로드 폴더 생성
-            os.makedirs('uploads', exist_ok=True)
+            # NamedTemporaryFile을 사용하여 더 안전한 임시 파일 생성
+            with tempfile.NamedTemporaryFile(
+                suffix=os.path.splitext(audio_file.filename)[1], 
+                delete=False
+            ) as temp_f:
+                temp_file = temp_f.name
+            
+            # 원본 파일을 임시 파일로 복사
+            shutil.copy2(original_file_path, temp_file)
             
             # 기존 분류 방법들을 위한 장르와 감정 정의
             genres = ['블루스', '클래식', '컨트리', '디스코', '힙합', '재즈', '메탈', '팝', '레게', '록']
             emotions = ['행복한', '슬픈', '평화로운', '열정적인']
-            
-            results = []
-            temp_files = []
-            total_files = len([f for f in files if f.filename != ''])
-            
+
+            if action == 'wav2vec2' and wav2vec2_model:
+                # Wav2Vec2 모델을 사용한 분류 (임시 파일 사용, 메모리 최적화)
+                try:
+                    # 메모리 사용량 모니터링
+                    initial_memory = monitor_memory_usage()
+                    print(f"웹앱 분류 시작 - 메모리: {initial_memory['rss']:.1f} MB")
+                    
+                    result = predict_music_wav2vec2(wav2vec2_model, wav2vec2_processor, temp_file)
+                    
+                    # 메모리 정리
+                    optimize_memory_usage()
+                    
+                    final_memory = monitor_memory_usage()
+                    print(f"웹앱 분류 완료 - 메모리: {final_memory['rss']:.1f} MB")
+                    
+                except Exception as e:
+                    result = {'error': f'Wav2Vec2 분류 중 오류 발생: {str(e)}', 'success': False}
+            elif action == 'wav2vec2' and not wav2vec2_model:
+                # Wav2Vec2 모델이 없을 때 기존 CNN 모델 사용 (만약 있다면)
+                result = {'error': 'Wav2Vec2 모델이 로드되지 않았습니다. 규칙 기반 분류를 사용하세요.'}
+            elif action == 'rule':
+                result = rule_based_classification(temp_file)
+            elif action == 'manual':
+                result = manual_classification(temp_file, genres, emotions)
+            elif action == 'ml':
+                result = {'error': '전통적인 ML 모델 기능은 아직 구현되지 않았습니다.'}
+            elif action == 'lyrics':
+                result = {'error': '가사 분석 기능은 아직 구현되지 않았습니다.'}
+            elif action == 'hybrid':
+                result = {'error': '통합 분류 기능은 아직 구현되지 않았습니다.'}
+            else:
+                print(f"DEBUG: 예상되지 않은 action 값: '{action}'")  # 디버깅용
+                result = {'error': f'선택한 기능을 사용할 수 없습니다. (action: {action})'}
+
+        except Exception as e:
+            result = {'error': f'파일 처리 중 오류 발생: {str(e)}'}
+        finally:
+            # 임시 파일 정리 (더 안전한 방식)
+            if temp_file:
+                try:
+                    if os.path.exists(temp_file):
+                        os.remove(temp_file)
+                        print(f"파일 업로드 임시 파일 정리: {temp_file}")
+                except Exception as cleanup_error:
+                    print(f"임시 파일 정리 실패: {cleanup_error}")
+
+        return render_template('index.html', prediction=result)
+    
+    # 다중 파일인 경우 백그라운드 처리
+    else:
+        # 고유한 작업 ID 생성
+        task_id = str(uuid.uuid4())
+        
+        # 진행률 초기화
+        update_progress(task_id, 'starting', '다중 파일 분류 작업을 시작합니다...', 0)
+        
+        # 백그라운드에서 실행
+        def run_multiple_classification():
             try:
-                for i, file in enumerate(files):
-                    if file.filename == '':
-                        continue
+                # 업로드 폴더 생성
+                os.makedirs('uploads', exist_ok=True)
+                
+                # 기존 분류 방법들을 위한 장르와 감정 정의
+                genres = ['블루스', '클래식', '컨트리', '디스코', '힙합', '재즈', '메탈', '팝', '레게', '록']
+                emotions = ['행복한', '슬픈', '평화로운', '열정적인']
+                
+                results = []
+                temp_files = []
+                total_files = len([f for f in files if f.filename != ''])
+                
+                try:
+                    for i, file in enumerate(files):
+                        if file.filename == '':
+                            continue
+                            
+                        # 진행률 업데이트
+                        progress = int((i / total_files) * 100)
+                        update_progress(task_id, 'processing', f'파일 {i+1}/{total_files} 처리 중: {file.filename}', progress)
                         
-                    # 진행률 업데이트
-                    progress = int((i / total_files) * 100)
-                    update_progress(task_id, 'processing', f'파일 {i+1}/{total_files} 처리 중: {file.filename}', progress)
-                    
-                    print(f"처리 중인 파일 {i+1}/{total_files}: {file.filename}")
-                    
-                    # 업로드 폴더에 원본 파일 저장
-                    original_file_path = os.path.join('uploads', file.filename)
-                    file.save(original_file_path)
-                    
-                    # 임시 파일 생성 (처리용)
-                    import tempfile
-                    import shutil
-                    
-                    temp_file = None
-                    try:
-                        with tempfile.NamedTemporaryFile(
-                            suffix=os.path.splitext(file.filename)[1], 
-                            delete=False
-                        ) as temp_f:
-                            temp_file = temp_f.name
+                        print(f"처리 중인 파일 {i+1}/{total_files}: {file.filename}")
                         
-                        # 원본 파일을 임시 파일로 복사
-                        shutil.copy2(original_file_path, temp_file)
-                        temp_files.append(temp_file)
+                        # 업로드 폴더에 원본 파일 저장
+                        original_file_path = os.path.join('uploads', file.filename)
+                        file.save(original_file_path)
                         
-                        # 분류 수행
-                        if action == 'wav2vec2' and wav2vec2_model:
-                            try:
-                                # 메모리 사용량 모니터링
-                                initial_memory = monitor_memory_usage()
-                                print(f"파일 {i+1} 분류 시작 - 메모리: {initial_memory['rss']:.1f} MB")
-                                
-                                result = predict_music_wav2vec2(wav2vec2_model, wav2vec2_processor, temp_file)
-                                
-                                # 메모리 정리
-                                optimize_memory_usage()
-                                
-                                final_memory = monitor_memory_usage()
-                                print(f"파일 {i+1} 분류 완료 - 메모리: {final_memory['rss']:.1f} MB")
-                                
-                            except Exception as e:
-                                result = {'error': f'Wav2Vec2 분류 중 오류 발생: {str(e)}', 'success': False}
-                        elif action == 'wav2vec2' and not wav2vec2_model:
-                            result = {'error': 'Wav2Vec2 모델이 로드되지 않았습니다.', 'success': False}
-                        elif action == 'rule':
-                            result = rule_based_classification(temp_file)
-                        else:
-                            result = {'error': f'지원하지 않는 분류 방법입니다: {action}', 'success': False}
+                        # 임시 파일 생성 (처리용)
+                        import tempfile
+                        import shutil
                         
-                        # 결과에 파일명 추가
-                        result['filename'] = file.filename
-                        if 'success' not in result:
-                            result['success'] = 'error' not in result
-                        
-                        results.append(result)
-                        
-                    except Exception as e:
-                        error_result = {
-                            'filename': file.filename,
-                            'error': f'파일 처리 중 오류 발생: {str(e)}',
-                            'success': False
-                        }
-                        results.append(error_result)
-                        print(f"파일 {file.filename} 처리 중 오류: {str(e)}")
-            
+                        temp_file = None
+                        try:
+                            with tempfile.NamedTemporaryFile(
+                                suffix=os.path.splitext(file.filename)[1], 
+                                delete=False
+                            ) as temp_f:
+                                temp_file = temp_f.name
+                            
+                            # 원본 파일을 임시 파일로 복사
+                            shutil.copy2(original_file_path, temp_file)
+                            temp_files.append(temp_file)
+                            
+                            # 분류 수행
+                            if action == 'wav2vec2' and wav2vec2_model:
+                                try:
+                                    # 메모리 사용량 모니터링
+                                    initial_memory = monitor_memory_usage()
+                                    print(f"파일 {i+1} 분류 시작 - 메모리: {initial_memory['rss']:.1f} MB")
+                                    
+                                    result = predict_music_wav2vec2(wav2vec2_model, wav2vec2_processor, temp_file)
+                                    
+                                    # 메모리 정리
+                                    optimize_memory_usage()
+                                    
+                                    final_memory = monitor_memory_usage()
+                                    print(f"파일 {i+1} 분류 완료 - 메모리: {final_memory['rss']:.1f} MB")
+                                    
+                                except Exception as e:
+                                    result = {'error': f'Wav2Vec2 분류 중 오류 발생: {str(e)}', 'success': False}
+                            elif action == 'wav2vec2' and not wav2vec2_model:
+                                result = {'error': 'Wav2Vec2 모델이 로드되지 않았습니다.', 'success': False}
+                            elif action == 'rule':
+                                result = rule_based_classification(temp_file)
+                            elif action == 'manual':
+                                result = manual_classification(temp_file, genres, emotions)
+                            elif action == 'ml':
+                                result = {'error': '전통적인 ML 모델 기능은 아직 구현되지 않았습니다.', 'success': False}
+                            elif action == 'lyrics':
+                                result = {'error': '가사 분석 기능은 아직 구현되지 않았습니다.', 'success': False}
+                            elif action == 'hybrid':
+                                result = {'error': '통합 분류 기능은 아직 구현되지 않았습니다.', 'success': False}
+                            else:
+                                result = {'error': f'지원하지 않는 분류 방법입니다: {action}', 'success': False}
+                            
+                            # 결과에 파일명 추가
+                            result['filename'] = file.filename
+                            if 'success' not in result:
+                                result['success'] = 'error' not in result
+                            
+                            results.append(result)
+                            
+                        except Exception as e:
+                            error_result = {
+                                'filename': file.filename,
+                                'error': f'파일 처리 중 오류 발생: {str(e)}',
+                                'success': False
+                            }
+                            results.append(error_result)
+                            print(f"파일 {file.filename} 처리 중 오류: {str(e)}")
+                
+                except Exception as e:
+                    error_result = {
+                        'filename': '전체 처리',
+                        'error': f'다중 파일 처리 중 오류 발생: {str(e)}',
+                        'success': False
+                    }
+                    results.append(error_result)
+                    print(f"다중 파일 처리 중 오류: {str(e)}")
+                
+                finally:
+                    # 임시 파일들 정리
+                    for temp_file in temp_files:
+                        try:
+                            if os.path.exists(temp_file):
+                                os.remove(temp_file)
+                                print(f"다중 파일 임시 파일 정리: {temp_file}")
+                        except Exception as cleanup_error:
+                            print(f"임시 파일 정리 실패: {cleanup_error}")
+                
+                # 최종 진행률 업데이트
+                update_progress(task_id, 'completed', f'다중 파일 분류가 완료되었습니다! (총 {len(results)}개 파일)', 100)
+                
+                # 결과 저장
+                save_classification_result(task_id, {'multiple_results': results, 'file_count': total_files})
+                
+                print(f"다중 파일 분류 완료 - 총 {len(results)}개 결과")
+                
             except Exception as e:
                 error_result = {
                     'filename': '전체 처리',
                     'error': f'다중 파일 처리 중 오류 발생: {str(e)}',
                     'success': False
                 }
-                results.append(error_result)
+                update_progress(task_id, 'error', f'다중 파일 처리 중 오류 발생: {str(e)}', 0)
+                save_classification_result(task_id, {'multiple_results': [error_result], 'file_count': 0})
                 print(f"다중 파일 처리 중 오류: {str(e)}")
-            
-            finally:
-                # 임시 파일들 정리
-                for temp_file in temp_files:
-                    try:
-                        if os.path.exists(temp_file):
-                            os.remove(temp_file)
-                            print(f"다중 파일 임시 파일 정리: {temp_file}")
-                    except Exception as cleanup_error:
-                        print(f"임시 파일 정리 실패: {cleanup_error}")
-            
-            # 최종 진행률 업데이트
-            update_progress(task_id, 'completed', f'다중 파일 분류가 완료되었습니다! (총 {len(results)}개 파일)', 100)
-            
-            # 결과 저장
-            save_classification_result(task_id, {'multiple_results': results, 'file_count': total_files})
-            
-            print(f"다중 파일 분류 완료 - 총 {len(results)}개 결과")
-            
-        except Exception as e:
-            error_result = {
-                'filename': '전체 처리',
-                'error': f'다중 파일 처리 중 오류 발생: {str(e)}',
-                'success': False
-            }
-            update_progress(task_id, 'error', f'다중 파일 처리 중 오류 발생: {str(e)}', 0)
-            save_classification_result(task_id, {'multiple_results': [error_result], 'file_count': 0})
-            print(f"다중 파일 처리 중 오류: {str(e)}")
-    
-    # 백그라운드 스레드에서 실행
-    thread = threading.Thread(target=run_multiple_classification)
-    thread.daemon = True
-    thread.start()
-    
-    # 진행률 페이지로 리다이렉트
-    return redirect(url_for('progress_page', task_id=task_id))
+        
+        # 백그라운드 스레드에서 실행
+        thread = threading.Thread(target=run_multiple_classification)
+        thread.daemon = True
+        thread.start()
+        
+        # 진행률 페이지로 리다이렉트
+        return redirect(url_for('progress_page', task_id=task_id))
 
 @app.route('/classify_url', methods=['POST'])
 def classify_url():
