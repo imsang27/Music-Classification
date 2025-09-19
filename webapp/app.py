@@ -273,15 +273,15 @@ def classify():
                     
                     result = predict_music_wav2vec2(wav2vec2_model, wav2vec2_processor, temp_file)
                     
-                # 메모리 정리
-                optimize_memory_usage()
-                
-                # 추가 메모리 정리
-                import gc
-                gc.collect()
-                
-                final_memory = monitor_memory_usage()
-                print(f"웹앱 분류 완료 - 메모리: {final_memory['rss']:.1f} MB")
+                    # 메모리 정리
+                    optimize_memory_usage()
+                    
+                    # 추가 메모리 정리
+                    import gc
+                    gc.collect()
+                    
+                    final_memory = monitor_memory_usage()
+                    print(f"웹앱 분류 완료 - 메모리: {final_memory['rss']:.1f} MB")
                     
                 except Exception as e:
                     result = {'error': f'Wav2Vec2 분류 중 오류 발생: {str(e)}', 'success': False}
