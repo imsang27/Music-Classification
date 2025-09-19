@@ -191,6 +191,8 @@
             if (data.stage === 'completed' && data.result) {
                 if (data.result.batch_results) {
                     showBatchResult(data.result);
+                } else if (data.result.multiple_results) {
+                    showMultipleFileResult(data.result);
                 } else {
                     showResult(data.result);
                 }
@@ -324,6 +326,75 @@
                 console.log('배치 결과 - 돌아가기 버튼 생성 완료');
             } else {
                 console.error('배치 결과 - progress-actions 요소를 찾을 수 없습니다');
+            }
+        }
+        
+        function showMultipleFileResult(result) {
+            const progressContent = document.querySelector('.progress-content');
+            if (!progressContent) return;
+            
+            // 다중 파일 결과 HTML 생성
+            let resultHTML = '<div class="result-section">';
+            resultHTML += '<h2>📁 다중 파일 분류 결과</h2>';
+            
+            if (result.multiple_results) {
+                const totalCount = result.multiple_results.length;
+                const successCount = result.multiple_results.filter(r => r.success).length;
+                const failedCount = totalCount - successCount;
+                
+                // 요약 통계
+                resultHTML += '<div class="batch-summary">';
+                resultHTML += '<h3>📊 분류 결과 요약</h3>';
+                resultHTML += '<div class="summary-stats">';
+                resultHTML += `<div class="stat-item"><div class="stat-number">${totalCount}</div><div class="stat-label">총 파일</div></div>`;
+                resultHTML += `<div class="stat-item"><div class="stat-number">${successCount}</div><div class="stat-label">성공</div></div>`;
+                resultHTML += `<div class="stat-item"><div class="stat-number">${failedCount}</div><div class="stat-label">실패</div></div>`;
+                resultHTML += '</div></div>';
+                
+                // 각 결과 항목
+                resultHTML += '<div class="batch-results">';
+                result.multiple_results.forEach((item, index) => {
+                    resultHTML += `<div class="batch-item ${item.success ? 'success' : 'error'}">`;
+                    resultHTML += `<h4>${index + 1}. ${item.filename}</h4>`;
+                    
+                    if (item.success) {
+                        resultHTML += '<div class="result-details">';
+                        if (item.genre) {
+                            resultHTML += `<p><strong>장르:</strong> ${item.genre} (${(item.confidence * 100).toFixed(1)}%)</p>`;
+                        }
+                        if (item.genres) {
+                            const topGenres = item.genres.slice(0, 3).map(g => `${g[0]}(${(g[1] * 100).toFixed(1)}%)`).join(', ');
+                            resultHTML += `<p><strong>장르 (기존 형식):</strong> ${topGenres}</p>`;
+                        }
+                        if (item.emotions) {
+                            const topEmotions = item.emotions.slice(0, 3).map(e => `${e[0]}(${(e[1] * 100).toFixed(1)}%)`).join(', ');
+                            resultHTML += `<p><strong>감정:</strong> ${topEmotions}</p>`;
+                        }
+                        if (item.method) {
+                            resultHTML += `<p><strong>방법:</strong> ${item.method}</p>`;
+                        }
+                        resultHTML += '</div>';
+                    } else {
+                        resultHTML += `<p class="error-text">❌ ${item.error}</p>`;
+                    }
+                    resultHTML += '</div>';
+                });
+                resultHTML += '</div>';
+            }
+            
+            resultHTML += '</div>';
+            
+            // 진행률 내용을 결과로 교체
+            progressContent.innerHTML = resultHTML;
+            
+            // 돌아가기 버튼 추가
+            const actionsDiv = document.querySelector('.progress-actions');
+            if (actionsDiv) {
+                console.log('다중 파일 결과 - 돌아가기 버튼 생성 중...');
+                actionsDiv.innerHTML = '<button type="button" class="big-btn" onclick="goBack()">← 돌아가기</button>';
+                console.log('다중 파일 결과 - 돌아가기 버튼 생성 완료');
+            } else {
+                console.error('다중 파일 결과 - progress-actions 요소를 찾을 수 없습니다');
             }
         }
         

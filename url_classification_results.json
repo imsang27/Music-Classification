@@ -1,0 +1,58 @@
+[
+  {
+    "genre": "팝",
+    "confidence": 0.8792955875396729,
+    "method": "Wav2Vec2 (Hugging Face)",
+    "note": "원본 장르: pop",
+    "success": true,
+    "memory_usage": {
+      "initial": 1079.828125,
+      "final": 1173.36328125,
+      "difference": 93.53515625
+    },
+    "url": "https://www.youtube.com/watch?v=XCiDuy4mrWU",
+    "status": "success"
+  },
+  {
+    "genre": "컨트리",
+    "confidence": 0.947658121585846,
+    "method": "Wav2Vec2 (Hugging Face)",
+    "note": "원본 장르: country",
+    "success": true,
+    "memory_usage": {
+      "initial": 1169.703125,
+      "final": 1174.38671875,
+      "difference": 4.68359375
+    },
+    "url": "https://youtu.be/1vrEljMfXYo",
+    "status": "success"
+  },
+  {
+    "genre": "블루스",
+    "confidence": 0.8123014569282532,
+    "method": "Wav2Vec2 (Hugging Face)",
+    "note": "원본 장르: blues",
+    "success": true,
+    "memory_usage": {
+      "initial": 1170.72265625,
+      "final": 1174.38671875,
+      "difference": 3.6640625
+    },
+    "url": "https://www.youtube.com/watch?v=71Gt46aX9Z4",
+    "status": "success"
+  },
+  {
+    "genre": "팝",
+    "confidence": 0.8639538884162903,
+    "method": "Wav2Vec2 (Hugging Face)",
+    "note": "원본 장르: pop",
+    "success": true,
+    "memory_usage": {
+      "initial": 1170.67578125,
+      "final": 1174.53125,
+      "difference": 3.85546875
+    },
+    "url": "https://music.youtube.com/watch?v=szDsuIRCPn0",
+    "status": "success"
+  }
+]
