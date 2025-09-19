@@ -38,6 +38,16 @@ function updateFileName() {
     }
 }
 
+// 파일 입력 초기화 함수
+function resetFileInput() {
+    const input = document.getElementById('audio_file');
+    if (input) {
+        // 파일 입력을 초기화하여 브라우저 캐시 문제 해결
+        input.value = '';
+        document.getElementById('file-name').textContent = '';
+    }
+}
+
 function toggleMode() {
     const body = document.body;
     const btn = document.querySelector('.mode-toggle button');
@@ -633,6 +643,9 @@ async function clearUploads() {
 
 // 페이지 로드 시 이벤트 리스너 설정
 document.addEventListener('DOMContentLoaded', function() {
+    // 페이지 로드 시 파일 입력 초기화
+    resetFileInput();
+    
     // 페이지 로드 시 모델 상태 확인
     checkModelStatus();
     
@@ -690,4 +703,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 페이지 로드 시 업로드 폴더 정보 조회
     refreshUploadsInfo();
+});
+
+// 브라우저 뒤로가기/앞으로가기 시 파일 입력 초기화
+window.addEventListener('pageshow', function(event) {
+    // 페이지가 캐시에서 로드된 경우 파일 입력 초기화
+    if (event.persisted) {
+        resetFileInput();
+    }
+});
+
+// 페이지 언로드 시 파일 입력 초기화
+window.addEventListener('beforeunload', function() {
+    resetFileInput();
 }); 
