@@ -320,6 +320,18 @@ def classify():
         # 진행률 초기화
         update_progress(task_id, 'starting', '다중 파일 분류 작업을 시작합니다...', 0)
         
+        # 파일 데이터를 미리 읽어서 저장 (스레드 간 공유 문제 해결)
+        file_data_list = []
+        for file in files:
+            if file.filename != '':
+                # 파일 데이터를 메모리에 읽어서 저장
+                file_data = {
+                    'filename': file.filename,
+                    'data': file.read(),
+                    'content_type': file.content_type
+                }
+                file_data_list.append(file_data)
+        
         # 백그라운드에서 실행
         def run_multiple_classification():
             try:
@@ -332,22 +344,23 @@ def classify():
                 
                 results = []
                 temp_files = []
-                total_files = len([f for f in files if f.filename != ''])
+                total_files = len(file_data_list)
                 
                 try:
-                    for i, file in enumerate(files):
-                        if file.filename == '':
-                            continue
-                            
+                    for i, file_data in enumerate(file_data_list):
+                        filename = file_data['filename']
+                        file_content = file_data['data']
+                        
                         # 진행률 업데이트
                         progress = int((i / total_files) * 100)
-                        update_progress(task_id, 'processing', f'파일 {i+1}/{total_files} 처리 중: {file.filename}', progress)
+                        update_progress(task_id, 'processing', f'파일 {i+1}/{total_files} 처리 중: {filename}', progress)
                         
-                        print(f"처리 중인 파일 {i+1}/{total_files}: {file.filename}")
+                        print(f"처리 중인 파일 {i+1}/{total_files}: {filename}")
                         
                         # 업로드 폴더에 원본 파일 저장
-                        original_file_path = os.path.join('uploads', file.filename)
-                        file.save(original_file_path)
+                        original_file_path = os.path.join('uploads', filename)
+                        with open(original_file_path, 'wb') as f:
+                            f.write(file_content)
                         
                         # 임시 파일 생성 (처리용)
                         import tempfile
@@ -356,7 +369,7 @@ def classify():
                         temp_file = None
                         try:
                             with tempfile.NamedTemporaryFile(
-                                suffix=os.path.splitext(file.filename)[1], 
+                                suffix=os.path.splitext(filename)[1], 
                                 delete=False
                             ) as temp_f:
                                 temp_file = temp_f.name
@@ -398,7 +411,7 @@ def classify():
                                 result = {'error': f'지원하지 않는 분류 방법입니다: {action}', 'success': False}
                             
                             # 결과에 파일명 추가
-                            result['filename'] = file.filename
+                            result['filename'] = filename
                             if 'success' not in result:
                                 result['success'] = 'error' not in result
                             
@@ -406,12 +419,12 @@ def classify():
                             
                         except Exception as e:
                             error_result = {
-                                'filename': file.filename,
+                                'filename': filename,
                                 'error': f'파일 처리 중 오류 발생: {str(e)}',
                                 'success': False
                             }
                             results.append(error_result)
-                            print(f"파일 {file.filename} 처리 중 오류: {str(e)}")
+                            print(f"파일 {filename} 처리 중 오류: {str(e)}")
                 
                 except Exception as e:
                     error_result = {
