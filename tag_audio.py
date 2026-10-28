@@ -5,8 +5,22 @@ from datetime import datetime
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 from obsidian_classifier_app import ROOT, SETTINGS, classify_paths
+
+
+def print_status(message):
+    """Korean status output must not abort inference on an English Windows PC."""
+    if sys.stdout is None:return
+    try:print(message,flush=True)
+    except UnicodeEncodeError:
+        if hasattr(sys.stdout,'reconfigure'):
+            sys.stdout.reconfigure(encoding='utf-8')
+            print(message,flush=True)
+        else:
+            encoding=getattr(sys.stdout,'encoding',None) or 'ascii'
+            sys.stdout.write((message+'\n').encode(encoding,errors='backslashreplace').decode(encoding))
 
 
 def assigned_tags(document):
@@ -148,7 +162,7 @@ def run(paths, output_directory=None, settings=SETTINGS, *, profile='single',sou
     target.mkdir(parents=True,exist_ok=False)
     (target/'status.json').write_text('{"status":"running"}\n',encoding='utf-8')
     try:
-        print(f'{len(paths)}개 음원 태깅 중입니다.',flush=True)
+        print_status(f'{len(paths)}개 음원 태깅 중입니다.')
         if profile=='familiar':
             from music_classification.familiar_candidates import classify_paths as classify_familiar
             raw = classify_familiar(paths,settings)
@@ -169,8 +183,8 @@ def run(paths, output_directory=None, settings=SETTINGS, *, profile='single',sou
         (target/'태깅결과.md').write_text(markdown(tags),encoding='utf-8')
         successful = sum(r['labels'] is not None for r in tags['results'])
         (target/'status.json').write_text(json.dumps({'status':'completed','successful':successful,'failed':len(paths)-successful},ensure_ascii=False)+'\n',encoding='utf-8')
-        if profile=='familiar':print(format_candidate_results(tags),flush=True)
-        print(f'완료: {successful}/{len(paths)}개\n결과 폴더: {target.resolve()}',flush=True)
+        if profile=='familiar':print_status(format_candidate_results(tags))
+        print_status(f'완료: {successful}/{len(paths)}개\n결과 폴더: {target.resolve()}')
         return target, 0 if successful == len(paths) else 1
     except Exception as exc:
         (target/'status.json').write_text(json.dumps({'status':'failed','error':str(exc)},ensure_ascii=False)+'\n',encoding='utf-8')
@@ -201,7 +215,7 @@ def main(argv=None):
             _,code=run_youtube(args.youtube,args.output_directory,args.settings)
             return code
         except Exception as exc:
-            print('YouTube 분류 오류: '+str(exc),flush=True)
+            print_status('YouTube 분류 오류: '+str(exc))
             return 2
     paths = args.audio
     if not paths and args.profile=='familiar':
@@ -217,12 +231,12 @@ def main(argv=None):
         finally:
             window.destroy()
         if not paths:
-            print('선택을 취소했습니다.'); return 0
+            print_status('선택을 취소했습니다.'); return 0
     try:
         _, code = run(paths,args.output_directory,args.settings,profile=args.profile)
         return code
     except Exception as exc:
-        print('태깅 오류: '+str(exc),flush=True)
+        print_status('태깅 오류: '+str(exc))
         return 2
 
 

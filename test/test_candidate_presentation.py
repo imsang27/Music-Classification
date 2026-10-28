@@ -58,6 +58,16 @@ class CandidatePresentationTests(unittest.TestCase):
             self.assertEqual(tag_audio.main(['--profile','familiar']),0)
         launch.assert_called_once_with(tag_audio.SETTINGS,None)
 
+    def test_non_utf8_windows_output_does_not_abort_classification(self):
+        buffer=io.BytesIO();console=io.TextIOWrapper(buffer,encoding='cp1252')
+        with patch('music_classification.familiar_candidates.classify_paths',return_value=self.raw),patch('sys.stdout',console):
+            target,code=tag_audio.run([self.audio],self.folder/'western_console',profile='familiar')
+        console.flush()
+        self.assertEqual(code,0)
+        self.assertIn('감정 후보',buffer.getvalue().decode('utf-8'))
+        self.assertTrue((target/'tags.json').is_file())
+        console.detach()
+
     def test_hidden_window_busy_guard_three_candidates_folder_and_reset(self):
         import tkinter as tk
         root=tk.Tk();root.withdraw();real_loop=root.mainloop
