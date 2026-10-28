@@ -9,3 +9,7 @@ scripts/test_desktop.py text eol=lf
 # Runtime integrity pins require identical JSON bytes on every platform.
 music_classification/resources/*.json -text
 setup_assets/muq/*.json -text
+# Published report hashes use UTF-8/LF bytes on every platform.
+docs/research/*.md text eol=lf
+docs/research/archive/*.md text eol=lf
+docs/research/*.json text eol=lf
