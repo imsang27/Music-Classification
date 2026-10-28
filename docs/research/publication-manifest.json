@@ -1,0 +1,132 @@
+{
+  "published_on": "2026-10-29",
+  "scope": "historical_public_benchmark_reports",
+  "transformations": [
+    "UTF-8 without BOM and LF line endings",
+    "Historical-version notice added after title",
+    "Unavailable relative links rendered as local-document references"
+  ],
+  "excluded": [
+    "personal feedback",
+    "private playlists",
+    "Obsidian notes",
+    "audio",
+    "weights",
+    "raw evaluation records",
+    "local experiment scripts"
+  ],
+  "reports": [
+    {
+      "file": "공개태그_모델비교_결과.md",
+      "title": "공개 정답 태그 기반 소규모 모델 비교",
+      "source_sha256": "3a19294363ffcb7d4b4d32af302f1513ed6884401319de0a1c3e89c81119f1f2",
+      "published_sha256": "b4a165632128500cfd31f2d7a911834735215bdad1a5dfc51b1b4496c8765233",
+      "unpublished_local_links": []
+    },
+    {
+      "file": "공개_장르_확대평가_결과.md",
+      "title": "공개 장르 평가 확대 결과",
+      "source_sha256": "2be6ca85446a45b00331818752c83e27b8da1ac9cbe6851fe1010f753f2f2165",
+      "published_sha256": "0583589e55c78e54f32c69b2a6fc98a20952d20dbe7acd4b688f12d0559cbf2d",
+      "unpublished_local_links": []
+    },
+    {
+      "file": "공개합의_확대평가_결과.md",
+      "title": "공개 합의 주석으로 확대한 분류 모델 평가",
+      "source_sha256": "708354d150fb4fe41dc08aba79e141817c50142ef1372c4473f576b3659391cc",
+      "published_sha256": "a992ad343816dae184041c05e00ee413acb4eea2d145da293473466d7e79fee1",
+      "unpublished_local_links": []
+    },
+    {
+      "file": "RWC_대분류_파일럿_결과.md",
+      "title": "RWC-G 소규모 대분류 평가",
+      "source_sha256": "7d01bf52f322f35c33fa21446390993dab39961f12c9f17e9594ce053c58a9da",
+      "published_sha256": "dff1433e9d67268cbadb2c96ceba2576c265b846a4f1f4fed6a170583d5f1f46",
+      "unpublished_local_links": []
+    },
+    {
+      "file": "작은_장르판별기_학습검증_결과.md",
+      "title": "공개 태그 기반 작은 장르 판별기 학습·검증 결과",
+      "source_sha256": "a5bad5792db678a6f8ee072639309fb93b74c92c550de48e269a465920ac7788",
+      "published_sha256": "30b956fa3e2eb2e425ddc6727e12abee81ee48223b4655873ab244c92600d3f9",
+      "unpublished_local_links": []
+    },
+    {
+      "file": "사람합의_장르_37곡_비교평가_결과.md",
+      "title": "사람 합의 장르 37곡 고정 비교 결과",
+      "source_sha256": "90f5fa0f41a6c4699412280380e5448d717a27e9462d3ab252ba08e344175b88",
+      "published_sha256": "a374b9709bbd97ed7efe3c13fa003a6dff4d8860bc2f14bb055637d52830fae7",
+      "unpublished_local_links": []
+    },
+    {
+      "file": "장르_확장_파일럿_결과.md",
+      "title": "13장르 확장 파일럿 결과",
+      "source_sha256": "4d1cf33e057e1ca474f1a2602897de5bb9151e5768c5682d5ffd8988fea6d36e",
+      "published_sha256": "4a5602a88024baa3c423391cdce22aa6e4a12462f86556e630220434d23d3f01",
+      "unpublished_local_links": []
+    },
+    {
+      "file": "Emotify_감정강도_비교결과.md",
+      "title": "Emotify+ 사람 감정 강도와 모델 점수 비교",
+      "source_sha256": "e4289b2651640e24bc3269d3055837cdaec1e1e877cd581b961b49e3d42db23c",
+      "published_sha256": "07ac2d2f514fc7d5c3fe764854726d7d0b215ec994386596e9329ce5965fb42f",
+      "unpublished_local_links": []
+    },
+    {
+      "file": "MuQ_감정강도_비교결과.md",
+      "title": "MuQ-MuLan 감정 강도 비교 결과",
+      "source_sha256": "fbe05e2f0f49f99f72bf41640b3cd08b217bc7edbb80ed2642034089f7050d44",
+      "published_sha256": "2f074c73bb74bb47dbfcfc57e013b8d9a8699793731aa4e43a6cf8c9ae353240",
+      "unpublished_local_links": []
+    },
+    {
+      "file": "Music2Emo_새자료_검증결과.md",
+      "title": "Music2Emo 수정 후보의 새 자료 검증",
+      "source_sha256": "2d17373778a5f6e7a12a6ff3c1bfbafca797edfd30e1b5a59ebf92a432a62a8e",
+      "published_sha256": "2a9dbfaf3bfa2d95c852c97b9ad72d7919e9e7c58ae08b491ece3f2efc6d2ee6",
+      "unpublished_local_links": []
+    },
+    {
+      "file": "Soundtracks_49개_분노평가_결과.md",
+      "title": "Soundtracks 49개 분노 평가 결과",
+      "source_sha256": "f6f4c9f8de2bdaa3f6fe438abd85233adb95f55b5df9ed291ab701b50b31a9f5",
+      "published_sha256": "063a9cae6f356590d41996f67896e3930f27f648b41e6a3a834a61337cb75f27",
+      "unpublished_local_links": []
+    },
+    {
+      "file": "몽환적_차분함_직접문구_평가결과.md",
+      "title": "몽환적·차분함 직접 문구 평가 결과",
+      "source_sha256": "c8b5014912c28daca159daa9d152a34e4f4306c7190a20159cc0dbb1fdf9a54a",
+      "published_sha256": "10ca322a09c9300a3a5e0bef38c48413b12e09fc26c4b6d04f4f5f8d556f37f3",
+      "unpublished_local_links": []
+    },
+    {
+      "file": "감정_분위기_최종보류평가_결과.md",
+      "title": "고정된 감정·분위기 분류 기준의 최종 보류 자료 평가",
+      "source_sha256": "458b1fd02e22655c01a9332d5248e5f883bda7eaba535fd8285de4b6c709f070",
+      "published_sha256": "9146f5c8e1fa9880dd6e64d90f15254df242ab87734085a460901af1eac99a1d",
+      "unpublished_local_links": []
+    },
+    {
+      "file": "보수적_보정_새자료_검증결과.md",
+      "title": "보수적 보정 후보의 새 자료 검증 결과",
+      "source_sha256": "844202b840ef6e4eb43c8e486dfd02b27f93ec32775795f75c50259480ce820b",
+      "published_sha256": "37bc9b5111bd6e9d4fcacb7d782411be50c2366524023514568627954aae4203",
+      "unpublished_local_links": []
+    },
+    {
+      "file": "감정_분위기_오류분석_개선방향.md",
+      "title": "감정·분위기 오류 유형과 개선 방향",
+      "source_sha256": "329a45e1527cf122f8db8b4d4be3f3d12766b8219a67be31eb015d16f4b410cd",
+      "published_sha256": "4e6dc109023f449ab27677ef5479c80a49403a73b4e5c5bf2b9b7ac7acbe579c",
+      "unpublished_local_links": []
+    },
+    {
+      "file": "공개태그_추가학습_실현가능성.md",
+      "title": "공개 장르 태그를 활용한 추가 학습의 실현 가능성",
+      "source_sha256": "d11032f437a17bbdb56deef88222459d1d6f83eaf7d4844d6cde396c2f32de7c",
+      "published_sha256": "6b3f577798d36725daa13ca9da1e7cad0308c8005df89cb9686d04c3408d35bc",
+      "unpublished_local_links": []
+    }
+  ]
+}

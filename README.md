@@ -12,6 +12,8 @@
 
 **설치와 실행: [로컬 태깅 안내](docs/desktop-tagging.md)**
 
+**분석과 평가: [현재 구성·검증 범위](docs/research/README.md) · [과거 실험 보고서 16개](docs/research/archive-index.md) · [지표 읽는 법](docs/research/metrics.md)**
+
 ```powershell
 py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e ".[desktop]"
