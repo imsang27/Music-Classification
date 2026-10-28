@@ -16,7 +16,7 @@ def main():
     suite=unittest.TestSuite()
     for name in ('test_youtube_input.py','test_candidate_presentation.py','test_familiar_candidates.py',
                  'test_hierarchical_tagging.py','test_obsidian_candidate_profile.py','test_obsidian_candidate_window.py',
-                 'test_public_setup.py'):
+                 'test_public_setup.py', 'test_local_tagging_server.py'):
         suite.addTests(unittest.defaultTestLoader.discover(str(ROOT/'test'),pattern=name))
     result=unittest.TextTestRunner(verbosity=2).run(suite)
     return not result.wasSuccessful()
