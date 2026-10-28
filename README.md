@@ -12,6 +12,8 @@
 
 **설치와 실행: [로컬 태깅 안내](docs/desktop-tagging.md)**
 
+**브라우저에서 사용: [로컬 웹 실행 안내](docs/local-web.md)** — `로컬_웹_실행.cmd`를 실행하면 파일·YouTube 입력과 결과 내려받기를 브라우저에서 사용할 수 있습니다. GitHub Pages에서는 Python 모델을 실행할 수 없어 이 컴퓨터의 서버를 사용합니다.
+
 **분석과 평가: [현재 구성·검증 범위](docs/research/README.md) · [과거 실험 보고서 16개](docs/research/archive-index.md) · [지표 읽는 법](docs/research/metrics.md)**
 
 ```powershell

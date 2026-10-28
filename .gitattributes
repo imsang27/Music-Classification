@@ -13,3 +13,6 @@ setup_assets/muq/*.json -text
 docs/research/*.md text eol=lf
 docs/research/archive/*.md text eol=lf
 docs/research/*.json text eol=lf
+local_tagging_server.py text eol=lf
+local_web/static/* text eol=lf
+local_web/templates/* text eol=lf
