@@ -1,0 +1,11 @@
+*.cmd text eol=crlf
+music_classification/*.py text eol=lf
+tag_audio.py text eol=lf
+familiar_tagging_app.py text eol=lf
+obsidian_classifier_app.py text eol=lf
+music_classifier_app.py text eol=lf
+scripts/setup_tagging_model.py text eol=lf
+scripts/test_desktop.py text eol=lf
+# Runtime integrity pins require identical JSON bytes on every platform.
+music_classification/resources/*.json -text
+setup_assets/muq/*.json -text

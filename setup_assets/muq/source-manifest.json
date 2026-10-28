@@ -1,0 +1,145 @@
+{
+  "revision": "28847ea50cd31ac4b8b6a7dacc051ad7d1c7606a",
+  "files": [
+    {
+      "path": "LICENSE",
+      "git_blob": "d690c4b29c6b3e3b2f83dda027d06de3c34bfafb",
+      "sha256": "8f4b76ec1ca72efcde8b595df518f3a861d83c04c275dea72eb4e3ba5d00a503"
+    },
+    {
+      "path": "LICENSE_weights",
+      "git_blob": "e395ca3e2cdebf48a6375a3c1022d10caabba7db",
+      "sha256": "1d8ca66080a2701508a70be4ddad4be28c509bcc3397a682fb8edf767fdd7a00"
+    },
+    {
+      "path": "README.md",
+      "git_blob": "a715493cbf7a3ee0b87f81ea96de8ffa9b419c29",
+      "sha256": "da92510de066ae208b9b5e6619c1df9b915abeb18df8296c7e7661b656f51729"
+    },
+    {
+      "path": "requirements.txt",
+      "git_blob": "21619ff79263184ec409ffac46ff7967d6ec4160",
+      "sha256": "3960a03a8424bb6d5a98eefad9dea8b29a96c961a556ab054f092a909187b4fa"
+    },
+    {
+      "path": "setup.py",
+      "git_blob": "1006570f10a897f88b59a4e92cdb869c1299a34e",
+      "sha256": "b57ced7a1bcf06902890386db2d84daa76373a93474edba49e1314b0ec3c1cb7"
+    },
+    {
+      "path": "src/muq/__init__.py",
+      "git_blob": "7575a352fcd9af16c791d2ce5dae3dfe72521b6f",
+      "sha256": "9992a578643a2f37a4901d8234f0311c90a40f7dc5bb3e735c63fd71226f4df3"
+    },
+    {
+      "path": "src/muq/muq/__init__.py",
+      "git_blob": "40a3cb62132cb3b3628b977c2a13563b78fe59c1",
+      "sha256": "e940aed947998857979e83245b5bd41f8fbc05e3261fbaafbef0321749555ddf"
+    },
+    {
+      "path": "src/muq/muq/models/__init__.py",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/muq/muq/models/muq_model.py",
+      "git_blob": "cd40397376cd25960909619aff68fdc3846d02d9",
+      "sha256": "9d0623fd1e2d7d9d212ed4ede1a04fb40a742282777b6a19fd08af6b2cc641db"
+    },
+    {
+      "path": "src/muq/muq/modules/__init__.py",
+      "git_blob": "139597f9cb07c5d48bed18984ec4747f4b4f3438",
+      "sha256": "75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070"
+    },
+    {
+      "path": "src/muq/muq/modules/conv.py",
+      "git_blob": "4e4695371474a19789b77b3668d01e0f430f11a1",
+      "sha256": "98386c207de5e70ff02d3cb76eac276902556faf4cd9902a5f8b7b2f0e27b221"
+    },
+    {
+      "path": "src/muq/muq/modules/features.py",
+      "git_blob": "8c206ae569b5b0d2d770ae4ab533ed45add81eb8",
+      "sha256": "d4bd1b49bce611bebb8133a4bd4dbfd6252bc7554d96a0b13119be190b62945e"
+    },
+    {
+      "path": "src/muq/muq/modules/flash_conformer.py",
+      "git_blob": "89012c476c27973748e2cee914dae3b400348465",
+      "sha256": "c0bf5df817a9c50e4706b4414b75e5399bcbdf89cec3a03de05f5ad8d0b3abfb"
+    },
+    {
+      "path": "src/muq/muq/modules/random_quantizer.py",
+      "git_blob": "c40a74b7614b448332de0d671e617212aded7b1f",
+      "sha256": "fbd5ff07bf0fe7116d2e5d207059137ce45b80c313ad4c7da23870bbd40b1b30"
+    },
+    {
+      "path": "src/muq/muq/modules/rvq.py",
+      "git_blob": "a7553cfab1b3233f1db91aa2853224c7320711cb",
+      "sha256": "7e427f2f1696b98fd95fe76c792f1570fc087f1265b2f1b151f800d3f4a5486b"
+    },
+    {
+      "path": "src/muq/muq/muq.py",
+      "git_blob": "c55e00e8dec0a6ea3e03d40a1c3ee22ff58ddce2",
+      "sha256": "dbec360f5e3ef622d83f1a73085e67ddde946eb626acad768cc01c1f81374211"
+    },
+    {
+      "path": "src/muq/muq_mulan/__init__.py",
+      "git_blob": "3a9979cecaaa28b5f297abe6ed94f62e4eb2e90b",
+      "sha256": "e26a0f594d2435d83094bf915f8480cad8fe1cd0c4d7d6679e1b3053fc7909b8"
+    },
+    {
+      "path": "src/muq/muq_mulan/models/__init__.py",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/muq/muq_mulan/models/audio.py",
+      "git_blob": "e1289976c7e1e60d3ea894b64b7a01f99a2a9c97",
+      "sha256": "05231129cffeb5132aded81b9aabc79ee29fc01513f26879ef98b1b0fbb14b9c"
+    },
+    {
+      "path": "src/muq/muq_mulan/models/mulan.py",
+      "git_blob": "2abaca29c2cb84051d87af8d77d2fb7e2d50862a",
+      "sha256": "f91111e8b54b408f749a526f3f13a1d3c1520d2de6692331d55bb35814fbb3fe"
+    },
+    {
+      "path": "src/muq/muq_mulan/models/text.py",
+      "git_blob": "8df6a1da744fef8fbc4abc0d1ccb123fa2b1fc3c",
+      "sha256": "0cd88116c4fc4bcc310ee87ffaa03f6d3af7f09c593a233ded494e1130c2d0a5"
+    },
+    {
+      "path": "src/muq/muq_mulan/modules/__init__.py",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/muq/muq_mulan/modules/contrastive.py",
+      "git_blob": "064377b58105f16780c37998a4f37d8fa62d772a",
+      "sha256": "a6e4327f34fb76ea3eb01d8a7ffd292ee127400096020a5d13a6c8ea38be4ecc"
+    },
+    {
+      "path": "src/muq/muq_mulan/modules/distributed.py",
+      "git_blob": "1f360a357f8c68c30febf73fb9539e5f5413b65a",
+      "sha256": "243b9842b1b04062067dac0344df5bb8308a282e6b67baa5bfa14ed1d66177a7"
+    },
+    {
+      "path": "src/muq/muq_mulan/modules/extend_distributed.py",
+      "git_blob": "2f0d0c3f57135173747c06f378b1f5a6d3568668",
+      "sha256": "d9d3f1d5ed06ce0ea9e839240739ecf7a5f7d7971b0e28763c0f55ab20057bf5"
+    },
+    {
+      "path": "src/muq/muq_mulan/modules/transformer.py",
+      "git_blob": "a27c8821436f46adf875c94e9ad6d21321509150",
+      "sha256": "5eb75b0ce631180fa11abb99f0db35ec1dfe110053026a31092937e1fae76dad"
+    },
+    {
+      "path": "src/muq/muq_mulan/modules/utils.py",
+      "git_blob": "2757fffc71898c3b9ea1a216689a9c09144e829a",
+      "sha256": "b457791957f9fcf6c56e4dfabae2d0b1a998b14498b33504eabbe77ff9369c8a"
+    },
+    {
+      "path": "src/muq/muq_mulan/muq_mulan.py",
+      "git_blob": "96f90e4066dba10107a96c078e8e09178b4a3049",
+      "sha256": "594843bf29efed147f97768c60946d8e247dce183af085fc5dffcd3d03a7164e"
+    }
+  ]
+}

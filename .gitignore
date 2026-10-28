@@ -105,3 +105,26 @@ uploads/
 Load model directly.py
 models/
 ffmpeg-master-latest-win64-gpl/
+
+# Local inference environments, downloaded weights and generated/private data
+/.venv/
+/work/
+/outputs/
+/.classification-cache/
+/config/*.local.json
+/data/evaluation/
+/data/feedback/
+/data/label_inventory/
+/data/research/
+/data/training/
+/data/usage/
+*.safetensors
+*.pt
+*.bin
+*.onnx
+*.wav
+*.mp3
+*.flac
+*.m4a
+*.webm
+*.sqlite3

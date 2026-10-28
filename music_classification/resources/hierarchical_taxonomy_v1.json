@@ -1,0 +1,633 @@
+{
+  "version": "emotion_mood_hierarchy_v1",
+  "source_profile_sha256": "972ab8c78d0f26544937eb0db991252049b62356ffb7e5f5b1c7d248533d1c84",
+  "parent_semantics": "editorial_organization_not_validated_acoustic_classes",
+  "routing": "max_child_raw_similarity_not_parent_probability",
+  "max_tags_per_axis": 3,
+  "axes": {
+    "emotion": {
+      "parents": [
+        {
+          "id": "emotion_family_joy_uplift",
+          "name": "기쁨·고양",
+          "boundary": "즐거움, 감정의 고조와 승리감. 빠른 템포만으로 판단하지 않는다."
+        },
+        {
+          "id": "emotion_family_sad_loss",
+          "name": "슬픔·상실",
+          "boundary": "슬픔, 부재와 고립, 공허함. 어두운 음색만으로 판단하지 않는다."
+        },
+        {
+          "id": "emotion_family_attachment",
+          "name": "애착·그리움",
+          "boundary": "애절은 호소와 아픔, 애틋은 부드러운 애착, 그리움은 부재를 향한 정서다."
+        },
+        {
+          "id": "emotion_family_hope",
+          "name": "희망·기대",
+          "boundary": "희망은 긍정적 전망, 설렘은 두근거리는 기대다."
+        },
+        {
+          "id": "emotion_family_anxiety",
+          "name": "불안·긴장",
+          "boundary": "불안은 불확실성, 긴장은 경계와 팽팽함, 초조는 안절부절과 조급함이다."
+        },
+        {
+          "id": "emotion_family_desire",
+          "name": "열의·욕구",
+          "boundary": "열정과 정열은 의미가 겹친다. 갈망은 강한 욕구, 간절은 절박함이다. 구별 근거가 없으면 확정하지 않는다."
+        },
+        {
+          "id": "emotion_family_resolve",
+          "name": "결심·저항",
+          "boundary": "투지는 저항, 결연은 굳은 결심, 의지는 지속하려는 힘이다."
+        }
+      ],
+      "labels": [
+        {
+          "id": "obsidian_affect_032",
+          "name": "신남",
+          "parent_id": "emotion_family_joy_uplift",
+          "definition": "즐겁게 들뜨고 흥분된 정서",
+          "confusable_names": [
+            "벅참",
+            "의기양양"
+          ],
+          "distinction": "즐거움, 감정의 고조와 승리감. 빠른 템포만으로 판단하지 않는다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_009",
+          "name": "벅참",
+          "parent_id": "emotion_family_joy_uplift",
+          "definition": "감정이 차오르는 듯한 고양된 정서",
+          "confusable_names": [
+            "신남",
+            "의기양양"
+          ],
+          "distinction": "즐거움, 감정의 고조와 승리감. 빠른 템포만으로 판단하지 않는다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_064",
+          "name": "의기양양",
+          "parent_id": "emotion_family_joy_uplift",
+          "definition": "승리감과 자신감이 고양된 정서",
+          "confusable_names": [
+            "신남",
+            "벅참"
+          ],
+          "distinction": "즐거움, 감정의 고조와 승리감. 빠른 템포만으로 판단하지 않는다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_071",
+          "name": "슬픔",
+          "parent_id": "emotion_family_sad_loss",
+          "definition": "슬프고 서글픈 정서",
+          "confusable_names": [
+            "쓸쓸",
+            "고독",
+            "허무"
+          ],
+          "distinction": "슬픔, 부재와 고립, 공허함. 어두운 음색만으로 판단하지 않는다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_039",
+          "name": "쓸쓸",
+          "parent_id": "emotion_family_sad_loss",
+          "definition": "허전하고 적막한 정서; 아련한 회상과 구분",
+          "confusable_names": [
+            "슬픔",
+            "고독",
+            "허무"
+          ],
+          "distinction": "슬픔, 부재와 고립, 공허함. 어두운 음색만으로 판단하지 않는다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_045",
+          "name": "고독",
+          "parent_id": "emotion_family_sad_loss",
+          "definition": "홀로 고립된 듯한 내적인 정서",
+          "confusable_names": [
+            "슬픔",
+            "쓸쓸",
+            "허무"
+          ],
+          "distinction": "슬픔, 부재와 고립, 공허함. 어두운 음색만으로 판단하지 않는다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_040",
+          "name": "허무",
+          "parent_id": "emotion_family_sad_loss",
+          "definition": "공허하고 의미를 잃은 듯한 정서",
+          "confusable_names": [
+            "슬픔",
+            "쓸쓸",
+            "고독"
+          ],
+          "distinction": "슬픔, 부재와 고립, 공허함. 어두운 음색만으로 판단하지 않는다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_010",
+          "name": "애절",
+          "parent_id": "emotion_family_attachment",
+          "definition": "가슴 아프고 호소하는 정서",
+          "confusable_names": [
+            "애틋",
+            "그리움"
+          ],
+          "distinction": "애절은 호소와 아픔, 애틋은 부드러운 애착, 그리움은 부재를 향한 정서다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_061",
+          "name": "애틋",
+          "parent_id": "emotion_family_attachment",
+          "definition": "소중히 여기는 부드럽고 안타까운 정서",
+          "confusable_names": [
+            "애절",
+            "그리움"
+          ],
+          "distinction": "애절은 호소와 아픔, 애틋은 부드러운 애착, 그리움은 부재를 향한 정서다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_060",
+          "name": "그리움",
+          "parent_id": "emotion_family_attachment",
+          "definition": "부재한 무언가를 그리워하는 정서; 가사 속 대상 분석 제외",
+          "confusable_names": [
+            "애절",
+            "애틋"
+          ],
+          "distinction": "애절은 호소와 아픔, 애틋은 부드러운 애착, 그리움은 부재를 향한 정서다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_028",
+          "name": "희망",
+          "parent_id": "emotion_family_hope",
+          "definition": "앞을 긍정적으로 바라보는 정서",
+          "confusable_names": [
+            "설렘"
+          ],
+          "distinction": "희망은 긍정적 전망, 설렘은 두근거리는 기대다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_021",
+          "name": "설렘",
+          "parent_id": "emotion_family_hope",
+          "definition": "기대와 두근거림이 표현되는 정서",
+          "confusable_names": [
+            "희망"
+          ],
+          "distinction": "희망은 긍정적 전망, 설렘은 두근거리는 기대다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_038",
+          "name": "불안",
+          "parent_id": "emotion_family_anxiety",
+          "definition": "걱정·불확실성이 표현되는 정서",
+          "confusable_names": [
+            "긴장",
+            "초조"
+          ],
+          "distinction": "불안은 불확실성, 긴장은 경계와 팽팽함, 초조는 안절부절과 조급함이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_074",
+          "name": "긴장",
+          "parent_id": "emotion_family_anxiety",
+          "definition": "팽팽하게 조여 있고 경계하는 정서",
+          "confusable_names": [
+            "불안",
+            "초조"
+          ],
+          "distinction": "불안은 불확실성, 긴장은 경계와 팽팽함, 초조는 안절부절과 조급함이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_073",
+          "name": "초조",
+          "parent_id": "emotion_family_anxiety",
+          "definition": "기다리지 못하고 안절부절하는 정서",
+          "confusable_names": [
+            "불안",
+            "긴장"
+          ],
+          "distinction": "불안은 불확실성, 긴장은 경계와 팽팽함, 초조는 안절부절과 조급함이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_006",
+          "name": "열정",
+          "parent_id": "emotion_family_desire",
+          "definition": "정서적 몰입과 강한 열의",
+          "confusable_names": [
+            "정열",
+            "갈망",
+            "간절"
+          ],
+          "distinction": "열정과 정열은 의미가 겹친다. 갈망은 강한 욕구, 간절은 절박함이다. 구별 근거가 없으면 확정하지 않는다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_067",
+          "name": "정열",
+          "parent_id": "emotion_family_desire",
+          "definition": "뜨겁게 분출하는 정서; 열정과 의미 중첩 가능",
+          "confusable_names": [
+            "열정",
+            "갈망",
+            "간절"
+          ],
+          "distinction": "열정과 정열은 의미가 겹친다. 갈망은 강한 욕구, 간절은 절박함이다. 구별 근거가 없으면 확정하지 않는다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_005",
+          "name": "갈망",
+          "parent_id": "emotion_family_desire",
+          "definition": "강하게 원하고 추구하는 정서; 과거 회상에 한정하지 않음",
+          "confusable_names": [
+            "열정",
+            "정열",
+            "간절"
+          ],
+          "distinction": "열정과 정열은 의미가 겹친다. 갈망은 강한 욕구, 간절은 절박함이다. 구별 근거가 없으면 확정하지 않는다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_098",
+          "name": "간절",
+          "parent_id": "emotion_family_desire",
+          "definition": "절박하게 바라는 정서",
+          "confusable_names": [
+            "열정",
+            "정열",
+            "갈망"
+          ],
+          "distinction": "열정과 정열은 의미가 겹친다. 갈망은 강한 욕구, 간절은 절박함이다. 구별 근거가 없으면 확정하지 않는다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_088",
+          "name": "투지",
+          "parent_id": "emotion_family_resolve",
+          "definition": "맞서 싸우고 버티려는 정서",
+          "confusable_names": [
+            "결연",
+            "의지"
+          ],
+          "distinction": "투지는 저항, 결연은 굳은 결심, 의지는 지속하려는 힘이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_075",
+          "name": "결연",
+          "parent_id": "emotion_family_resolve",
+          "definition": "흔들리지 않겠다는 굳은 정서",
+          "confusable_names": [
+            "투지",
+            "의지"
+          ],
+          "distinction": "투지는 저항, 결연은 굳은 결심, 의지는 지속하려는 힘이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_085",
+          "name": "의지",
+          "parent_id": "emotion_family_resolve",
+          "definition": "계속 해나가려는 내적 힘의 정서",
+          "confusable_names": [
+            "투지",
+            "결연"
+          ],
+          "distinction": "투지는 저항, 결연은 굳은 결심, 의지는 지속하려는 힘이다.",
+          "trained": false
+        }
+      ]
+    },
+    "mood": {
+      "parents": [
+        {
+          "id": "mood_family_relaxed",
+          "name": "이완·안정",
+          "boundary": "Chill은 느긋한 흐름, 잔잔은 작은 요동, 편안은 낮은 압박, 나른함은 졸리고 느슨한 인상이다."
+        },
+        {
+          "id": "mood_family_motion",
+          "name": "활력·움직임",
+          "boundary": "Energetic은 추진력, 활기는 생기, 역동은 변화, 발랄은 가볍고 장난스러운 움직임이다."
+        },
+        {
+          "id": "mood_family_intensity",
+          "name": "강도·격정",
+          "boundary": "강렬은 소리의 강한 인상, 격정은 요동치는 강도, 도발은 대담하고 자극적인 인상이다."
+        },
+        {
+          "id": "mood_family_open",
+          "name": "맑음·개방",
+          "boundary": "청량은 맑고 산뜻한 질감, 시원은 탁 트이고 뻗어나가는 해방감이다. 중첩 가능성을 보존한다."
+        },
+        {
+          "id": "mood_family_soft",
+          "name": "부드러움·친근함",
+          "boundary": "사랑스러움은 정감, 귀여움은 앙증맞음, 달콤은 부드러운 선율, 따뜻은 포근한 음색 인상이다."
+        },
+        {
+          "id": "mood_family_dream",
+          "name": "회상·비현실감",
+          "boundary": "아련은 희미하고 먼 회상, 몽환은 떠 있는 듯한 비현실적 공간감이다."
+        },
+        {
+          "id": "mood_family_grand",
+          "name": "장엄·엄숙함",
+          "boundary": "웅장은 크고 넓은 규모, 비장은 엄숙하고 무게 있는 인상이다."
+        },
+        {
+          "id": "mood_family_allure",
+          "name": "매혹",
+          "boundary": "끌어들이는 유혹적인 소리 인상이며 듣는 사람의 선호 점수가 아니다."
+        }
+      ],
+      "labels": [
+        {
+          "id": "obsidian_affect_015",
+          "name": "Chill",
+          "parent_id": "mood_family_relaxed",
+          "definition": "힘을 빼고 느긋하게 흐르는 소리 인상",
+          "confusable_names": [
+            "잔잔",
+            "편안",
+            "나른함"
+          ],
+          "distinction": "Chill은 느긋한 흐름, 잔잔은 작은 요동, 편안은 낮은 압박, 나른함은 졸리고 느슨한 인상이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_117",
+          "name": "잔잔",
+          "parent_id": "mood_family_relaxed",
+          "definition": "큰 요동 없이 차분하게 이어지는 소리 인상",
+          "confusable_names": [
+            "Chill",
+            "편안",
+            "나른함"
+          ],
+          "distinction": "Chill은 느긋한 흐름, 잔잔은 작은 요동, 편안은 낮은 압박, 나른함은 졸리고 느슨한 인상이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_023",
+          "name": "편안",
+          "parent_id": "mood_family_relaxed",
+          "definition": "긴장과 압박이 적고 안정적인 소리 인상",
+          "confusable_names": [
+            "Chill",
+            "잔잔",
+            "나른함"
+          ],
+          "distinction": "Chill은 느긋한 흐름, 잔잔은 작은 요동, 편안은 낮은 압박, 나른함은 졸리고 느슨한 인상이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_055",
+          "name": "나른함",
+          "parent_id": "mood_family_relaxed",
+          "definition": "졸리고 느슨하게 풀린 소리 인상",
+          "confusable_names": [
+            "Chill",
+            "잔잔",
+            "편안"
+          ],
+          "distinction": "Chill은 느긋한 흐름, 잔잔은 작은 요동, 편안은 낮은 압박, 나른함은 졸리고 느슨한 인상이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_076",
+          "name": "Energetic",
+          "parent_id": "mood_family_motion",
+          "definition": "강한 추진력과 활동적인 소리 에너지",
+          "confusable_names": [
+            "활기",
+            "역동",
+            "발랄"
+          ],
+          "distinction": "Energetic은 추진력, 활기는 생기, 역동은 변화, 발랄은 가볍고 장난스러운 움직임이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_034",
+          "name": "활기",
+          "parent_id": "mood_family_motion",
+          "definition": "생기 있고 살아 움직이는 소리 인상; 에너지 크기와 구분 시도",
+          "confusable_names": [
+            "Energetic",
+            "역동",
+            "발랄"
+          ],
+          "distinction": "Energetic은 추진력, 활기는 생기, 역동은 변화, 발랄은 가볍고 장난스러운 움직임이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_065",
+          "name": "역동",
+          "parent_id": "mood_family_motion",
+          "definition": "움직임과 변화가 활발한 소리 인상",
+          "confusable_names": [
+            "Energetic",
+            "활기",
+            "발랄"
+          ],
+          "distinction": "Energetic은 추진력, 활기는 생기, 역동은 변화, 발랄은 가볍고 장난스러운 움직임이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_106",
+          "name": "발랄",
+          "parent_id": "mood_family_motion",
+          "definition": "가볍게 튀고 장난스러운 소리 인상",
+          "confusable_names": [
+            "Energetic",
+            "활기",
+            "역동"
+          ],
+          "distinction": "Energetic은 추진력, 활기는 생기, 역동은 변화, 발랄은 가볍고 장난스러운 움직임이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_003",
+          "name": "강렬",
+          "parent_id": "mood_family_intensity",
+          "definition": "강하게 밀고 들어오는 소리 인상",
+          "confusable_names": [
+            "격정",
+            "도발"
+          ],
+          "distinction": "강렬은 소리의 강한 인상, 격정은 요동치는 강도, 도발은 대담하고 자극적인 인상이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_114",
+          "name": "격정",
+          "parent_id": "mood_family_intensity",
+          "definition": "거칠고 요동치는 감정적 소리 인상",
+          "confusable_names": [
+            "강렬",
+            "도발"
+          ],
+          "distinction": "강렬은 소리의 강한 인상, 격정은 요동치는 강도, 도발은 대담하고 자극적인 인상이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_056",
+          "name": "도발",
+          "parent_id": "mood_family_intensity",
+          "definition": "도전적이고 대담하게 자극하는 소리 인상",
+          "confusable_names": [
+            "강렬",
+            "격정"
+          ],
+          "distinction": "강렬은 소리의 강한 인상, 격정은 요동치는 강도, 도발은 대담하고 자극적인 인상이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_022",
+          "name": "청량",
+          "parent_id": "mood_family_open",
+          "definition": "맑고 산뜻하며 가벼운 공기감의 소리 인상",
+          "confusable_names": [
+            "시원"
+          ],
+          "distinction": "청량은 맑고 산뜻한 질감, 시원은 탁 트이고 뻗어나가는 해방감이다. 중첩 가능성을 보존한다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_026",
+          "name": "시원",
+          "parent_id": "mood_family_open",
+          "definition": "탁 트이고 뻗어나가는 해방감 있는 소리 인상; 청량과 중첩 가능",
+          "confusable_names": [
+            "청량"
+          ],
+          "distinction": "청량은 맑고 산뜻한 질감, 시원은 탁 트이고 뻗어나가는 해방감이다. 중첩 가능성을 보존한다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_108",
+          "name": "사랑스러움",
+          "parent_id": "mood_family_soft",
+          "definition": "부드럽고 정감 가는 소리 인상; 사랑 이야기 판독 제외",
+          "confusable_names": [
+            "귀여움",
+            "달콤",
+            "따뜻"
+          ],
+          "distinction": "사랑스러움은 정감, 귀여움은 앙증맞음, 달콤은 부드러운 선율, 따뜻은 포근한 음색 인상이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_107",
+          "name": "귀여움",
+          "parent_id": "mood_family_soft",
+          "definition": "작고 앙증맞고 장난스러운 소리 인상",
+          "confusable_names": [
+            "사랑스러움",
+            "달콤",
+            "따뜻"
+          ],
+          "distinction": "사랑스러움은 정감, 귀여움은 앙증맞음, 달콤은 부드러운 선율, 따뜻은 포근한 음색 인상이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_113",
+          "name": "달콤",
+          "parent_id": "mood_family_soft",
+          "definition": "달게 감싸는 듯 부드러운 소리 인상",
+          "confusable_names": [
+            "사랑스러움",
+            "귀여움",
+            "따뜻"
+          ],
+          "distinction": "사랑스러움은 정감, 귀여움은 앙증맞음, 달콤은 부드러운 선율, 따뜻은 포근한 음색 인상이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_083",
+          "name": "따뜻",
+          "parent_id": "mood_family_soft",
+          "definition": "포근하고 감싸는 음색·소리 인상; 물리적 온도 제외",
+          "confusable_names": [
+            "사랑스러움",
+            "귀여움",
+            "달콤"
+          ],
+          "distinction": "사랑스러움은 정감, 귀여움은 앙증맞음, 달콤은 부드러운 선율, 따뜻은 포근한 음색 인상이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_059",
+          "name": "아련",
+          "parent_id": "mood_family_dream",
+          "definition": "멀고 희미한 회상처럼 느껴지는 소리 인상",
+          "confusable_names": [
+            "몽환"
+          ],
+          "distinction": "아련은 희미하고 먼 회상, 몽환은 떠 있는 듯한 비현실적 공간감이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_016",
+          "name": "몽환",
+          "parent_id": "mood_family_dream",
+          "definition": "떠 있는 듯 비현실적이고 흐릿한 소리 인상",
+          "confusable_names": [
+            "아련"
+          ],
+          "distinction": "아련은 희미하고 먼 회상, 몽환은 떠 있는 듯한 비현실적 공간감이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_042",
+          "name": "웅장",
+          "parent_id": "mood_family_grand",
+          "definition": "크고 장엄하며 넓게 펼쳐지는 소리 인상",
+          "confusable_names": [
+            "비장"
+          ],
+          "distinction": "웅장은 크고 넓은 규모, 비장은 엄숙하고 무게 있는 인상이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_094",
+          "name": "비장",
+          "parent_id": "mood_family_grand",
+          "definition": "엄숙하고 결전 같은 무게감의 소리 인상",
+          "confusable_names": [
+            "웅장"
+          ],
+          "distinction": "웅장은 크고 넓은 규모, 비장은 엄숙하고 무게 있는 인상이다.",
+          "trained": false
+        },
+        {
+          "id": "obsidian_affect_057",
+          "name": "매혹",
+          "parent_id": "mood_family_allure",
+          "definition": "끌어들이는 듯 유혹적인 소리 인상",
+          "confusable_names": [],
+          "distinction": "끌어들이는 유혹적인 소리 인상이며 듣는 사람의 선호 점수가 아니다.",
+          "trained": false
+        }
+      ]
+    }
+  }
+}

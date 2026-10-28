@@ -1,0 +1,53 @@
+{
+  "version": "0.1.0-draft",
+  "status": "evaluation_candidates_not_model_capabilities",
+  "policy": {
+    "input": "audio",
+    "emotion_target": "expressed_in_audio",
+    "priority_domain": "j_pop",
+    "output_preference": "coverage_first",
+    "return_nearest_for_uncertain_music": true,
+    "multilabel": true,
+    "score_is_accuracy": false,
+    "subgenres_require_validation": true
+  },
+  "genre": [
+    {"id": "pop", "name": "팝"},
+    {"id": "rock", "name": "록"},
+    {"id": "electronic", "name": "일렉트로닉"},
+    {"id": "rnb_soul", "name": "R&B·소울"},
+    {"id": "hip_hop", "name": "힙합"},
+    {"id": "folk_acoustic", "name": "포크·어쿠스틱"},
+    {"id": "jazz", "name": "재즈"},
+    {"id": "classical_orchestral", "name": "클래식·오케스트럴"},
+    {"id": "metal", "name": "메탈"}
+  ],
+  "emotion": [
+    {"id": "joy", "name": "기쁨"},
+    {"id": "sadness", "name": "슬픔"},
+    {"id": "anticipation", "name": "설렘"},
+    {"id": "longing", "name": "그리움"},
+    {"id": "poignancy", "name": "애절함"},
+    {"id": "hope", "name": "희망"},
+    {"id": "anxiety", "name": "불안"},
+    {"id": "anger", "name": "분노"}
+  ],
+  "mood": [
+    {"id": "refreshing", "name": "청량함"},
+    {"id": "dreamy", "name": "몽환적"},
+    {"id": "warm", "name": "따뜻함"},
+    {"id": "calm", "name": "차분함"},
+    {"id": "dark", "name": "어두움"},
+    {"id": "grand", "name": "웅장함"},
+    {"id": "bouncy", "name": "경쾌함"},
+    {"id": "wistful", "name": "아련함"}
+  ],
+  "subgenre_candidates": [
+    {"id": "synth_pop", "parent": "pop", "name": "신스팝", "validated": false},
+    {"id": "dance_pop", "parent": "pop", "name": "댄스팝", "validated": false},
+    {"id": "indie_pop", "parent": "pop", "name": "인디 팝", "validated": false},
+    {"id": "pop_rock", "parent": "rock", "name": "팝 록", "validated": false},
+    {"id": "alternative_rock", "parent": "rock", "name": "얼터너티브 록", "validated": false},
+    {"id": "indie_rock", "parent": "rock", "name": "인디 록", "validated": false}
+  ]
+}
