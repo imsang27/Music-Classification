@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "muq": {
+    "installation": "../work/muq-experiment",
+    "python_executable": "../.venv/Scripts/python.exe",
+    "work_directory": "../work/inference-requests",
+    "cache_directory": "../work/inference-cache",
+    "timeout": 600
+  }
+}

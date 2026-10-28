@@ -1,0 +1,51 @@
+{
+  "upstream_revision": "28847ea50cd31ac4b8b6a7dacc051ad7d1c7606a",
+  "patches": [
+    {
+      "file": "src/muq/muq_mulan/models/audio.py",
+      "old": "self.model = MuQ.from_pretrained(model_name, cache_dir=self.hf_hub_cache_dir)",
+      "new": "import json\n            from pathlib import Path\n            self.model = MuQ(config=json.loads(Path('C:/Python/Music Classification/work/muq-experiment/audio-config/config.json').read_text(encoding=\"utf-8\")))"
+    },
+    {
+      "file": "src/muq/muq_mulan/models/text.py",
+      "old": "from transformers import AutoTokenizer,XLMRobertaModel,AutoModelForCausalLM",
+      "new": "from transformers import AutoTokenizer,XLMRobertaModel,XLMRobertaConfig,AutoModelForCausalLM"
+    },
+    {
+      "file": "src/muq/muq_mulan/models/text.py",
+      "old": "XLMRobertaModel.from_pretrained(self.model_name, trust_remote_code=True, cache_dir=self.hf_hub_cache_dir)",
+      "new": "XLMRobertaModel(XLMRobertaConfig.from_pretrained(self.model_name, local_files_only=True))"
+    },
+    {
+      "file": "src/muq/muq_mulan/models/text.py",
+      "old": "AutoTokenizer.from_pretrained(self.model_name, trust_remote_code=True, cache_dir=self.hf_hub_cache_dir)",
+      "new": "AutoTokenizer.from_pretrained(self.model_name, local_files_only=True)"
+    }
+  ],
+  "reason": "Instantiate backbones from verified local configs; all parameters must then load strictly from complete MuQ-MuLan checkpoint; local tokenizer, no redundant backbone weight download",
+  "files_sha256": {
+    "src/muq/__init__.py": "9992a578643a2f37a4901d8234f0311c90a40f7dc5bb3e735c63fd71226f4df3",
+    "src/muq/muq/__init__.py": "e940aed947998857979e83245b5bd41f8fbc05e3261fbaafbef0321749555ddf",
+    "src/muq/muq/models/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/muq/muq/models/muq_model.py": "9d0623fd1e2d7d9d212ed4ede1a04fb40a742282777b6a19fd08af6b2cc641db",
+    "src/muq/muq/modules/__init__.py": "75a11da44c802486bc6f65640aa48a730f0f684c5c07a42ba3cd1735eb3fb070",
+    "src/muq/muq/modules/conv.py": "98386c207de5e70ff02d3cb76eac276902556faf4cd9902a5f8b7b2f0e27b221",
+    "src/muq/muq/modules/features.py": "d4bd1b49bce611bebb8133a4bd4dbfd6252bc7554d96a0b13119be190b62945e",
+    "src/muq/muq/modules/flash_conformer.py": "c0bf5df817a9c50e4706b4414b75e5399bcbdf89cec3a03de05f5ad8d0b3abfb",
+    "src/muq/muq/modules/random_quantizer.py": "fbd5ff07bf0fe7116d2e5d207059137ce45b80c313ad4c7da23870bbd40b1b30",
+    "src/muq/muq/modules/rvq.py": "7e427f2f1696b98fd95fe76c792f1570fc087f1265b2f1b151f800d3f4a5486b",
+    "src/muq/muq/muq.py": "dbec360f5e3ef622d83f1a73085e67ddde946eb626acad768cc01c1f81374211",
+    "src/muq/muq_mulan/__init__.py": "e26a0f594d2435d83094bf915f8480cad8fe1cd0c4d7d6679e1b3053fc7909b8",
+    "src/muq/muq_mulan/models/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/muq/muq_mulan/models/audio.py": "ab1b153569ddb989dc41cfc7cf99a1ada8042d0ed0389f02bc3ad50dfa0d0002",
+    "src/muq/muq_mulan/models/mulan.py": "f91111e8b54b408f749a526f3f13a1d3c1520d2de6692331d55bb35814fbb3fe",
+    "src/muq/muq_mulan/models/text.py": "7e39c74c74d234419eeafe06c97d252678436c3fd152ddf56aef9f5e6a0fd497",
+    "src/muq/muq_mulan/modules/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/muq/muq_mulan/modules/contrastive.py": "a6e4327f34fb76ea3eb01d8a7ffd292ee127400096020a5d13a6c8ea38be4ecc",
+    "src/muq/muq_mulan/modules/distributed.py": "243b9842b1b04062067dac0344df5bb8308a282e6b67baa5bfa14ed1d66177a7",
+    "src/muq/muq_mulan/modules/extend_distributed.py": "d9d3f1d5ed06ce0ea9e839240739ecf7a5f7d7971b0e28763c0f55ab20057bf5",
+    "src/muq/muq_mulan/modules/transformer.py": "5eb75b0ce631180fa11abb99f0db35ec1dfe110053026a31092937e1fae76dad",
+    "src/muq/muq_mulan/modules/utils.py": "b457791957f9fcf6c56e4dfabae2d0b1a998b14498b33504eabbe77ff9369c8a",
+    "src/muq/muq_mulan/muq_mulan.py": "594843bf29efed147f97768c60946d8e247dce183af085fc5dffcd3d03a7164e"
+  }
+}

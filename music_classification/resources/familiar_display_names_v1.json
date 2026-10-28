@@ -1,0 +1,11 @@
+{
+  "version": "familiar_display_names_v1",
+  "scope": "Display names only; fixed label IDs and audio-text prompts unchanged",
+  "overrides": {
+    "familiar_mood_04": {
+      "previous_name": "청량",
+      "name": "시원",
+      "reason": "User-selected familiar Korean display name"
+    }
+  }
+}

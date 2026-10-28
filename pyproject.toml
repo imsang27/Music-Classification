@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=70"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "music-classification-core"
+version = "0.6.0"
+description = "Independent local music classification APIs with explicit experimental model scope"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+diagnostics = ["numpy==1.26.4", "soundfile>=0.12"]
+youtube = ["yt-dlp>=2026.10.21", "soundfile>=0.12"]
+desktop-test = ["numpy==1.26.4", "soundfile>=0.12", "yt-dlp>=2026.10.21"]
+desktop = ["numpy==1.26.4", "librosa==0.10.2.post1", "soundfile>=0.12", "yt-dlp>=2026.10.21", "transformers==4.44.2", "torch>=2.1", "torchaudio>=2.1", "einops", "easydict", "x-clip", "encodec", "nnAudio", "sentencepiece"]
+genre = ["numpy==1.26.4", "librosa==0.10.2.post1", "transformers==4.44.2", "safetensors>=0.4", "torch>=2.1"]
+
+[tool.setuptools.packages.find]
+include = ["music_classification*"]
+
+[tool.setuptools.package-data]
+music_classification = ["resources/*.json"]

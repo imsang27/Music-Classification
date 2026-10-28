@@ -1,0 +1,34 @@
+{
+  "version": "common10_v1",
+  "labels": [
+    "disco",
+    "metal",
+    "reggae",
+    "blues",
+    "rock",
+    "classical",
+    "jazz",
+    "hiphop",
+    "country",
+    "pop"
+  ],
+  "prompts": {
+    "disco": "This is disco music.",
+    "metal": "This is metal music.",
+    "reggae": "This is reggae music.",
+    "blues": "This is blues music.",
+    "rock": "This is rock music.",
+    "classical": "This is classical music.",
+    "jazz": "This is jazz music.",
+    "hiphop": "This is hiphop music.",
+    "country": "This is country music.",
+    "pop": "This is pop music."
+  },
+  "evaluation": {
+    "public_tracks": 60,
+    "observed_hit_at_1_count": 41,
+    "protocol_sha256": "4a7896c258be926186301c33185bbd9fecc42069e1891ae1055468d418aa705f",
+    "jpop_validated": false,
+    "subgenres_validated": false
+  }
+}

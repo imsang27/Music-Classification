@@ -1,0 +1,403 @@
+{
+  "version": "familiar_audio_candidates_v1",
+  "status": "fixed_vocabulary_unvalidated",
+  "axes": {
+    "genre": [
+      {
+        "id": "obsidian_genre_001",
+        "name": "Rock",
+        "korean_gloss": "록",
+        "definition_ko": "일렉트릭 기타·베이스·드럼 중심의 록 스타일",
+        "prompt_en": "Rock music with electric guitars, bass and a driving drum kit.",
+        "aliases": [
+          "Rock"
+        ]
+      },
+      {
+        "id": "obsidian_genre_007",
+        "name": "Ballad",
+        "korean_gloss": "발라드",
+        "definition_ko": "느린 전개와 노래 선율을 중심으로 하는 발라드 스타일",
+        "prompt_en": "A slow melodic ballad with expressive vocals and sustained accompaniment.",
+        "aliases": [
+          "Ballad"
+        ]
+      },
+      {
+        "id": "obsidian_genre_030",
+        "name": "Pop Rock",
+        "korean_gloss": "팝 록",
+        "definition_ko": "팝 선율과 록 밴드 반주가 결합된 스타일",
+        "prompt_en": "Pop rock music combining catchy pop melodies with electric guitar band arrangements.",
+        "aliases": [
+          "Pop Rock",
+          "Pop rock"
+        ]
+      },
+      {
+        "id": "obsidian_genre_029",
+        "name": "Pop",
+        "korean_gloss": "팝",
+        "definition_ko": "접근하기 쉬운 선율·반복 후렴 중심의 팝 스타일",
+        "prompt_en": "Pop music with catchy melodies, accessible song structures and repeated choruses.",
+        "aliases": [
+          "Pop"
+        ]
+      },
+      {
+        "id": "obsidian_genre_031",
+        "name": "Synth Pop",
+        "korean_gloss": "신스팝",
+        "definition_ko": "신시사이저 선율과 전자 반주가 중심인 팝",
+        "prompt_en": "Synth pop music led by synthesizer melodies, electronic textures and pop songwriting.",
+        "aliases": [
+          "Synth Pop",
+          "Synth-Pop"
+        ]
+      },
+      {
+        "id": "obsidian_genre_047",
+        "name": "Alternative Rock",
+        "korean_gloss": "얼터너티브 록",
+        "definition_ko": "관습적인 팝 록과 다른 질감·전개의 록 후보",
+        "prompt_en": "Alternative rock music with distinctive electric guitar textures and unconventional rock arrangements.",
+        "aliases": [
+          "Alternative Rock",
+          "Alternative rock"
+        ]
+      },
+      {
+        "id": "obsidian_genre_058",
+        "name": "Acoustic",
+        "korean_gloss": "어쿠스틱",
+        "definition_ko": "어쿠스틱 악기의 자연스러운 질감이 중심인 스타일",
+        "prompt_en": "Acoustic music led by natural acoustic guitar or piano with restrained electronic production.",
+        "aliases": [
+          "Acoustic"
+        ]
+      },
+      {
+        "id": "obsidian_genre_051",
+        "name": "Electropop",
+        "korean_gloss": "일렉트로팝",
+        "definition_ko": "전자적 리듬·음색을 강조하는 팝; 신스팝과 겹칠 수 있음",
+        "prompt_en": "Electropop music with prominent programmed beats, electronic production and catchy pop vocals.",
+        "aliases": [
+          "Electronic Pop",
+          "Electropop"
+        ]
+      },
+      {
+        "id": "obsidian_genre_062",
+        "name": "Indie Pop",
+        "korean_gloss": "인디 팝",
+        "definition_ko": "작고 개성 있는 편곡·질감의 팝 후보; 유통 경로 추정 제외",
+        "prompt_en": "Indie pop music with intimate vocals, distinctive melodic arrangements and a less polished sound.",
+        "aliases": [
+          "Indie Pop"
+        ]
+      },
+      {
+        "id": "obsidian_genre_048",
+        "name": "Indie Rock",
+        "korean_gloss": "인디 록",
+        "definition_ko": "개성 있는 기타 밴드 질감의 록 후보; 유통 경로 추정 제외",
+        "prompt_en": "Indie rock music with raw guitar band textures and distinctive rock songwriting.",
+        "aliases": [
+          "Indie Rock"
+        ]
+      },
+      {
+        "id": "obsidian_genre_020",
+        "name": "R&B",
+        "korean_gloss": "R&B",
+        "definition_ko": "리듬·그루브와 유연한 보컬 프레이징 중심의 R&B",
+        "prompt_en": "R and B music with syncopated grooves, smooth vocals and soulful phrasing.",
+        "aliases": [
+          "R&B"
+        ]
+      },
+      {
+        "id": "obsidian_genre_102",
+        "name": "2-step Garage",
+        "korean_gloss": "투스텝 개러지",
+        "definition_ko": "엇갈린 투스텝 리듬과 베이스 중심의 전자 스타일",
+        "prompt_en": "UK two step garage music with shuffled syncopated drum patterns, bass and electronic production.",
+        "aliases": [
+          "2-step Garage"
+        ]
+      },
+      {
+        "id": "obsidian_genre_101",
+        "name": "Arena Rock",
+        "korean_gloss": "아레나 록",
+        "definition_ko": "크고 선명한 밴드 사운드와 합창형 후렴의 록",
+        "prompt_en": "Arena rock music with big guitar chords, powerful drums and anthemic choruses.",
+        "aliases": [
+          "Arena Rock"
+        ]
+      },
+      {
+        "id": "obsidian_genre_052",
+        "name": "Chill Pop",
+        "korean_gloss": "칠 팝",
+        "definition_ko": "절제되고 느긋한 질감의 팝",
+        "prompt_en": "Chill pop music with laid back beats, soft vocals and relaxed pop melodies.",
+        "aliases": [
+          "Chill Pop"
+        ]
+      },
+      {
+        "id": "obsidian_genre_019",
+        "name": "Dance Pop",
+        "korean_gloss": "댄스 팝",
+        "definition_ko": "춤추기 좋은 규칙적인 박자와 팝 보컬의 결합",
+        "prompt_en": "Dance pop music with steady dance beats, catchy vocals and bright pop production.",
+        "aliases": [
+          "Dance Pop"
+        ]
+      },
+      {
+        "id": "obsidian_genre_093",
+        "name": "EDM Trap",
+        "korean_gloss": "EDM 트랩",
+        "definition_ko": "트랩 리듬·베이스와 전자 댄스 전개의 결합",
+        "prompt_en": "Electronic dance trap music with rapid hi hats, heavy sub bass and electronic drops.",
+        "aliases": [
+          "EDM Trap"
+        ]
+      },
+      {
+        "id": "obsidian_genre_036",
+        "name": "Electronic",
+        "korean_gloss": "일렉트로닉",
+        "definition_ko": "전자음·프로그램된 리듬 중심의 넓은 스타일",
+        "prompt_en": "Electronic music built around synthesizers, electronic sound design and programmed rhythms.",
+        "aliases": [
+          "Electronic"
+        ]
+      },
+      {
+        "id": "obsidian_genre_099",
+        "name": "Electronic Rock",
+        "korean_gloss": "일렉트로닉 록",
+        "definition_ko": "전자적 질감과 록 기타·드럼의 결합",
+        "prompt_en": "Electronic rock music combining electric rock guitars with synthesizers and programmed elements.",
+        "aliases": [
+          "Electronic Rock"
+        ]
+      },
+      {
+        "id": "obsidian_genre_072",
+        "name": "Funk Rock",
+        "korean_gloss": "펑크 록",
+        "definition_ko": "펑크 그루브와 록 기타의 결합",
+        "prompt_en": "Funk rock music with syncopated bass grooves, rhythmic guitar and rock drums.",
+        "aliases": [
+          "Funk Rock"
+        ]
+      },
+      {
+        "id": "obsidian_genre_105",
+        "name": "Idol Pop",
+        "korean_gloss": "아이돌 팝",
+        "definition_ko": "밝고 군무형 리듬·합창 후렴의 팝 후보; 가수 신원 추정 제외",
+        "prompt_en": "Idol pop music with bright polished vocals, dance rhythms and catchy group choruses.",
+        "aliases": [
+          "Idol Pop"
+        ]
+      },
+      {
+        "id": "obsidian_genre_079",
+        "name": "New Age",
+        "korean_gloss": "뉴에이지",
+        "definition_ko": "잔잔한 기악 선율과 공간감 중심의 스타일",
+        "prompt_en": "New age instrumental music with flowing piano or ambient textures and spacious melodic arrangements.",
+        "aliases": [
+          "New Age"
+        ]
+      },
+      {
+        "id": "obsidian_genre_096",
+        "name": "Post-grunge",
+        "korean_gloss": "포스트 그런지",
+        "definition_ko": "거친 기타 음색과 선율적인 보컬을 갖춘 록 후보",
+        "prompt_en": "Post grunge rock music with heavy distorted guitar riffs and melodic gritty vocals.",
+        "aliases": [
+          "Post-grunge"
+        ]
+      },
+      {
+        "id": "obsidian_genre_041",
+        "name": "Rock Ballad",
+        "korean_gloss": "록 발라드",
+        "definition_ko": "발라드 전개에 록 기타·드럼이 결합된 스타일",
+        "prompt_en": "A rock ballad with expressive melodic vocals, electric guitars and a gradual powerful build.",
+        "aliases": [
+          "Rock Ballad"
+        ]
+      },
+      {
+        "id": "obsidian_genre_050",
+        "name": "Shibuya-kei",
+        "korean_gloss": "시부야계",
+        "definition_ko": "재즈·보사노바·복고 팝 질감을 혼합하는 후보",
+        "prompt_en": "Shibuya kei music blending retro pop, jazz, bossa nova and playful arranged textures.",
+        "aliases": [
+          "Shibuya-kei"
+        ]
+      },
+      {
+        "id": "obsidian_genre_100",
+        "name": "Symphonic Rock",
+        "korean_gloss": "심포닉 록",
+        "definition_ko": "관현악적 편곡과 록 밴드의 결합",
+        "prompt_en": "Symphonic rock music combining orchestral strings and grand arrangements with electric guitar rock.",
+        "aliases": [
+          "Symphonic Rock"
+        ]
+      }
+    ],
+    "emotion": [
+      {
+        "id": "familiar_emotion_01",
+        "name": "기쁨",
+        "definition_ko": "즐겁고 기쁜 정서",
+        "prompt_en": "Music expressing happiness, joy and delight."
+      },
+      {
+        "id": "familiar_emotion_02",
+        "name": "슬픔",
+        "definition_ko": "슬프고 서글픈 정서",
+        "prompt_en": "Music expressing sadness, sorrow and a downhearted feeling."
+      },
+      {
+        "id": "familiar_emotion_03",
+        "name": "분노",
+        "definition_ko": "화나고 격한 정서",
+        "prompt_en": "Music expressing anger, rage and an aggressive emotional tone."
+      },
+      {
+        "id": "familiar_emotion_04",
+        "name": "불안",
+        "definition_ko": "걱정스럽고 불안한 정서",
+        "prompt_en": "Music expressing anxiety, unease and worried uncertainty."
+      },
+      {
+        "id": "familiar_emotion_05",
+        "name": "설렘",
+        "definition_ko": "기대하며 두근거리는 정서",
+        "prompt_en": "Music expressing fluttering anticipation and excited expectation."
+      },
+      {
+        "id": "familiar_emotion_06",
+        "name": "그리움",
+        "definition_ko": "누군가나 무언가를 그리워하는 정서; 가사 의미 분석 제외",
+        "prompt_en": "Music expressing longing, yearning and missing someone or something."
+      },
+      {
+        "id": "familiar_emotion_07",
+        "name": "외로움",
+        "definition_ko": "혼자 남겨진 듯 쓸쓸한 정서",
+        "prompt_en": "Music expressing loneliness, isolation and a feeling of being alone."
+      },
+      {
+        "id": "familiar_emotion_08",
+        "name": "희망",
+        "definition_ko": "앞을 긍정적으로 바라보는 정서",
+        "prompt_en": "Music expressing hope, optimism and looking forward positively."
+      },
+      {
+        "id": "familiar_emotion_09",
+        "name": "사랑",
+        "definition_ko": "애정이 느껴지는 정서; 가사의 연애 이야기 판독 제외",
+        "prompt_en": "Music expressing love, affection and emotional tenderness."
+      }
+    ],
+    "mood": [
+      {
+        "id": "familiar_mood_01",
+        "name": "잔잔",
+        "definition_ko": "큰 요동 없이 차분히 흐르는 분위기",
+        "prompt_en": "Music with a calm, quiet, restrained and gently steady atmosphere."
+      },
+      {
+        "id": "familiar_mood_02",
+        "name": "몽환",
+        "definition_ko": "꿈꾸는 듯 비현실적인 분위기",
+        "prompt_en": "Music with a dreamy, floating and surreal atmosphere."
+      },
+      {
+        "id": "familiar_mood_03",
+        "name": "따뜻",
+        "definition_ko": "포근하게 감싸는 분위기",
+        "prompt_en": "Music with a warm, cozy and softly enveloping atmosphere."
+      },
+      {
+        "id": "familiar_mood_04",
+        "name": "청량",
+        "definition_ko": "맑고 산뜻한 분위기",
+        "prompt_en": "Music with a fresh, clear, breezy and sparkling atmosphere."
+      },
+      {
+        "id": "familiar_mood_05",
+        "name": "웅장",
+        "definition_ko": "크고 장엄한 분위기",
+        "prompt_en": "Music with a grand, majestic and expansive atmosphere."
+      },
+      {
+        "id": "familiar_mood_06",
+        "name": "발랄",
+        "definition_ko": "가볍고 통통 튀는 분위기",
+        "prompt_en": "Music with a bubbly, playful and sprightly atmosphere."
+      },
+      {
+        "id": "familiar_mood_07",
+        "name": "편안",
+        "definition_ko": "긴장 없이 안정되는 분위기",
+        "prompt_en": "Music with a comfortable, soothing and easy atmosphere."
+      },
+      {
+        "id": "familiar_mood_08",
+        "name": "어둠",
+        "definition_ko": "어둡고 무거운 분위기; 슬픔과 같은 감정으로 간주하지 않음",
+        "prompt_en": "Music with a dark, heavy and shadowy atmosphere."
+      },
+      {
+        "id": "familiar_mood_09",
+        "name": "낭만",
+        "definition_ko": "부드럽고 로맨틱한 분위기; 가사 내용 추론 제외",
+        "prompt_en": "Music with a romantic, intimate and gently sentimental atmosphere."
+      },
+      {
+        "id": "familiar_mood_10",
+        "name": "Energetic",
+        "definition_ko": "힘 있고 에너지가 넘치는 분위기",
+        "prompt_en": "Music with an energetic, vigorous and propulsive atmosphere."
+      },
+      {
+        "id": "familiar_mood_11",
+        "name": "Chill",
+        "definition_ko": "힘을 빼고 느긋하게 흐르는 분위기",
+        "prompt_en": "Music with a chill, laid back and relaxed atmosphere."
+      }
+    ]
+  },
+  "source_profile_sha256": "972ab8c78d0f26544937eb0db991252049b62356ffb7e5f5b1c7d248533d1c84",
+  "selection": "Nearest fixed English description; no arbitrary text generation",
+  "naming": "Existing three-stage naming rules; preserve familiar Korean nouns and approved Energetic/Chill",
+  "source_policy": "Curated familiar Korean music terms, not measured word-frequency ranks or a universal emotion ontology",
+  "reference_vocabulary_urls": [
+    "https://raw.githubusercontent.com/MTG/mtg-jamendo-dataset/master/data/tags/moodtheme.txt"
+  ],
+  "validation": {
+    "accuracy_validated": false,
+    "human_verified": false,
+    "previous_metrics_transfer": false
+  },
+  "limits": [
+    "Emotion and mood may overlap; fixed vocabulary does not prove perceptual separation",
+    "Familiarity is an editorial choice, not a dataset frequency claim",
+    "No lyrics meaning analysis; origin, artist identity and cover status not inferred"
+  ]
+}

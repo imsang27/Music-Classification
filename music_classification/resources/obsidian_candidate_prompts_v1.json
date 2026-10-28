@@ -1,0 +1,770 @@
+{
+  "version": "obsidian_audio_candidates_v1",
+  "status": "experimental_unvalidated",
+  "vocabulary_sha256": "4f23ec704bb5944e22522b31a3b8f6fdebf8bed42cd4a29963856bedc135b131",
+  "axes": {
+    "genre": [
+      {
+        "id": "obsidian_genre_001",
+        "name": "Rock",
+        "korean_gloss": "록",
+        "definition_ko": "일렉트릭 기타·베이스·드럼 중심의 록 스타일",
+        "prompt_en": "Rock music with electric guitars, bass and a driving drum kit.",
+        "aliases": [
+          "Rock"
+        ]
+      },
+      {
+        "id": "obsidian_genre_007",
+        "name": "Ballad",
+        "korean_gloss": "발라드",
+        "definition_ko": "느린 전개와 노래 선율을 중심으로 하는 발라드 스타일",
+        "prompt_en": "A slow melodic ballad with expressive vocals and sustained accompaniment.",
+        "aliases": [
+          "Ballad"
+        ]
+      },
+      {
+        "id": "obsidian_genre_030",
+        "name": "Pop Rock",
+        "korean_gloss": "팝 록",
+        "definition_ko": "팝 선율과 록 밴드 반주가 결합된 스타일",
+        "prompt_en": "Pop rock music combining catchy pop melodies with electric guitar band arrangements.",
+        "aliases": [
+          "Pop Rock",
+          "Pop rock"
+        ]
+      },
+      {
+        "id": "obsidian_genre_029",
+        "name": "Pop",
+        "korean_gloss": "팝",
+        "definition_ko": "접근하기 쉬운 선율·반복 후렴 중심의 팝 스타일",
+        "prompt_en": "Pop music with catchy melodies, accessible song structures and repeated choruses.",
+        "aliases": [
+          "Pop"
+        ]
+      },
+      {
+        "id": "obsidian_genre_031",
+        "name": "Synth Pop",
+        "korean_gloss": "신스팝",
+        "definition_ko": "신시사이저 선율과 전자 반주가 중심인 팝",
+        "prompt_en": "Synth pop music led by synthesizer melodies, electronic textures and pop songwriting.",
+        "aliases": [
+          "Synth Pop",
+          "Synth-Pop"
+        ]
+      },
+      {
+        "id": "obsidian_genre_047",
+        "name": "Alternative Rock",
+        "korean_gloss": "얼터너티브 록",
+        "definition_ko": "관습적인 팝 록과 다른 질감·전개의 록 후보",
+        "prompt_en": "Alternative rock music with distinctive electric guitar textures and unconventional rock arrangements.",
+        "aliases": [
+          "Alternative Rock",
+          "Alternative rock"
+        ]
+      },
+      {
+        "id": "obsidian_genre_058",
+        "name": "Acoustic",
+        "korean_gloss": "어쿠스틱",
+        "definition_ko": "어쿠스틱 악기의 자연스러운 질감이 중심인 스타일",
+        "prompt_en": "Acoustic music led by natural acoustic guitar or piano with restrained electronic production.",
+        "aliases": [
+          "Acoustic"
+        ]
+      },
+      {
+        "id": "obsidian_genre_051",
+        "name": "Electropop",
+        "korean_gloss": "일렉트로팝",
+        "definition_ko": "전자적 리듬·음색을 강조하는 팝; 신스팝과 겹칠 수 있음",
+        "prompt_en": "Electropop music with prominent programmed beats, electronic production and catchy pop vocals.",
+        "aliases": [
+          "Electronic Pop",
+          "Electropop"
+        ]
+      },
+      {
+        "id": "obsidian_genre_062",
+        "name": "Indie Pop",
+        "korean_gloss": "인디 팝",
+        "definition_ko": "작고 개성 있는 편곡·질감의 팝 후보; 유통 경로 추정 제외",
+        "prompt_en": "Indie pop music with intimate vocals, distinctive melodic arrangements and a less polished sound.",
+        "aliases": [
+          "Indie Pop"
+        ]
+      },
+      {
+        "id": "obsidian_genre_048",
+        "name": "Indie Rock",
+        "korean_gloss": "인디 록",
+        "definition_ko": "개성 있는 기타 밴드 질감의 록 후보; 유통 경로 추정 제외",
+        "prompt_en": "Indie rock music with raw guitar band textures and distinctive rock songwriting.",
+        "aliases": [
+          "Indie Rock"
+        ]
+      },
+      {
+        "id": "obsidian_genre_020",
+        "name": "R&B",
+        "korean_gloss": "R&B",
+        "definition_ko": "리듬·그루브와 유연한 보컬 프레이징 중심의 R&B",
+        "prompt_en": "R and B music with syncopated grooves, smooth vocals and soulful phrasing.",
+        "aliases": [
+          "R&B"
+        ]
+      },
+      {
+        "id": "obsidian_genre_102",
+        "name": "2-step Garage",
+        "korean_gloss": "투스텝 개러지",
+        "definition_ko": "엇갈린 투스텝 리듬과 베이스 중심의 전자 스타일",
+        "prompt_en": "UK two step garage music with shuffled syncopated drum patterns, bass and electronic production.",
+        "aliases": [
+          "2-step Garage"
+        ]
+      },
+      {
+        "id": "obsidian_genre_101",
+        "name": "Arena Rock",
+        "korean_gloss": "아레나 록",
+        "definition_ko": "크고 선명한 밴드 사운드와 합창형 후렴의 록",
+        "prompt_en": "Arena rock music with big guitar chords, powerful drums and anthemic choruses.",
+        "aliases": [
+          "Arena Rock"
+        ]
+      },
+      {
+        "id": "obsidian_genre_052",
+        "name": "Chill Pop",
+        "korean_gloss": "칠 팝",
+        "definition_ko": "절제되고 느긋한 질감의 팝",
+        "prompt_en": "Chill pop music with laid back beats, soft vocals and relaxed pop melodies.",
+        "aliases": [
+          "Chill Pop"
+        ]
+      },
+      {
+        "id": "obsidian_genre_019",
+        "name": "Dance Pop",
+        "korean_gloss": "댄스 팝",
+        "definition_ko": "춤추기 좋은 규칙적인 박자와 팝 보컬의 결합",
+        "prompt_en": "Dance pop music with steady dance beats, catchy vocals and bright pop production.",
+        "aliases": [
+          "Dance Pop"
+        ]
+      },
+      {
+        "id": "obsidian_genre_093",
+        "name": "EDM Trap",
+        "korean_gloss": "EDM 트랩",
+        "definition_ko": "트랩 리듬·베이스와 전자 댄스 전개의 결합",
+        "prompt_en": "Electronic dance trap music with rapid hi hats, heavy sub bass and electronic drops.",
+        "aliases": [
+          "EDM Trap"
+        ]
+      },
+      {
+        "id": "obsidian_genre_036",
+        "name": "Electronic",
+        "korean_gloss": "일렉트로닉",
+        "definition_ko": "전자음·프로그램된 리듬 중심의 넓은 스타일",
+        "prompt_en": "Electronic music built around synthesizers, electronic sound design and programmed rhythms.",
+        "aliases": [
+          "Electronic"
+        ]
+      },
+      {
+        "id": "obsidian_genre_099",
+        "name": "Electronic Rock",
+        "korean_gloss": "일렉트로닉 록",
+        "definition_ko": "전자적 질감과 록 기타·드럼의 결합",
+        "prompt_en": "Electronic rock music combining electric rock guitars with synthesizers and programmed elements.",
+        "aliases": [
+          "Electronic Rock"
+        ]
+      },
+      {
+        "id": "obsidian_genre_072",
+        "name": "Funk Rock",
+        "korean_gloss": "펑크 록",
+        "definition_ko": "펑크 그루브와 록 기타의 결합",
+        "prompt_en": "Funk rock music with syncopated bass grooves, rhythmic guitar and rock drums.",
+        "aliases": [
+          "Funk Rock"
+        ]
+      },
+      {
+        "id": "obsidian_genre_105",
+        "name": "Idol Pop",
+        "korean_gloss": "아이돌 팝",
+        "definition_ko": "밝고 군무형 리듬·합창 후렴의 팝 후보; 가수 신원 추정 제외",
+        "prompt_en": "Idol pop music with bright polished vocals, dance rhythms and catchy group choruses.",
+        "aliases": [
+          "Idol Pop"
+        ]
+      },
+      {
+        "id": "obsidian_genre_079",
+        "name": "New Age",
+        "korean_gloss": "뉴에이지",
+        "definition_ko": "잔잔한 기악 선율과 공간감 중심의 스타일",
+        "prompt_en": "New age instrumental music with flowing piano or ambient textures and spacious melodic arrangements.",
+        "aliases": [
+          "New Age"
+        ]
+      },
+      {
+        "id": "obsidian_genre_096",
+        "name": "Post-grunge",
+        "korean_gloss": "포스트 그런지",
+        "definition_ko": "거친 기타 음색과 선율적인 보컬을 갖춘 록 후보",
+        "prompt_en": "Post grunge rock music with heavy distorted guitar riffs and melodic gritty vocals.",
+        "aliases": [
+          "Post-grunge"
+        ]
+      },
+      {
+        "id": "obsidian_genre_041",
+        "name": "Rock Ballad",
+        "korean_gloss": "록 발라드",
+        "definition_ko": "발라드 전개에 록 기타·드럼이 결합된 스타일",
+        "prompt_en": "A rock ballad with expressive melodic vocals, electric guitars and a gradual powerful build.",
+        "aliases": [
+          "Rock Ballad"
+        ]
+      },
+      {
+        "id": "obsidian_genre_050",
+        "name": "Shibuya-kei",
+        "korean_gloss": "시부야계",
+        "definition_ko": "재즈·보사노바·복고 팝 질감을 혼합하는 후보",
+        "prompt_en": "Shibuya kei music blending retro pop, jazz, bossa nova and playful arranged textures.",
+        "aliases": [
+          "Shibuya-kei"
+        ]
+      },
+      {
+        "id": "obsidian_genre_100",
+        "name": "Symphonic Rock",
+        "korean_gloss": "심포닉 록",
+        "definition_ko": "관현악적 편곡과 록 밴드의 결합",
+        "prompt_en": "Symphonic rock music combining orchestral strings and grand arrangements with electric guitar rock.",
+        "aliases": [
+          "Symphonic Rock"
+        ]
+      }
+    ],
+    "emotion": [
+      {
+        "id": "obsidian_affect_039",
+        "name": "쓸쓸",
+        "korean_gloss": "쓸쓸",
+        "definition_ko": "허전하고 적막한 정서; 아련한 회상과 구분",
+        "prompt_en": "Music expressing a lonely, wistfully empty feeling with a sense of absence.",
+        "aliases": [
+          "쓸쓸",
+          "쓸쓸한",
+          "쓸쓸함"
+        ]
+      },
+      {
+        "id": "obsidian_affect_028",
+        "name": "희망",
+        "korean_gloss": "희망",
+        "definition_ko": "앞을 긍정적으로 바라보는 정서",
+        "prompt_en": "Music expressing hope, optimism and a sense of looking forward.",
+        "aliases": [
+          "Hope",
+          "희망",
+          "희망찬"
+        ]
+      },
+      {
+        "id": "obsidian_affect_010",
+        "name": "애절",
+        "korean_gloss": "애절",
+        "definition_ko": "가슴 아프고 호소하는 정서",
+        "prompt_en": "Music expressing poignant heartache with a pleading, emotionally aching tone.",
+        "aliases": [
+          "애절",
+          "애절한",
+          "애절함"
+        ]
+      },
+      {
+        "id": "obsidian_affect_009",
+        "name": "벅참",
+        "korean_gloss": "벅참",
+        "definition_ko": "감정이 차오르는 듯한 고양된 정서",
+        "prompt_en": "Music expressing an overwhelming emotional swell and a deeply stirred, uplifted feeling.",
+        "aliases": [
+          "벅차오름",
+          "벅찬",
+          "벅참"
+        ]
+      },
+      {
+        "id": "obsidian_affect_071",
+        "name": "슬픔",
+        "korean_gloss": "슬픔",
+        "definition_ko": "슬프고 서글픈 정서",
+        "prompt_en": "Music expressing sadness, sorrow and a downhearted emotional tone.",
+        "aliases": [
+          "슬픔"
+        ]
+      },
+      {
+        "id": "obsidian_affect_061",
+        "name": "애틋",
+        "korean_gloss": "애틋",
+        "definition_ko": "소중히 여기는 부드럽고 안타까운 정서",
+        "prompt_en": "Music expressing tender affection with a delicate, bittersweet emotional attachment.",
+        "aliases": [
+          "애틋",
+          "애틋한",
+          "애틋함"
+        ]
+      },
+      {
+        "id": "obsidian_affect_060",
+        "name": "그리움",
+        "korean_gloss": "그리움",
+        "definition_ko": "부재한 무언가를 그리워하는 정서; 가사 속 대상 분석 제외",
+        "prompt_en": "Music expressing longing and yearning for something absent or far away.",
+        "aliases": [
+          "그리움"
+        ]
+      },
+      {
+        "id": "obsidian_affect_038",
+        "name": "불안",
+        "korean_gloss": "불안",
+        "definition_ko": "걱정·불확실성이 표현되는 정서",
+        "prompt_en": "Music expressing anxiety, unease and a feeling of uncertainty.",
+        "aliases": [
+          "Anxiety",
+          "불안",
+          "불안한"
+        ]
+      },
+      {
+        "id": "obsidian_affect_021",
+        "name": "설렘",
+        "korean_gloss": "설렘",
+        "definition_ko": "기대와 두근거림이 표현되는 정서",
+        "prompt_en": "Music expressing fluttering anticipation, excited expectation and a gently racing heart.",
+        "aliases": [
+          "설렘"
+        ]
+      },
+      {
+        "id": "obsidian_affect_032",
+        "name": "신남",
+        "korean_gloss": "신남",
+        "definition_ko": "즐겁게 들뜨고 흥분된 정서",
+        "prompt_en": "Music expressing cheerful excitement and an exuberant, thrilled feeling.",
+        "aliases": [
+          "신남"
+        ]
+      },
+      {
+        "id": "obsidian_affect_006",
+        "name": "열정",
+        "korean_gloss": "열정",
+        "definition_ko": "정서적 몰입과 강한 열의",
+        "prompt_en": "Music expressing passion, emotional fervor and intense enthusiasm.",
+        "aliases": [
+          "열정"
+        ]
+      },
+      {
+        "id": "obsidian_affect_088",
+        "name": "투지",
+        "korean_gloss": "투지",
+        "definition_ko": "맞서 싸우고 버티려는 정서",
+        "prompt_en": "Music expressing a fighting spirit, defiance and resolve against resistance.",
+        "aliases": [
+          "투지"
+        ]
+      },
+      {
+        "id": "obsidian_affect_005",
+        "name": "갈망",
+        "korean_gloss": "갈망",
+        "definition_ko": "강하게 원하고 추구하는 정서; 과거 회상에 한정하지 않음",
+        "prompt_en": "Music expressing intense desire, craving and an urgent wish to reach something.",
+        "aliases": [
+          "갈망"
+        ]
+      },
+      {
+        "id": "obsidian_affect_045",
+        "name": "고독",
+        "korean_gloss": "고독",
+        "definition_ko": "홀로 고립된 듯한 내적인 정서",
+        "prompt_en": "Music expressing deep solitude, isolation and an inward feeling of being alone.",
+        "aliases": [
+          "고독",
+          "고독함"
+        ]
+      },
+      {
+        "id": "obsidian_affect_098",
+        "name": "간절",
+        "korean_gloss": "간절",
+        "definition_ko": "절박하게 바라는 정서",
+        "prompt_en": "Music expressing earnest pleading, heartfelt urgency and a desperate wish.",
+        "aliases": [
+          "간절",
+          "간절함"
+        ]
+      },
+      {
+        "id": "obsidian_affect_075",
+        "name": "결연",
+        "korean_gloss": "결연",
+        "definition_ko": "흔들리지 않겠다는 굳은 정서",
+        "prompt_en": "Music expressing firm resolve, solemn determination and unwavering purpose.",
+        "aliases": [
+          "결연",
+          "결연함"
+        ]
+      },
+      {
+        "id": "obsidian_affect_074",
+        "name": "긴장",
+        "korean_gloss": "긴장",
+        "definition_ko": "팽팽하게 조여 있고 경계하는 정서",
+        "prompt_en": "Music expressing tension, suspense and a taut feeling of alertness.",
+        "aliases": [
+          "긴장",
+          "긴장감"
+        ]
+      },
+      {
+        "id": "obsidian_affect_064",
+        "name": "의기양양",
+        "korean_gloss": "의기양양",
+        "definition_ko": "승리감과 자신감이 고양된 정서",
+        "prompt_en": "Music expressing triumph, pride and a confident victorious feeling.",
+        "aliases": [
+          "의기양양",
+          "의기양양한"
+        ]
+      },
+      {
+        "id": "obsidian_affect_085",
+        "name": "의지",
+        "korean_gloss": "의지",
+        "definition_ko": "계속 해나가려는 내적 힘의 정서",
+        "prompt_en": "Music expressing willpower, perseverance and a steady commitment to continue.",
+        "aliases": [
+          "의지"
+        ]
+      },
+      {
+        "id": "obsidian_affect_067",
+        "name": "정열",
+        "korean_gloss": "정열",
+        "definition_ko": "뜨겁게 분출하는 정서; 열정과 의미 중첩 가능",
+        "prompt_en": "Music expressing fiery ardor, heated emotion and an intense outpouring of feeling.",
+        "aliases": [
+          "정열",
+          "정열적인"
+        ]
+      },
+      {
+        "id": "obsidian_affect_073",
+        "name": "초조",
+        "korean_gloss": "초조",
+        "definition_ko": "기다리지 못하고 안절부절하는 정서",
+        "prompt_en": "Music expressing restless impatience, nervous agitation and unsettled urgency.",
+        "aliases": [
+          "초조",
+          "초조함"
+        ]
+      },
+      {
+        "id": "obsidian_affect_040",
+        "name": "허무",
+        "korean_gloss": "허무",
+        "definition_ko": "공허하고 의미를 잃은 듯한 정서",
+        "prompt_en": "Music expressing emptiness, futility and a hollow, resigned emotional tone.",
+        "aliases": [
+          "허무",
+          "허무한"
+        ]
+      }
+    ],
+    "mood": [
+      {
+        "id": "obsidian_affect_059",
+        "name": "아련",
+        "korean_gloss": "아련",
+        "definition_ko": "멀고 희미한 회상처럼 느껴지는 소리 인상",
+        "prompt_en": "Music with a faint, wistful, distant atmosphere like a softly fading memory.",
+        "aliases": [
+          "아련",
+          "아련한",
+          "아련함"
+        ]
+      },
+      {
+        "id": "obsidian_affect_042",
+        "name": "웅장",
+        "korean_gloss": "웅장",
+        "definition_ko": "크고 장엄하며 넓게 펼쳐지는 소리 인상",
+        "prompt_en": "Music with a grand, majestic and expansive atmosphere.",
+        "aliases": [
+          "Grand",
+          "웅장",
+          "웅장한",
+          "웅장함"
+        ]
+      },
+      {
+        "id": "obsidian_affect_016",
+        "name": "몽환",
+        "korean_gloss": "몽환",
+        "definition_ko": "떠 있는 듯 비현실적이고 흐릿한 소리 인상",
+        "prompt_en": "Music with a dreamy, floating and surreal atmosphere, with blurred spacious textures.",
+        "aliases": [
+          "몽환",
+          "몽환적",
+          "몽환적인",
+          "몽환적임"
+        ]
+      },
+      {
+        "id": "obsidian_affect_022",
+        "name": "청량",
+        "korean_gloss": "청량",
+        "definition_ko": "맑고 산뜻하며 가벼운 공기감의 소리 인상",
+        "prompt_en": "Music with a fresh, clear, breezy atmosphere and light sparkling textures.",
+        "aliases": [
+          "청량",
+          "청량한",
+          "청량함"
+        ]
+      },
+      {
+        "id": "obsidian_affect_003",
+        "name": "강렬",
+        "korean_gloss": "강렬",
+        "definition_ko": "강하게 밀고 들어오는 소리 인상",
+        "prompt_en": "Music with an intense, forceful and striking sonic atmosphere.",
+        "aliases": [
+          "강렬",
+          "강렬한",
+          "강렬함"
+        ]
+      },
+      {
+        "id": "obsidian_affect_108",
+        "name": "사랑스러움",
+        "korean_gloss": "사랑스러움",
+        "definition_ko": "부드럽고 정감 가는 소리 인상; 사랑 이야기 판독 제외",
+        "prompt_en": "Music with a lovable, endearing and sweetly affectionate atmosphere.",
+        "aliases": [
+          "사랑스러운",
+          "사랑스러움"
+        ]
+      },
+      {
+        "id": "obsidian_affect_076",
+        "name": "Energetic",
+        "korean_gloss": "Energetic",
+        "definition_ko": "강한 추진력과 활동적인 소리 에너지",
+        "prompt_en": "Music with high energy, strong propulsion and an active, vigorous sound.",
+        "aliases": [
+          "Energetic",
+          "에너제틱함"
+        ]
+      },
+      {
+        "id": "obsidian_affect_034",
+        "name": "활기",
+        "korean_gloss": "활기",
+        "definition_ko": "생기 있고 살아 움직이는 소리 인상; 에너지 크기와 구분 시도",
+        "prompt_en": "Music with a lively, vibrant atmosphere and a sense of buoyant life.",
+        "aliases": [
+          "활기",
+          "활기찬"
+        ]
+      },
+      {
+        "id": "obsidian_affect_055",
+        "name": "나른함",
+        "korean_gloss": "나른함",
+        "definition_ko": "졸리고 느슨하게 풀린 소리 인상",
+        "prompt_en": "Music with a drowsy, languid atmosphere and unhurried, gently drooping motion.",
+        "aliases": [
+          "나른한",
+          "나른함"
+        ]
+      },
+      {
+        "id": "obsidian_affect_057",
+        "name": "매혹",
+        "korean_gloss": "매혹",
+        "definition_ko": "끌어들이는 듯 유혹적인 소리 인상",
+        "prompt_en": "Music with an alluring, captivating and subtly seductive atmosphere.",
+        "aliases": [
+          "매혹",
+          "매혹적",
+          "매혹적인"
+        ]
+      },
+      {
+        "id": "obsidian_affect_106",
+        "name": "발랄",
+        "korean_gloss": "발랄",
+        "definition_ko": "가볍게 튀고 장난스러운 소리 인상",
+        "prompt_en": "Music with a bubbly, sprightly atmosphere and light playful movement.",
+        "aliases": [
+          "발랄",
+          "발랄함"
+        ]
+      },
+      {
+        "id": "obsidian_affect_094",
+        "name": "비장",
+        "korean_gloss": "비장",
+        "definition_ko": "엄숙하고 결전 같은 무게감의 소리 인상",
+        "prompt_en": "Music with a solemn, grave and heroic atmosphere carrying a sense of weight.",
+        "aliases": [
+          "비장",
+          "비장한",
+          "비장함"
+        ]
+      },
+      {
+        "id": "obsidian_affect_026",
+        "name": "시원",
+        "korean_gloss": "시원",
+        "definition_ko": "탁 트이고 뻗어나가는 해방감 있는 소리 인상; 청량과 중첩 가능",
+        "prompt_en": "Music with an open, expansive and refreshing sound that feels freely released.",
+        "aliases": [
+          "시원",
+          "시원함"
+        ]
+      },
+      {
+        "id": "obsidian_affect_015",
+        "name": "Chill",
+        "korean_gloss": "Chill",
+        "definition_ko": "힘을 빼고 느긋하게 흐르는 소리 인상",
+        "prompt_en": "Music with a chill, laid back atmosphere, relaxed grooves and an easygoing sound.",
+        "aliases": [
+          "Chill",
+          "칠(Chill)함",
+          "칠함"
+        ]
+      },
+      {
+        "id": "obsidian_affect_114",
+        "name": "격정",
+        "korean_gloss": "격정",
+        "definition_ko": "거칠고 요동치는 감정적 소리 인상",
+        "prompt_en": "Music with a turbulent, impassioned atmosphere and surging emotional intensity.",
+        "aliases": [
+          "격정",
+          "격정적"
+        ]
+      },
+      {
+        "id": "obsidian_affect_107",
+        "name": "귀여움",
+        "korean_gloss": "귀여움",
+        "definition_ko": "작고 앙증맞고 장난스러운 소리 인상",
+        "prompt_en": "Music with a cute, dainty and playfully charming atmosphere.",
+        "aliases": [
+          "귀여움"
+        ]
+      },
+      {
+        "id": "obsidian_affect_113",
+        "name": "달콤",
+        "korean_gloss": "달콤",
+        "definition_ko": "달게 감싸는 듯 부드러운 소리 인상",
+        "prompt_en": "Music with a sweet, gentle atmosphere and softly enveloping melodic textures.",
+        "aliases": [
+          "달콤",
+          "달콤함"
+        ]
+      },
+      {
+        "id": "obsidian_affect_056",
+        "name": "도발",
+        "korean_gloss": "도발",
+        "definition_ko": "도전적이고 대담하게 자극하는 소리 인상",
+        "prompt_en": "Music with a provocative, daring and boldly challenging atmosphere.",
+        "aliases": [
+          "도발",
+          "도발적"
+        ]
+      },
+      {
+        "id": "obsidian_affect_083",
+        "name": "따뜻",
+        "korean_gloss": "따뜻",
+        "definition_ko": "포근하고 감싸는 음색·소리 인상; 물리적 온도 제외",
+        "prompt_en": "Music with a warm, cozy atmosphere and soft enveloping timbres.",
+        "aliases": [
+          "따뜻",
+          "따뜻함"
+        ]
+      },
+      {
+        "id": "obsidian_affect_065",
+        "name": "역동",
+        "korean_gloss": "역동",
+        "definition_ko": "움직임과 변화가 활발한 소리 인상",
+        "prompt_en": "Music with a dynamic atmosphere, active motion and vigorous changes in rhythm and texture.",
+        "aliases": [
+          "역동",
+          "역동적인"
+        ]
+      },
+      {
+        "id": "obsidian_affect_117",
+        "name": "잔잔",
+        "korean_gloss": "잔잔",
+        "definition_ko": "큰 요동 없이 차분하게 이어지는 소리 인상",
+        "prompt_en": "Music with a calm, restrained atmosphere and gently steady motion.",
+        "aliases": [
+          "잔잔"
+        ]
+      },
+      {
+        "id": "obsidian_affect_023",
+        "name": "편안",
+        "korean_gloss": "편안",
+        "definition_ko": "긴장과 압박이 적고 안정적인 소리 인상",
+        "prompt_en": "Music with a comfortable, soothing atmosphere and an easy, settled sound.",
+        "aliases": [
+          "편안",
+          "편안함"
+        ]
+      }
+    ]
+  },
+  "method": "Fixed English audio-text prompts, MuQ-MuLan; mean native similarity over full supplied audio",
+  "language_scope": "Japanese songs, utaite, covers; no lyrics semantics or singer identification",
+  "validation": {
+    "accuracy_validated": false,
+    "independent_test": false,
+    "final_tags": false,
+    "previous_profile_metrics_transfer": false
+  },
+  "overlap_notes": [
+    "Broad genres and subgenres share candidate space; no validated hierarchy",
+    "Longing/desire, passion/ardor, solitude/loneliness and energy/liveliness may overlap",
+    "Custom mood uses MuQ direct prompts; no native56 mapping; not a resumption of failed CLAP prompts"
+  ]
+}

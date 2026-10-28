@@ -1,0 +1,38 @@
+{
+  "version": "0.1.0-experimental",
+  "model": "laion/larger_clap_music",
+  "language": "en",
+  "prompts": {
+    "genre": {
+      "pop": "pop music with melodic vocals and a polished pop arrangement",
+      "rock": "rock music with electric guitars, bass and drums",
+      "electronic": "electronic dance music driven by synthesizers and programmed beats",
+      "rnb_soul": "R&B and soul music with soulful singing and syncopated grooves",
+      "hip_hop": "hip hop music with rhythmic rap vocals and beats",
+      "folk_acoustic": "folk and acoustic music with acoustic guitar and a natural arrangement",
+      "jazz": "jazz music with jazz harmonies, improvisation and swing",
+      "classical_orchestral": "classical or orchestral music with acoustic orchestral instruments",
+      "metal": "heavy metal music with heavily distorted guitars and aggressive playing"
+    },
+    "emotion": {
+      "joy": "joyful music expressing happiness and delight",
+      "sadness": "sad music expressing sorrow and sadness",
+      "anticipation": "music expressing excited anticipation and romantic butterflies",
+      "longing": "music expressing yearning and longing for someone or something",
+      "poignancy": "heartfelt poignant music expressing an aching, pleading emotion",
+      "hope": "hopeful music expressing optimism and encouragement",
+      "anxiety": "anxious music expressing unease, worry and tension",
+      "anger": "angry music expressing rage and hostility"
+    },
+    "mood": {
+      "refreshing": "music with a refreshing, airy, clear and breezy atmosphere",
+      "dreamy": "music with a dreamy, ethereal and floating atmosphere",
+      "warm": "music with a warm, soft and comforting atmosphere",
+      "calm": "music with a calm, peaceful and restrained atmosphere",
+      "dark": "music with a dark, heavy and ominous atmosphere",
+      "grand": "music with a grand, majestic and expansive atmosphere",
+      "bouncy": "music with a light, bouncy and lively atmosphere",
+      "wistful": "music with a wistful, hazy and nostalgic atmosphere"
+    }
+  }
+}
