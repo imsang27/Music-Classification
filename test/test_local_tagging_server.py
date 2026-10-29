@@ -290,13 +290,22 @@ class LocalWebTests(unittest.TestCase):
             tags={'classifier':'rule','results':[{'audio_path':str(paths[0]),'labels':labels,'status':'ok',
                 'candidates':{a:[{'name':v,'rank':1,'representative':True} for v in values] for a,values in labels.items()}}]}
             return classic_web.save(target,tags,{'tempo_bpm':90})
-        with patch('local_tagging_server.classic_web.run_rule',side_effect=rules):
+        with patch('local_tagging_server.classic_web.run_rule',side_effect=rules), \
+             patch('local_tagging_server.classic_web.rule_status',return_value={'ready':True}):
             job=self.wait(self.client.post('/api/jobs/files',data={'method':'rule','audio':(io.BytesIO(b'fixture'),'참고.wav')},headers=self.headers))
         self.assertEqual(job['method'],'rule')
         self.assertEqual(job['result']['results'][0]['labels'],{'genre':['재즈'],'emotion':['슬픈'],'mood':[]})
         self.assertIn('참고 결과',self.client.get(job['downloads']['태깅결과.md']).get_data(as_text=True))
         for tempo in (float('nan'),0,True):
             with self.assertRaises(ValueError):classic_web.rule_labels(tempo)
+
+    def test_missing_rule_dependencies_do_not_disable_manual_recording(self):
+        from music_classification import classic_web
+        with patch('music_classification.classic_web.importlib.util.find_spec',return_value=None):
+            self.assertFalse(classic_web.rule_status(self.settings)['ready'])
+            state=self.client.get('/api/status').json
+            self.assertFalse(state['models']['rule']['ready'])
+            self.assertTrue(state['models']['manual']['ready'])
 
     def test_upload_cleanup_is_reversible_and_does_not_touch_notes(self):
         folder=self.root/'uploads';folder.mkdir()
