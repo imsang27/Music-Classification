@@ -15,7 +15,7 @@ from uuid import uuid4
 import webbrowser
 import urllib.request
 
-from flask import Flask, abort, jsonify, render_template, request, send_file
+from flask import Flask, abort, jsonify, render_template, request, send_file, send_from_directory
 from werkzeug.exceptions import HTTPException, RequestEntityTooLarge
 from werkzeug.serving import make_server
 
@@ -243,7 +243,16 @@ def create_app(settings_path=None, *, root=ROOT, runner=None, youtube_runner=Non
 
     @app.get('/')
     def index():
+        prepared=model_status(settings_path)['ready'] or legacy_genre_web.status(settings_path)['ready']
+        return render_template('classic_home.html',token=token,model_status='준비됨' if prepared else '설정 필요')
+
+    @app.get('/ai')
+    def ai_page():
         return render_template('index.html', token=token)
+
+    @app.get('/classic-assets/<path:filename>')
+    def classic_assets(filename):
+        return send_from_directory(ROOT/'webapp/static',filename)
 
     @app.get('/api/status')
     def status():

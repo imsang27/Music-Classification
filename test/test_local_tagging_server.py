@@ -247,14 +247,21 @@ class LocalWebTests(unittest.TestCase):
         self.assertEqual(response.status_code, 503)
         self.assertEqual(self.client.post('/api/jobs/youtube', json={'url':url,'method':'unknown'}, headers=self.headers).status_code, 400)
 
-    def test_original_entry_point_uses_same_ai_screen(self):
+    def test_original_home_and_dedicated_ai_page_are_separate(self):
         from webapp.app import app
         self.addCleanup(app.extensions['tagging_jobs'].close)
-        page = app.test_client().get('/').get_data(as_text=True)
+        home = app.test_client().get('/').get_data(as_text=True)
+        self.assertIn('id="file-form"',home)
+        self.assertEqual(home.count('data-open-ai="true"'),3)
+        self.assertNotIn('class="sticky-header"',home)
+        self.assertNotIn('onclick=',home)
+        page = app.test_client().get('/ai').get_data(as_text=True)
         self.assertIn('AI 분류 방식', page)
         self.assertIn('sticky-header', page)
         self.assertIn('Wav2Vec2', page)
         self.assertIn('MuQ', page)
+        self.assertIn('기존 페이지로',page)
+        self.assertEqual(app.test_client().get('/classic-assets/css/style.css').status_code,200)
 
     def test_manual_selection_is_saved_without_model_or_audio(self):
         choices=self.client.get('/api/vocabulary').json
