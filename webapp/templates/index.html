@@ -19,9 +19,9 @@
     <nav class="main-tabs tabs" role="tablist" aria-label="분류 및 관리">
       <button type="button" id="ai-nav" role="tab" aria-selected="true" aria-controls="ai-panel" data-section="ai">AI 분류</button>
       <button type="button" id="rule-nav" role="tab" aria-selected="false" aria-controls="ai-panel" data-section="rule" tabindex="-1">규칙 분류</button>
-      <button type="button" id="manual-nav" role="tab" aria-selected="false" aria-controls="ai-panel" data-section="manual" tabindex="-1">직접 분류</button>
       <button type="button" id="uploads-nav" role="tab" aria-selected="false" aria-controls="uploads-panel" data-section="uploads" tabindex="-1">업로드 관리</button>
       <button type="button" id="other-nav" role="tab" aria-selected="false" aria-controls="other-panel" data-section="other" tabindex="-1">기타 기능</button>
+      <button type="button" id="manual-nav" role="tab" aria-selected="false" aria-controls="ai-panel" data-section="manual" tabindex="-1">직접 분류</button>
     </nav>
     <nav id="ai-model-navigation" class="ai-navigation" aria-label="AI 분류">
       <strong>모델 선택</strong>
@@ -37,6 +37,12 @@
       <p class="eyebrow">음악의 느낌을 단어로</p>
       <h1>어떤 음악인가요?</h1>
       <p id="method-description">노래의 소리를 듣고 장르, 감정, 분위기를 제안합니다.</p>
+      <details id="ai-method-guide" class="ai-method-guide">
+        <summary>AI 분류 방식과 준비 상태</summary>
+        <article><h3>사전학습 모델 <span>MuQ · Wav2Vec2</span></h3><p>현재 연결된 방식입니다. 위 모델 탭에서 선택하고 준비 상태를 확인할 수 있습니다.</p></article>
+        <article><h3>전통적 머신러닝 <span>모델 미연결</span></h3><p>SVM · Random Forest. 사용할 학습 모델이 아직 연결되지 않아 실행할 수 없습니다.</p></article>
+        <article><h3>직접 학습한 딥러닝 <span>모델 미연결</span></h3><p>CNN · LSTM. 사용할 학습 모델이 아직 연결되지 않아 실행할 수 없습니다.</p></article>
+      </details>
     </section>
     <div class="workspace">
       <section class="panel input-panel" aria-labelledby="input-title">
@@ -103,7 +109,6 @@
     </section>
     <section id="other-panel" class="panel management-panel" role="tabpanel" aria-labelledby="other-nav" hidden>
       <h2>기존 페이지의 기타 기능</h2><p class="hint">기존 버튼의 구현 상태를 구분해 안내합니다.</p>
-      <article class="availability-card"><h3>머신러닝 분류 <span>미구현</span></h3><p>기존 웹에서는 학습된 ML 모델이 연결되지 않았습니다. 사용할 모델과 출력 체계를 준비해야 합니다.</p></article>
       <article class="availability-card"><h3>통합 분류 <span>미구현</span></h3><p>여러 모델의 결과를 결합할 기준과 검증이 아직 없습니다. AI 탭의 모델 선택은 결과를 합치는 기능이 아닙니다.</p></article>
       <article class="availability-card"><h3>가사 분석 <span>현재 범위 제외</span></h3><p>이 프로젝트는 가사 의미를 제외하고 소리의 인상을 분류합니다.</p></article>
     </section>
