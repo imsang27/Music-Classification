@@ -88,6 +88,14 @@
   });
   document.addEventListener('keydown',event => {if (event.key === 'Escape') hideTip();});
   tip.addEventListener('pointerenter',() => clearTimeout(hideTimer)); tip.addEventListener('pointerleave',laterHide);
-  window.addEventListener('scroll',hideTip,{passive:true}); window.addEventListener('resize',hideTip);
+  function viewportChanged() {
+    // Focusing an off-screen help button can scroll after focusin fires.
+    if (trigger && document.activeElement === trigger) {
+      const rect = trigger.getBoundingClientRect();
+      if (rect.bottom > 0 && rect.top < innerHeight) showTip(trigger);
+      else hideTip();
+    } else hideTip();
+  }
+  window.addEventListener('scroll',viewportChanged,{passive:true}); window.addEventListener('resize',viewportChanged);
   window.MusicUI = {toast,enter,loading,hideTip};
 })();
