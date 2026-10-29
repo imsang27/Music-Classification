@@ -21,6 +21,7 @@ from werkzeug.serving import make_server
 from music_classification.app_paths import default_settings_path
 from music_classification.settings import ModelSettings
 from music_classification.youtube_input import canonical_url, environment_status, YoutubeInputError
+from music_classification import legacy_genre_web
 
 ROOT = Path(__file__).resolve().parent
 EXTENSIONS = {'.wav', '.mp3', '.flac', '.ogg', '.m4a', '.aac'}
@@ -78,15 +79,20 @@ class Jobs:
                 abort(404, description='이 서버 실행 중에 생성한 작업을 찾을 수 없습니다.')
             return deepcopy(item)
 
-    def start(self, job_id, *, upload=None, names=None, url=None):
-        self.pool.submit(self.execute, job_id, upload, names, url)
+    def start(self, job_id, *, upload=None, names=None, url=None, method='familiar'):
+        self.pool.submit(self.execute, job_id, upload, names, url, method)
 
-    def execute(self, job_id, upload, names, url):
+    def execute(self, job_id, upload, names, url, method):
         result = None
         try:
             self.update(job_id, status='running', message='오디오를 분석하고 있습니다. 처음에는 모델 준비에 시간이 걸릴 수 있습니다.')
             target = self.root / 'outputs' / 'local-web' / job_id
-            if url:
+            if method == 'wav2vec2':
+                if url:
+                    folder, code = legacy_genre_web.run_youtube(url, target, self.settings)
+                else:
+                    folder, code = legacy_genre_web.run(sorted(Path(upload).iterdir()), target, self.settings)
+            elif url:
                 folder, code = self.youtube_runner(url, target, self.settings)
             else:
                 paths = sorted(Path(upload).iterdir())
@@ -102,10 +108,12 @@ class Jobs:
                     row.update(display_name=name, audio_path=None, input_kind='local_upload')
                 result['input_retention'] = 'temporary_uploads_deleted_after_processing'
                 (folder / 'tags.json').write_text(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + '\n', encoding='utf-8')
-                from tag_audio import markdown
+                from tag_audio import markdown as familiar_markdown
+                markdown = legacy_genre_web.markdown if method == 'wav2vec2' else familiar_markdown
                 (folder / '태깅결과.md').write_text(markdown(result), encoding='utf-8')
             successful = sum(row['labels'] is not None for row in result['results'])
             final = {'status': 'completed' if code == 0 else 'partial',
+                     'method': method,
                      'message': f'{successful}/{len(result["results"])}개 분류 완료', 'result': result,
                      'downloads': {name: f'/api/jobs/{job_id}/downloads/{name}' for name in sorted(EXPORTS)}}
         except YoutubeInputError as exc:
@@ -191,16 +199,20 @@ def create_app(settings_path=None, *, root=ROOT, runner=None, youtube_runner=Non
         with jobs.lock:
             active = jobs.active
         return jsonify(application='music-classification-local-web-v1', model=model_status(settings_path),
+                       models={'familiar': model_status(settings_path), 'wav2vec2': legacy_genre_web.status(settings_path)},
                        youtube=environment_status(), active_job=active)
 
-    def ready():
-        state = model_status(settings_path)
+    def ready(method):
+        if method not in ('familiar', 'wav2vec2'):
+            abort(400, description='지원하지 않는 AI 분류 방식입니다.')
+        state = legacy_genre_web.status(settings_path) if method == 'wav2vec2' else model_status(settings_path)
         if not state['ready']:
             abort(503, description=state['message'])
 
     @app.post('/api/jobs/files')
     def files_job():
-        ready()
+        method = request.form.get('method', 'familiar')
+        ready(method)
         files = request.files.getlist('audio')
         if not 1 <= len(files) <= 20:
             abort(400, description='음원 파일을 1~20개 선택해주세요.')
@@ -228,7 +240,7 @@ def create_app(settings_path=None, *, root=ROOT, runner=None, youtube_runner=Non
                         stream.write(chunk)
                 if size == 0:
                     abort(400, description='빈 파일은 분석할 수 없습니다.')
-            jobs.start(job_id, upload=folder, names=names)
+            jobs.start(job_id, upload=folder, names=names, method=method)
         except Exception:
             try:
                 if folder is not None:
@@ -241,10 +253,11 @@ def create_app(settings_path=None, *, root=ROOT, runner=None, youtube_runner=Non
 
     @app.post('/api/jobs/youtube')
     def youtube_job():
-        ready()
         data = request.get_json(silent=True)
         if not isinstance(data, dict):
             abort(400, description='YouTube 영상 한 곡의 링크를 입력해주세요.')
+        method = data.get('method', 'familiar')
+        ready(method)
         try:
             url = canonical_url(data.get('url'))
         except ValueError as exc:
@@ -254,7 +267,7 @@ def create_app(settings_path=None, *, root=ROOT, runner=None, youtube_runner=Non
             abort(503, description=youtube_state['message'])
         job_id = jobs.reserve()
         try:
-            jobs.start(job_id, url=url)
+            jobs.start(job_id, url=url, method=method)
         except Exception:
             jobs.release(job_id)
             jobs.update(job_id, status='failed', message='작업을 시작하지 못했습니다.')

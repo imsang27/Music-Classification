@@ -2,6 +2,33 @@
 const $ = id => document.getElementById(id);
 const token = document.querySelector('meta[name="app-token"]').content;
 let mode = 'files', busy = false, ready = false, youtubeState = null;
+let method = 'familiar', models = {};
+const resultByMethod = {};
+function selectMethod(value, announce = true, force = false) {
+  if (busy && !force) return;
+  method = value;
+  for (const [id, key] of [['familiar-tab','familiar'],['legacy-tab','wav2vec2']]) {
+    $(id).setAttribute('aria-selected', String(method === key)); $(id).tabIndex = method === key ? 0 : -1;
+  }
+  $('ai-panel').setAttribute('aria-labelledby', method === 'familiar' ? 'familiar-tab' : 'legacy-tab');
+  $('method-description').textContent = method === 'familiar' ? 'MuQ · 장르 25개, 감정 9개, 분위기 11개를 전곡에서 비교합니다.' : 'Wav2Vec2 · 앞부분 최대 30초로 기존 10장르를 분류합니다. 감정·분위기는 미지원입니다.';
+  const emptyCopy = $('empty-copy') || $('empty-state').querySelector('p');
+  emptyCopy.textContent = method === 'familiar' ? '분류가 끝나면 감정과 분위기를 각각 세 가지 후보로 보여드릴게요.' : '분류가 끝나면 기존 10장르 중 가장 가까운 장르를 보여드립니다. 감정·분위기는 제공하지 않습니다.';
+  ready = Boolean(models[method]?.ready); controls();
+  $('model-help').hidden = ready || method === 'wav2vec2';
+  if (announce) message(models[method]?.message || '실행 환경을 확인하고 있습니다.', ready ? '' : 'error');
+  if (resultByMethod[method]) showResults(resultByMethod[method]);
+  else {$('results').replaceChildren(); $('downloads').hidden = true; $('result-count').textContent = ''; $('empty-state').hidden = false;}
+}
+for (const id of ['familiar-tab','legacy-tab']) {
+  $(id).addEventListener('click', () => selectMethod($(id).dataset.method));
+  $(id).addEventListener('keydown', event => {
+    if (busy || !['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+    event.preventDefault();
+    const next = event.key === 'Home' ? 'familiar' : event.key === 'End' ? 'wav2vec2' : method === 'familiar' ? 'wav2vec2' : 'familiar';
+    selectMethod(next); $(next === 'familiar' ? 'familiar-tab' : 'legacy-tab').focus();
+  });
+}
 const api = async (url, options = {}) => {
   const response = await fetch(url, {...options, headers: {'X-App-Token': token, ...options.headers}});
   const data = await response.json();
@@ -14,7 +41,7 @@ function message(text, kind = '') { $('status').textContent = text; $('status').
 function controls() {
   $('start').disabled = busy || !ready;
   $('start').firstChild.textContent = busy ? '분류 중입니다 ' : '분류 시작 ';
-  for (const id of ['file-tab', 'youtube-tab', 'audio-files', 'youtube-url']) $(id).disabled = busy;
+  for (const id of ['file-tab', 'youtube-tab', 'audio-files', 'youtube-url','familiar-tab','legacy-tab']) $(id).disabled = busy;
 }
 function chooseMode(value) {
   if (busy) return;
@@ -42,8 +69,13 @@ $('drop-zone').addEventListener('drop', event => {
   if (!busy && event.dataTransfer.files.length) {$('audio-files').files = event.dataTransfer.files; listFiles();}
 });
 function showResults(job) {
+  resultByMethod[job.method || 'familiar'] = job;
+  $('empty-state').hidden = true;
   $('results').replaceChildren(); $('downloads').replaceChildren();
   const rows = job.result.results;
+  const sourceLabel = document.createElement('p'); sourceLabel.className = 'hint';
+  sourceLabel.textContent = job.method === 'wav2vec2' ? '기존 AI · Wav2Vec2 · 앞부분 최대 30초' : '현재 AI · MuQ · 전곡 구간 종합';
+  $('results').append(sourceLabel);
   $('result-count').textContent = `${rows.length}곡`;
   for (const row of rows) {
     const card = document.createElement('article'); card.className = 'song';
@@ -58,6 +90,7 @@ function showResults(job) {
         const label = document.createElement('span'); label.className = 'axis-label'; label.textContent = name;
         const chips = document.createElement('div'); chips.className = 'chips';
         const candidates = axis === 'genre' ? row.candidates[axis].slice(0,1) : row.candidates[axis].slice(0,3);
+        if (!candidates.length) {const note = document.createElement('span'); note.className = 'unsupported'; note.textContent = '이 방식에서는 미지원'; chips.append(note);}
         for (const candidate of candidates) {
           const chip = document.createElement('span'); chip.className = 'chip' + (candidate.representative ? ' primary-chip' : '');
           const rank = document.createElement('small'); rank.textContent = candidate.representative ? '대표' : `${candidate.rank}순위`;
@@ -79,6 +112,7 @@ async function poll(id) {
   try {
     while (true) {
       const job = await api(`/api/jobs/${encodeURIComponent(id)}`);
+      if (job.method && job.method !== method) selectMethod(job.method, false, true);
       message(job.message, ['preparing','running'].includes(job.status) ? 'busy' : job.status === 'completed' ? '' : 'error');
       if (['completed','partial'].includes(job.status)) {showResults(job); break;}
       if (job.status === 'failed') break;
@@ -102,12 +136,12 @@ $('tagging-form').addEventListener('submit', async event => {
     if (files.some(file => !file.size || file.size > 100*1048576) || files.reduce((n,f) => n+f.size,0) > 500*1048576) {
       message('빈 파일을 제외하고 파일당 100MiB, 합계 500MiB 이하로 선택해주세요.', 'error'); return;
     }
-    body = new FormData(); for (const file of files) body.append('audio', file);
+    body = new FormData(); body.append('method',method); for (const file of files) body.append('audio', file);
     options = {method:'POST', body};
   } else {
     const url = $('youtube-url').value.trim();
     if (!url) {message('YouTube 영상 한 곡의 링크를 입력해주세요.', 'error'); return;}
-    options = {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({url})};
+    options = {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({url,method})};
   }
   busy = true; controls(); message('입력을 준비하고 있습니다.', 'busy');
   try {
@@ -120,7 +154,7 @@ $('tagging-form').addEventListener('submit', async event => {
 });
 async function initialize() {
   try {
-    const state = await api('/api/status'); ready = state.model.ready; youtubeState = state.youtube;
+    const state = await api('/api/status'); models = state.models; youtubeState = state.youtube; selectMethod('familiar',false);
     message(state.model.message, ready ? '' : 'error'); $('model-help').hidden = ready; controls();
     const id = state.active_job || sessionStorage.getItem('music-tagging-job');
     if (id) await poll(id);

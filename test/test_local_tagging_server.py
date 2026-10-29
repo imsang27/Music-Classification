@@ -214,6 +214,48 @@ class LocalWebTests(unittest.TestCase):
              patch('music_classification.youtube_input.ffmpeg_executable', return_value=self.root / 'missing-ffmpeg'):
             self.assertIn('FFmpeg', environment_status()['message'])
 
+    def test_legacy_tab_uses_original_runner_and_exports_unsupported_axes(self):
+        def original(paths, target, settings):
+            folder, code = fake_run(paths, target, settings, profile='familiar')
+            path = folder / 'tags.json'
+            tags = json.loads(path.read_text(encoding='utf-8'))
+            tags.update(schema='music_legacy_genre_tags_v1', classifier='wav2vec2')
+            for row in tags['results']:
+                row['labels'].update(emotion=[], mood=[])
+                row['candidates'].update(emotion=[], mood=[])
+            path.write_text(json.dumps(tags), encoding='utf-8')
+            return folder, code
+        with patch('local_tagging_server.legacy_genre_web.status', return_value={'ready': True}), \
+             patch('local_tagging_server.legacy_genre_web.run', side_effect=original) as runner:
+            response = self.client.post('/api/jobs/files', data={'method':'wav2vec2',
+                'audio': (io.BytesIO(b'original audio'), '기존.wav')}, headers=self.headers)
+            job = self.wait(response)
+        self.assertEqual(runner.call_count, 1)
+        self.assertEqual(job['method'], 'wav2vec2')
+        self.assertEqual(job['result']['results'][0]['labels']['emotion'], [])
+        self.assertIn('미지원', self.client.get(job['downloads']['태깅결과.md']).get_data(as_text=True))
+
+    def test_legacy_youtube_dispatch_and_unavailable_model_are_explicit(self):
+        url = 'https://www.youtube.com/watch?v=-VKIqrvVOpo'
+        with patch('local_tagging_server.legacy_genre_web.status', return_value={'ready': True}), \
+             patch('local_tagging_server.legacy_genre_web.run_youtube', side_effect=self.youtube) as runner:
+            job = self.wait(self.client.post('/api/jobs/youtube', json={'url':url,'method':'wav2vec2'}, headers=self.headers))
+        self.assertEqual(runner.call_args.args[0], url)
+        self.assertEqual(job['method'], 'wav2vec2')
+        with patch('local_tagging_server.legacy_genre_web.status', return_value={'ready': False, 'message':'기존 모델 없음'}):
+            response = self.client.post('/api/jobs/youtube', json={'url':url,'method':'wav2vec2'}, headers=self.headers)
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(self.client.post('/api/jobs/youtube', json={'url':url,'method':'unknown'}, headers=self.headers).status_code, 400)
+
+    def test_original_entry_point_uses_same_ai_screen(self):
+        from webapp.app import app
+        self.addCleanup(app.extensions['tagging_jobs'].close)
+        page = app.test_client().get('/').get_data(as_text=True)
+        self.assertIn('AI 분류 방식', page)
+        self.assertIn('sticky-header', page)
+        self.assertIn('Wav2Vec2', page)
+        self.assertIn('MuQ', page)
+
 
 if __name__ == '__main__':
     unittest.main()
