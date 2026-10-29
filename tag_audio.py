@@ -106,9 +106,9 @@ def markdown(document):
              assignment_text,
              '가사·아티스트 정보는 분석하지 않았습니다. 원본 음원과 Obsidian 노트는 수정하지 않았습니다.', '',
              ('| 음원 | 장르 대표 | 감정 후보1~3 | 분위기 후보1~3 |' if familiar else '| 음원 | 장르 | 감정 | 분위기 |'), '|---|---|---|---|']
-    if document.get('input_source',{}).get('kind')=='youtube':
+    if document.get('input_source',{}).get('kind') in ('youtube','direct'):
         lines[3:3]=['원본 링크: '+document['input_source']['url'],
-                    '분석용 오디오는 처리 후 삭제하고 결과만 저장합니다. 영상 제목은 화면 표시용이며 분류 근거로 사용하지 않습니다.','']
+                    '분석용 오디오는 처리 후 삭제하고 결과만 저장합니다. 제목은 화면 표시용이며 분류 근거로 사용하지 않습니다.','']
     for row in document['results']:
         name = (row.get('display_name') or Path(row['audio_path']).name).replace('|','\\|')
         if row['labels'] is None:
@@ -155,8 +155,8 @@ def run(paths, output_directory=None, settings=SETTINGS, *, profile='single',sou
     paths = [Path(p).expanduser().resolve() for p in paths]
     if not paths:
         raise ValueError('태깅할 음원을 선택해주세요.')
-    if source is not None and (profile!='familiar' or len(paths)!=1 or source.get('kind')!='youtube'):
-        raise ValueError('YouTube 입력은 익숙한 표현 구성에서 한 곡씩 지원합니다.')
+    if source is not None and (profile!='familiar' or len(paths)!=1 or source.get('kind') not in ('youtube','direct')):
+        raise ValueError('링크 입력은 익숙한 표현 구성에서 한 곡씩 지원합니다.')
     target = Path(output_directory) if output_directory else ROOT/'outputs/tagged_audio'/datetime.now().strftime('%Y%m%d-%H%M%S-%f')
     # Always create a new directory so exports cannot overwrite audio or settings.
     target.mkdir(parents=True,exist_ok=False)

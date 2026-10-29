@@ -213,7 +213,7 @@ except Exception as e:
 @app.route('/')
 def index():
     model_status = "로드됨" if wav2vec2_model else "로드되지 않음"
-    return render_template('index.html', prediction=None, model_status=model_status)
+    return render_template('legacy_index.html', prediction=None, model_status=model_status)
 
 @app.route('/progress/<task_id>')
 def progress_page(task_id):
@@ -306,13 +306,13 @@ def classify():
             except Exception as cleanup_error:
                 print(f"임시 파일 정리 실패: {cleanup_error}")
 
-    return render_template('index.html', prediction=result)
+    return render_template('legacy_index.html', prediction=result)
 
 @app.route('/classify_url', methods=['POST'])
 def classify_url():
     url = request.form.get('url', '').strip()
     if not url:
-        return render_template('index.html', prediction={'error': 'URL을 입력해주세요.'})
+        return render_template('legacy_index.html', prediction={'error': 'URL을 입력해주세요.'})
 
     action = request.form.get('action')
     print(f"DEBUG: URL 분류 - 받은 action 값: '{action}'")  # 디버깅용
@@ -384,23 +384,23 @@ def classify_url():
             print(f"DEBUG: URL 분류 - 예상되지 않은 action 값: '{action}'")  # 디버깅용
             result = {'error': f'선택한 기능을 사용할 수 없습니다. (action: {action})'}
 
-        return render_template('index.html', prediction=result, url=url)
+        return render_template('legacy_index.html', prediction=result, url=url)
 
     except Exception as e:
         update_progress(task_id, 'error', f'분류 중 오류 발생: {str(e)}', 0)
-        return render_template('index.html', prediction={'error': f'분류 중 오류 발생: {str(e)}'}, url=url)
+        return render_template('legacy_index.html', prediction={'error': f'분류 중 오류 발생: {str(e)}'}, url=url)
 
 @app.route('/batch_classify', methods=['POST'])
 def batch_classify():
     urls_text = request.form.get('urls', '').strip()
     if not urls_text:
-        return render_template('index.html', prediction={'error': 'URL 목록을 입력해주세요.'})
+        return render_template('legacy_index.html', prediction={'error': 'URL 목록을 입력해주세요.'})
 
     # URL 목록 파싱 (줄바꿈이나 쉼표로 구분)
     urls = [url.strip() for url in urls_text.replace(',', '\n').split('\n') if url.strip()]
 
     if not urls:
-        return render_template('index.html', prediction={'error': '유효한 URL이 없습니다.'})
+        return render_template('legacy_index.html', prediction={'error': '유효한 URL이 없습니다.'})
 
     action = request.form.get('action')
 
@@ -443,9 +443,9 @@ def batch_classify():
             # 진행률 페이지로 리다이렉트
             return redirect(url_for('progress_page', task_id=task_id))
         else:
-            return render_template('index.html', prediction={'error': 'Wav2Vec2 모델이 로드되지 않았습니다.'})
+            return render_template('legacy_index.html', prediction={'error': 'Wav2Vec2 모델이 로드되지 않았습니다.'})
     else:
-        return render_template('index.html', prediction={'error': '일괄 분류는 Wav2Vec2 모델만 지원합니다.'})
+        return render_template('legacy_index.html', prediction={'error': '일괄 분류는 Wav2Vec2 모델만 지원합니다.'})
 
 @app.route('/api/validate_url', methods=['POST'])
 def validate_url_api():
