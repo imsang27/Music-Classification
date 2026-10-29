@@ -256,6 +256,99 @@ class LocalWebTests(unittest.TestCase):
         self.assertIn('Wav2Vec2', page)
         self.assertIn('MuQ', page)
 
+    def test_manual_selection_is_saved_without_model_or_audio(self):
+        choices=self.client.get('/api/vocabulary').json
+        labels={a:[values[0]] for a,values in choices.items()}
+        with patch('local_tagging_server.ModelSettings.from_file',side_effect=AssertionError('manual must not load models')):
+            job=self.wait(self.client.post('/api/jobs/manual',json={'title':'직접 선택한 곡','labels':labels},headers=self.headers))
+        self.assertEqual(job['method'],'manual')
+        self.assertEqual(job['result']['origin'],'human_entered')
+        self.assertEqual(job['result']['results'][0]['labels'],labels)
+        self.assertIsNone(job['result']['results'][0]['audio_path'])
+        self.assertIn('사용자가 선택',self.client.get(job['downloads']['태깅결과.md']).get_data(as_text=True))
+        labels['emotion']=['unknown']
+        self.assertEqual(self.client.post('/api/jobs/manual',json={'title':'곡','labels':labels},headers=self.headers).status_code,400)
+
+    def test_batch_links_keep_failures_and_continue(self):
+        urls=['https://www.youtube.com/watch?v=-VKIqrvVOpo','https://www.youtube.com/watch?v=9lVPAWLWtWc','https://www.youtube.com/watch?v=KTZ-y85Erus']
+        def linked(url,target,settings):
+            if url==urls[1]:raise YoutubeInputError('fixture unavailable')
+            return self.youtube(url,target,settings)
+        with patch.object(self.app.extensions['tagging_jobs'],'youtube_runner',side_effect=linked):
+            job=self.wait(self.client.post('/api/jobs/links',json={'urls':urls},headers=self.headers))
+        self.assertEqual(job['status'],'partial')
+        self.assertEqual(len(job['result']['results']),3)
+        self.assertIsNone(job['result']['results'][1]['labels'])
+        self.assertIsNotNone(job['result']['results'][2]['labels'])
+        self.assertIsNone(self.client.get(job['downloads']['status.json']).json['temporary_audio_removed'])
+        self.assertEqual(self.client.post('/api/jobs/links',json={'urls':urls*4},headers=self.headers).status_code,400)
+
+    def test_rule_upload_dispatch_and_legacy_rules_are_explicit(self):
+        from music_classification import classic_web
+        def rules(paths,target,settings):
+            labels=classic_web.rule_labels(90.0)
+            tags={'classifier':'rule','results':[{'audio_path':str(paths[0]),'labels':labels,'status':'ok',
+                'candidates':{a:[{'name':v,'rank':1,'representative':True} for v in values] for a,values in labels.items()}}]}
+            return classic_web.save(target,tags,{'tempo_bpm':90})
+        with patch('local_tagging_server.classic_web.run_rule',side_effect=rules), \
+             patch('local_tagging_server.classic_web.rule_status',return_value={'ready':True}):
+            job=self.wait(self.client.post('/api/jobs/files',data={'method':'rule','audio':(io.BytesIO(b'fixture'),'참고.wav')},headers=self.headers))
+        self.assertEqual(job['method'],'rule')
+        self.assertEqual(job['result']['results'][0]['labels'],{'genre':['재즈'],'emotion':['슬픈'],'mood':[]})
+        self.assertIn('참고 결과',self.client.get(job['downloads']['태깅결과.md']).get_data(as_text=True))
+        for tempo in (float('nan'),0,True):
+            with self.assertRaises(ValueError):classic_web.rule_labels(tempo)
+
+    def test_missing_rule_dependencies_do_not_disable_manual_recording(self):
+        from music_classification import classic_web
+        with patch('music_classification.classic_web.importlib.util.find_spec',return_value=None):
+            self.assertFalse(classic_web.rule_status(self.settings)['ready'])
+            state=self.client.get('/api/status').json
+            self.assertFalse(state['models']['rule']['ready'])
+            self.assertTrue(state['models']['manual']['ready'])
+
+    def test_upload_cleanup_is_reversible_and_does_not_touch_notes(self):
+        folder=self.root/'uploads';folder.mkdir()
+        (folder/'곡.wav').write_bytes(b'original');(folder/'note.md').write_text('keep',encoding='utf-8')
+        state=self.client.get('/api/uploads').json
+        self.assertEqual(state['count'],1)
+        self.assertEqual(self.client.post('/api/uploads/recycle',json={'version':'stale'},headers=self.headers).status_code,409)
+        recycled=self.client.post('/api/uploads/recycle',json={'version':state['version']},headers=self.headers)
+        self.assertEqual(recycled.status_code,200)
+        self.assertFalse((folder/'곡.wav').exists());self.assertTrue((folder/'note.md').exists())
+        self.assertEqual(self.client.get('/api/uploads').json['count'],0)
+        restored=self.client.post('/api/uploads/restore',json={'id':recycled.json['id']},headers=self.headers)
+        self.assertEqual(restored.status_code,200)
+        self.assertEqual((folder/'곡.wav').read_bytes(),b'original')
+        self.assertEqual(self.client.post('/api/uploads/restore',json={'id':'../../bad'},headers=self.headers).status_code,409)
+
+    def test_upload_cleanup_refuses_changes_during_analysis(self):
+        jobs=self.app.extensions['tagging_jobs'];identifier=jobs.reserve()
+        try:self.assertEqual(self.client.post('/api/uploads/recycle',json={'version':'x'},headers=self.headers).status_code,409)
+        finally:jobs.release(identifier)
+
+    def test_direct_link_source_keeps_origin_and_does_not_use_youtube_downloader(self):
+        from contextlib import contextmanager
+        from music_classification.youtube_input import YoutubeAudio
+        @contextmanager
+        def direct(url):
+            with tempfile.TemporaryDirectory(dir=self.root) as folder:
+                path=Path(folder)/'audio.wav';path.write_bytes(b'fixture')
+                yield YoutubeAudio(path,{'kind':'direct','url':url,'title':'public.wav','audio_sha256':hashlib.sha256(path.read_bytes()).hexdigest()})
+            self.assertFalse(path.exists())
+        with patch('local_tagging_server.temporary_input',side_effect=direct):
+            job=self.wait(self.client.post('/api/jobs/youtube',json={'url':'https://example.org/public.wav'},headers=self.headers))
+        self.assertEqual(job['result']['input_source']['kind'],'direct')
+        self.assertEqual(self.youtube_calls,[])
+        self.assertTrue(self.client.get(job['downloads']['status.json']).json['temporary_audio_removed'])
+
+    def test_link_preview_does_not_start_analysis(self):
+        preview={'kind':'youtube','title':'공식 영상','url':'https://www.youtube.com/watch?v=-VKIqrvVOpo','duration_seconds':200}
+        with patch('local_tagging_server.preview_link',return_value=preview):
+            response=self.client.post('/api/link_preview',json={'url':preview['url']},headers=self.headers)
+        self.assertEqual(response.json,preview)
+        self.assertIsNone(self.client.get('/api/status').json['active_job'])
+
 
 if __name__ == '__main__':
     unittest.main()
