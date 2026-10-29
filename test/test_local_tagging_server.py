@@ -10,10 +10,12 @@ import tempfile
 import threading
 import time
 import unittest
+import tomllib
 from unittest.mock import patch
 
 from local_tagging_server import create_app
 from music_classification.familiar_candidates import PROFILE_SHA256, profile_spec, ranked_axes
+from music_classification.youtube_input import YoutubeInputError, environment_status
 import tag_audio
 
 
@@ -43,6 +45,9 @@ class LocalWebTests(unittest.TestCase):
         gc.collect()
 
     def setUp(self):
+        dependency_patch = patch('local_tagging_server.environment_status', return_value={'ready': True, 'message': 'ready'})
+        dependency_patch.start()
+        self.addCleanup(dependency_patch.stop)
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
@@ -178,6 +183,36 @@ class LocalWebTests(unittest.TestCase):
         self.assertFalse(self.client.get('/api/status').json['model']['ready'])
         self.assertEqual(self.submit().status_code, 503)
         self.assertIsNone(self.client.get('/api/status').json['active_job'])
+
+    def test_youtube_environment_is_reported_before_starting_a_job(self):
+        missing = {'ready': False, 'message': 'YouTube 연결 도구가 없습니다.'}
+        with patch('local_tagging_server.environment_status', return_value=missing):
+            self.assertEqual(self.client.get('/api/status').json['youtube'], missing)
+            response = self.client.post('/api/jobs/youtube', json={'url': 'https://youtu.be/-VKIqrvVOpo'}, headers=self.headers)
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.json['error'], missing['message'])
+        self.assertEqual(self.youtube_calls, [])
+        self.assertIsNone(self.client.get('/api/status').json['active_job'])
+
+    def test_specific_youtube_error_is_visible_and_job_released(self):
+        message = 'YouTube 오디오를 가져오지 못했습니다. 공개 영상 여부를 확인해주세요.'
+        with patch.object(self.app.extensions['tagging_jobs'], 'youtube_runner', side_effect=YoutubeInputError(message)):
+            job = self.wait(self.client.post('/api/jobs/youtube', json={'url': 'https://youtu.be/-VKIqrvVOpo'}, headers=self.headers))
+        self.assertEqual(job['status'], 'failed')
+        self.assertEqual(job['message'], message)
+        self.assertIsNone(self.client.get('/api/status').json['active_job'])
+
+    def test_web_install_includes_link_dependencies_and_detects_missing_tools(self):
+        project = tomllib.loads((Path(__file__).resolve().parents[1] / 'pyproject.toml').read_text(encoding='utf-8'))
+        extras = project['project']['optional-dependencies']
+        self.assertTrue(set(extras['youtube']) <= set(extras['web']))
+        with patch('music_classification.youtube_input.importlib.util.find_spec', return_value=None):
+            state = environment_status()
+            self.assertFalse(state['ready'])
+            self.assertIn('YouTube', state['message'])
+        with patch('music_classification.youtube_input.importlib.util.find_spec', return_value=object()), \
+             patch('music_classification.youtube_input.ffmpeg_executable', return_value=self.root / 'missing-ffmpeg'):
+            self.assertIn('FFmpeg', environment_status()['message'])
 
 
 if __name__ == '__main__':

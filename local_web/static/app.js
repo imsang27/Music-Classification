@@ -1,7 +1,7 @@
 'use strict';
 const $ = id => document.getElementById(id);
 const token = document.querySelector('meta[name="app-token"]').content;
-let mode = 'files', busy = false, ready = false;
+let mode = 'files', busy = false, ready = false, youtubeState = null;
 const api = async (url, options = {}) => {
   const response = await fetch(url, {...options, headers: {'X-App-Token': token, ...options.headers}});
   const data = await response.json();
@@ -22,6 +22,7 @@ function chooseMode(value) {
   $('file-panel').hidden = mode !== 'files'; $('youtube-panel').hidden = mode !== 'youtube';
   $('file-tab').setAttribute('aria-selected', String(mode === 'files'));
   $('youtube-tab').setAttribute('aria-selected', String(mode === 'youtube'));
+  if (mode === 'youtube' && youtubeState && !youtubeState.ready) message(youtubeState.message, 'error');
 }
 $('file-tab').addEventListener('click', () => chooseMode('files'));
 $('youtube-tab').addEventListener('click', () => chooseMode('youtube'));
@@ -119,7 +120,7 @@ $('tagging-form').addEventListener('submit', async event => {
 });
 async function initialize() {
   try {
-    const state = await api('/api/status'); ready = state.model.ready;
+    const state = await api('/api/status'); ready = state.model.ready; youtubeState = state.youtube;
     message(state.model.message, ready ? '' : 'error'); $('model-help').hidden = ready; controls();
     const id = state.active_job || sessionStorage.getItem('music-tagging-job');
     if (id) await poll(id);
