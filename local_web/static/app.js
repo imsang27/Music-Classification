@@ -221,7 +221,9 @@ $('restore-uploads').addEventListener('click',async()=>{
   catch(error){feedback(error.message);}finally{$('restore-uploads').disabled=false;}
 });
 async function initialize(){
-  try{const state=await api('/api/status');models=state.models;youtubeState=state.youtube;showModelStatus();selectMethod('familiar',false);loadVocabulary().catch(error=>feedback(error.message));message(state.model.message,ready?'':'error');const id=state.active_job||sessionStorage.getItem('music-tagging-job');if(id)await poll(id,false);}
+  try{const state=await api('/api/status');models=state.models;youtubeState=state.youtube;showModelStatus();selectMethod('familiar',false);loadVocabulary().catch(error=>feedback(error.message));message(state.model.message,ready?'':'error');
+    const query=new URLSearchParams(location.search);if(['files','youtube','links'].includes(query.get('input')))chooseMode(query.get('input'));if(['manual','rule','uploads','other'].includes(query.get('section')))selectSection(query.get('section'));
+    const id=state.active_job||sessionStorage.getItem('music-tagging-job');if(id)await poll(id,false);}
   catch(error){feedback('서버에 연결하지 못했습니다. 실행 창을 확인한 뒤 새로고침해주세요.');}
   finally{busy=false;controls();}
 }

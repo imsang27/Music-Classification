@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="app-token" content="{{ token }}">
+    <title>음악 분류 웹</title>
+    <link rel="stylesheet" href="{{ url_for('classic_assets', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('classic_assets', filename='css/bridge.css') }}">
+</head>
+<body class="dark-mode">
+    <div class="mode-toggle">
+        <button type="button" id="classic-theme">화이트 모드</button>
+    </div>
+
+    <!-- 모델 상태 표시 -->
+    <div class="model-status">
+        <div class="status-header">
+            <div class="model-label-container">
+                <span class="status-label">AI 모델:</span>
+                <span id="model-name" class="model-name" hidden></span>
+            </div>
+            <button type="button" class="refresh-model-btn" id="classic-model-refresh" title="모델 상태 새로고침">🔄</button>
+        </div>
+        <div class="status-content">
+            <span class="status-value {% if model_status == '준비됨' %}status-success{% else %}status-error{% endif %}">
+                {{ model_status }}
+            </span>
+            {% if model_status == '설정 필요' %}
+                <span class="status-note">(AI 페이지에서 준비 상태를 확인하세요)</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="center-container">
+        <!-- 파일 업로드 폼 -->
+        <div class="form-section">
+            <h3>📁 파일로 분류하기</h3>
+            <form action="{{ url_for('index') }}" method="post" enctype="multipart/form-data" id="file-form">
+                <div class="file-search-bar">
+                    <span class="cta-text" id="random-cta"></span>
+                    <div class="right-group">
+                        <span id="file-name"></span>
+                        <label for="audio_file" class="file-label">음악 찾기</label>
+                        <input type="file" id="audio_file" name="audio_file" required>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button type="button" class="big-btn" data-open-ai="true">🎵 AI로 분석하기</button>
+                    <button type="button" class="big-btn" data-open-manual="true">✋ 직접 분류하기</button>
+                    <button type="submit" class="big-btn" name="action" value="rule">📋 규칙으로 분류</button>
+                    <button type="submit" class="big-btn" name="action" value="ml" disabled title="기존 웹에서 미구현 상태인 기능입니다.">🤖 머신러닝 분류</button>
+                    <button type="submit" class="big-btn" name="action" value="lyrics" disabled title="현재 범위에서 제외된 기능입니다.">📝 가사로 분석하기</button>
+                    <button type="submit" class="big-btn" name="action" value="hybrid" disabled title="기존 웹에서 미구현 상태인 기능입니다.">🔗 통합 분류하기</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- URL 링크 폼 -->
+        <div class="form-section">
+            <h3>🔗 링크로 분류하기</h3>
+            <form action="{{ url_for('index') }}" method="post" id="url-form">
+                <div class="url-input-group">
+                    <div class="url-input-container">
+                        <input type="url" id="url_input" name="url" placeholder="YouTube 링크나 음악 파일 링크를 입력하세요..."
+                               required class="url-input">
+                        <button type="button" class="preview-btn" id="classic-preview" title="링크 미리보기">👁️</button>
+                    </div>
+                    <div id="url-validation" class="validation-message"></div>
+                </div>
+
+                <!-- 링크 미리보기 -->
+                <div id="link-preview" class="link-preview" hidden>
+                    <div class="preview-content">
+                        <div class="preview-header">
+                            <span id="preview-platform" class="platform-badge"></span>
+                            <button type="button" class="close-preview" id="classic-preview-close">×</button>
+                        </div>
+                        <div id="preview-info" class="preview-info">
+                            <!-- 미리보기 정보가 여기에 표시됩니다 -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="button" class="big-btn" data-open-ai="true">🎵 AI로 분석하기</button>
+                    <button type="submit" class="big-btn" name="action" value="rule">📋 규칙으로 분류</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 일괄 분류 폼 -->
+        <div class="form-section">
+            <h3>📋 여러 링크 일괄 분류하기</h3>
+            <form action="{{ url_for('index') }}" method="post" id="batch-form">
+                <div class="batch-input-group">
+                    <textarea id="urls_input" name="urls" placeholder="여러 링크를 줄바꿈이나 쉼표로 구분하여 입력하세요...&#10;예시:&#10;https://youtube.com/watch?v=...&#10;https://youtube.com/watch?v=...&#10;https://example.com/music.mp3"
+                              required class="batch-textarea"></textarea>
+                </div>
+                <div class="button-group">
+                    <button type="button" class="big-btn" data-open-ai="true">🎵 AI로 일괄 분석하기</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 업로드 폴더 관리 -->
+        <div class="form-section">
+            <h3>🗂️ 업로드 폴더 관리</h3>
+            <div class="uploads-info">
+                <div class="info-header">
+                    <span class="info-label">📁 업로드된 파일 정보</span>
+                    <button type="button" class="refresh-btn" id="classic-uploads-refresh">🔄 새로고침</button>
+                </div>
+                <div id="uploads-stats" class="uploads-stats">
+                    <p>로딩 중...</p>
+                </div>
+                <div id="uploads-files" class="uploads-files" hidden>
+                    <!-- 파일 목록이 여기에 표시됩니다 -->
+                </div>
+                <div class="uploads-actions">
+                    <button type="button" class="clear-btn" id="classic-recycle" disabled>🗑️ 폴더 비우기</button>
+                <button type="button" id="classic-restore" class="clear-btn" hidden>최근 정리 되돌리기</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 분류 결과 표시 -->
+        {% if prediction %}
+            <div class="result-section">
+                <h2>분류 결과</h2>
+                {% if url %}
+                    <p><strong>분석한 링크:</strong> <a href="{{ url }}" target="_blank">{{ url }}</a></p>
+                {% endif %}
+                {% if prediction.error %}
+                    <div class="error-message">
+                        <h3>❌ 오류 발생</h3>
+                        <p>{{ prediction.error }}</p>
+                    </div>
+                {% else %}
+                    <div class="prediction-result">
+                        {% if prediction.genre %}
+                            <div class="result-group">
+                                <h3>🎼 장르 분류</h3>
+                                <p><strong>예측 장르:</strong> {{ prediction.genre }} ({{ "%.2f"|format(prediction.confidence * 100) }}%)</p>
+                            </div>
+                        {% endif %}
+                        {% if prediction.genres %}
+                            <div class="result-group">
+                                <h3>🎼 장르 분류 (기존 형식)</h3>
+                                <ul>
+                                    {% for genre, confidence in prediction.genres %}
+                                        <li>{{ genre }} ({{ "%.2f"|format(confidence * 100) }}%)</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                        {% if prediction.emotions %}
+                            <div class="result-group">
+                                <h3>😊 감정 분류</h3>
+                                <ul>
+                                    {% for emotion, confidence in prediction.emotions %}
+                                        <li>{{ emotion }} ({{ "%.2f"|format(confidence * 100) }}%)</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                        {% if prediction.youtube_info %}
+                            <div class="result-group">
+                                <h3>📺 YouTube 정보</h3>
+                                <p><strong>제목:</strong> {{ prediction.youtube_info.title }}</p>
+                                <p><strong>업로더:</strong> {{ prediction.youtube_info.uploader }}</p>
+                                <p><strong>길이:</strong> {{ prediction.youtube_info.duration }}초</p>
+                            </div>
+                        {% endif %}
+                        {% if prediction.method %}
+                            <div class="result-group">
+                                <h3>🔍 분류 방법</h3>
+                                <p><strong>사용된 방법:</strong> {{ prediction.method }}</p>
+                                {% if prediction.note %}
+                                    <p><strong>참고:</strong> {{ prediction.note }}</p>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <!-- 일괄 분류 결과 표시 -->
+        {% if batch_results %}
+            <div class="result-section">
+                <h2>일괄 분류 결과</h2>
+                <div class="batch-summary">
+                    <p><strong>총 처리된 링크:</strong> {{ batch_results|length }}개</p>
+                    {% set success_count = batch_results|selectattr('status', 'equalto', 'success')|list|length %}
+                    {% set failed_count = batch_results|length - success_count %}
+                    <p><strong>성공:</strong> {{ success_count }}개</p>
+                    <p><strong>실패:</strong> {{ failed_count }}개</p>
+                </div>
+
+                <div class="batch-results">
+                    {% for result in batch_results %}
+                        <div class="batch-item {% if result.status == 'error' %}error{% else %}success{% endif %}">
+                            <h4>{{ loop.index }}. <a href="{{ result.url }}" target="_blank">{{ result.url }}</a></h4>
+                            {% if result.status == 'success' %}
+                                <div class="result-details">
+                                    {% if result.genre %}
+                                        <p><strong>장르:</strong> {{ result.genre }} ({{ "%.1f"|format(result.confidence * 100) }}%)</p>
+                                    {% endif %}
+                                    {% if result.genres %}
+                                        <p><strong>장르 (기존 형식):</strong>
+                                            {% for genre, confidence in result.genres[:3] %}
+                                                {{ genre }}({{ "%.1f"|format(confidence * 100) }}%){% if not loop.last %}, {% endif %}
+                                            {% endfor %}
+                                        </p>
+                                    {% endif %}
+                                    {% if result.emotions %}
+                                        <p><strong>감정:</strong>
+                                            {% for emotion, confidence in result.emotions[:3] %}
+                                                {{ emotion }}({{ "%.1f"|format(confidence * 100) }}%){% if not loop.last %}, {% endif %}
+                                            {% endfor %}
+                                        </p>
+                                    {% endif %}
+                                    {% if result.youtube_info %}
+                                        <p><strong>제목:</strong> {{ result.youtube_info.title }}</p>
+                                    {% endif %}
+                                    {% if result.method %}
+                                        <p><strong>방법:</strong> {{ result.method }}</p>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <p class="error-text">❌ {{ result.error }}</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    <section class="result-section" id="classic-results" hidden><h2>분류 결과</h2><p id="classic-status" role="status"></p><div id="classic-result-body"></div></section>
+    <div id="classic-notice" role="status" hidden></div>
+    <script src="{{ url_for('classic_assets', filename='js/bridge.js') }}"></script>
+</body>
+</html>
