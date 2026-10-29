@@ -93,6 +93,12 @@ class ModelSettings:
         if genre_backend == 'muq':
             return ExperimentalCombinedClassifier(None, None, mood_classifier=mood, emotion_classifier=emotion,
                                                   genre_classifier=self.create_muq_genre_classifier(), share_muq_model=share_muq_model)
+        model, processor = self.load_genre_model()
+        return ExperimentalCombinedClassifier(model, processor, mood_classifier=mood, emotion_classifier=emotion,
+                                              share_muq_model=share_muq_model)
+
+    def load_genre_model(self):
+        """Load only the original genre model, independently of optional axes."""
         model, processor = None, None
         if self.genre_checkpoint is not None:
             if not self.genre_checkpoint.is_dir():
@@ -119,5 +125,4 @@ class ModelSettings:
             del state
             model.to(self.genre_device).eval()
             processor = AutoFeatureExtractor.from_pretrained(str(self.genre_checkpoint), local_files_only=True)
-        return ExperimentalCombinedClassifier(model, processor, mood_classifier=mood, emotion_classifier=emotion,
-                                              share_muq_model=share_muq_model)
+        return model, processor
