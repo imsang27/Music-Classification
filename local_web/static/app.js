@@ -38,7 +38,6 @@ function paintSection(value){
     const selected=button.dataset.section===value;button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;
   }
   $('ai-model-navigation').hidden=value!=='ai';
-  $('ai-method-guide').hidden=value!=='ai';
   $('ai-panel').hidden=['uploads','other'].includes(value);
   $('uploads-panel').hidden=value!=='uploads';$('other-panel').hidden=value!=='other';
   if(['uploads','other'].includes(value))document.querySelector('footer').textContent='원본 노트는 수정하지 않습니다. 새 분석용 오디오는 처리 후 삭제합니다.';
