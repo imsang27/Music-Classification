@@ -25,19 +25,19 @@ except ImportError as e:
     # 기본 함수들 정의
     def predict_music_wav2vec2(*args, **kwargs):
         return {'error': 'core 모듈을 로드할 수 없습니다', 'success': False}
-    
+
     def rule_based_classification(*args, **kwargs):
         return {'error': 'core 모듈을 로드할 수 없습니다', 'success': False}
-    
+
     def dummy_classification(*args, **kwargs):
         return {'error': 'core 모듈을 로드할 수 없습니다', 'success': False}
-    
+
     def classify_music_from_url_wav2vec2(*args, **kwargs):
         return {'error': 'core 모듈을 로드할 수 없습니다', 'success': False}
-    
+
     def batch_classify_urls_wav2vec2(*args, **kwargs):
         return [{'error': 'core 모듈을 로드할 수 없습니다', 'success': False}]
-    
+
     def manual_classification(*args, **kwargs):
         return {'error': 'core 모듈을 로드할 수 없습니다', 'success': False}
 
@@ -49,19 +49,19 @@ except ImportError as e:
     # 기본 함수들 정의
     def download_youtube_audio(*args, **kwargs):
         return None
-    
+
     def download_direct_audio(*args, **kwargs):
         return None
-    
+
     def validate_url(*args, **kwargs):
         return False, "utils 모듈을 로드할 수 없습니다"
-    
+
     def get_link_preview(*args, **kwargs):
         return {'error': 'utils 모듈을 로드할 수 없습니다'}
-    
+
     def monitor_memory_usage(*args, **kwargs):
         return {'rss': 0, 'vms': 0, 'percent': 0}
-    
+
     def optimize_memory_usage(*args, **kwargs):
         pass
 
@@ -131,44 +131,44 @@ wav2vec2_model_name = None  # 전역 변수로 모델 이름 저장
 try:
     from transformers import Wav2Vec2ForSequenceClassification, Wav2Vec2FeatureExtractor
     import torch
-    
+
     MODEL_PATH = os.path.join(os.path.dirname(__file__), '..', 'models', 'models--dima806--music_genres_classification', 'snapshots', '5f71fb1e2c6bedcddb2bfb1e929fc70655780902')
-    
+
     if os.path.exists(MODEL_PATH):
         try:
             # Load the Wav2Vec2 model and feature extractor
             wav2vec2_model = Wav2Vec2ForSequenceClassification.from_pretrained(MODEL_PATH)
             wav2vec2_processor = Wav2Vec2FeatureExtractor.from_pretrained(MODEL_PATH)
-            
+
             # Set model to evaluation mode
             wav2vec2_model.eval()
-            
+
             # 모델 이름 저장 - models 폴더부터 경로 분석
             wav2vec2_model_name = 'music_genres_classification'  # 기본값
-            
+
             try:
                 # MODEL_PATH에서 models 폴더부터의 경로 추출
                 # 예: .../models/models--dima806--music_genres_classification/snapshots/...
                 model_path_str = str(MODEL_PATH)
                 print(f"   - 전체 모델 경로: {model_path_str}")
-                
+
                 # models 폴더 찾기
                 if 'models' in model_path_str:
                     # models 폴더 이후의 경로 추출
                     models_index = model_path_str.find('models')
                     models_path = model_path_str[models_index:]
                     print(f"   - models 폴더부터 경로: {models_path}")
-                    
+
                     # 경로를 / 또는 \ 로 분할
                     path_parts = models_path.replace('\\', '/').split('/')
                     print(f"   - 경로 분할: {path_parts}")
-                    
+
                     # models 폴더 다음에 오는 폴더명 찾기
                     for i, part in enumerate(path_parts):
                         if part == 'models' and i + 1 < len(path_parts):
                             model_folder = path_parts[i + 1]
                             print(f"   - 모델 폴더명: {model_folder}")
-                            
+
                             # models--dima806--music_genres_classification 형태에서 마지막 부분 추출
                             if '--' in model_folder:
                                 wav2vec2_model_name = model_folder.split('--')[-1]
@@ -179,18 +179,18 @@ try:
                             break
                 else:
                     print("   - models 폴더를 찾을 수 없음, 기본값 사용")
-                    
+
             except Exception as e:
                 print(f"   - 모델명 추출 중 오류: {e}")
                 wav2vec2_model_name = 'music_genres_classification'
-            
+
             print(f"   - 최종 모델명: {wav2vec2_model_name}")
-            
+
             # GPU 사용 가능 시 GPU로 이동
             if torch.cuda.is_available():
                 wav2vec2_model = wav2vec2_model.cuda()
                 print("✅ GPU 사용 가능 - Wav2Vec2 모델을 GPU로 이동")
-            
+
             print("✅ Wav2Vec2 모델 로드 성공")
             print(f"   - 모델 이름: {wav2vec2_model_name}")
             print(f"   - 지원 장르: {list(wav2vec2_model.config.id2label.values())}")
@@ -239,19 +239,19 @@ def classify():
     # 임시 파일 생성 (처리용) - 최적화된 방식
     import tempfile
     import shutil
-    
+
     temp_file = None
     try:
         # NamedTemporaryFile을 사용하여 더 안전한 임시 파일 생성
         with tempfile.NamedTemporaryFile(
-            suffix=os.path.splitext(audio_file.filename)[1], 
+            suffix=os.path.splitext(audio_file.filename)[1],
             delete=False
         ) as temp_f:
             temp_file = temp_f.name
-        
+
         # 원본 파일을 임시 파일로 복사
         shutil.copy2(original_file_path, temp_file)
-        
+
         action = request.form.get('action')
         print(f"DEBUG: 받은 action 값: '{action}'")  # 디버깅용
         print(f"DEBUG: request.form 전체: {dict(request.form)}")  # 디버깅용
@@ -266,15 +266,15 @@ def classify():
                 # 메모리 사용량 모니터링
                 initial_memory = monitor_memory_usage()
                 print(f"웹앱 분류 시작 - 메모리: {initial_memory['rss']:.1f} MB")
-                
+
                 result = predict_music_wav2vec2(wav2vec2_model, wav2vec2_processor, temp_file)
-                
+
                 # 메모리 정리
                 optimize_memory_usage()
-                
+
                 final_memory = monitor_memory_usage()
                 print(f"웹앱 분류 완료 - 메모리: {final_memory['rss']:.1f} MB")
-                
+
             except Exception as e:
                 result = {'error': f'Wav2Vec2 분류 중 오류 발생: {str(e)}', 'success': False}
         elif action == 'wav2vec2' and not wav2vec2_model:
@@ -318,11 +318,11 @@ def classify_url():
     print(f"DEBUG: URL 분류 - 받은 action 값: '{action}'")  # 디버깅용
     print(f"DEBUG: URL 분류 - request.form 전체: {dict(request.form)}")  # 디버깅용
     task_id = str(uuid.uuid4())
-    
+
     try:
         # 진행률 초기화
         update_progress(task_id, 'starting', '분류 작업을 시작합니다...', 0)
-        
+
         if action == 'wav2vec2':
             if wav2vec2_model:
                 # 백그라운드에서 실행
@@ -331,11 +331,11 @@ def classify_url():
                         # 진행률 콜백 함수 정의
                         def progress_callback(stage, message, progress):
                             update_progress(task_id, stage, message, progress)
-                        
+
                         result = classify_music_from_url_wav2vec2(
-                            wav2vec2_model, 
-                            wav2vec2_processor, 
-                            url, 
+                            wav2vec2_model,
+                            wav2vec2_processor,
+                            url,
                             progress_callback=progress_callback
                         )
                         # 결과 저장
@@ -347,12 +347,12 @@ def classify_url():
                         # 오류 결과도 저장
                         save_classification_result(task_id, error_result)
                         return error_result
-                
+
                 # 백그라운드 스레드에서 실행
                 thread = threading.Thread(target=run_classification)
                 thread.daemon = True
                 thread.start()
-                
+
                 # 진행률 페이지로 리다이렉트
                 return redirect(url_for('progress_page', task_id=task_id, url=url))
             else:
@@ -367,7 +367,7 @@ def classify_url():
                     temp_file = download_youtube_audio(url, max_duration=30)  # 길이 제한으로 최적화
                 else:
                     temp_file = download_direct_audio(url, max_size_mb=50)  # 크기 제한으로 최적화
-                
+
                 update_progress(task_id, 'processing', '규칙 기반으로 분류하는 중...', 70)
                 result = rule_based_classification(temp_file)
                 update_progress(task_id, 'completed', '분류가 완료되었습니다!', 100)
@@ -383,9 +383,9 @@ def classify_url():
         else:
             print(f"DEBUG: URL 분류 - 예상되지 않은 action 값: '{action}'")  # 디버깅용
             result = {'error': f'선택한 기능을 사용할 수 없습니다. (action: {action})'}
-        
+
         return render_template('index.html', prediction=result, url=url)
-        
+
     except Exception as e:
         update_progress(task_id, 'error', f'분류 중 오류 발생: {str(e)}', 0)
         return render_template('index.html', prediction={'error': f'분류 중 오류 발생: {str(e)}'}, url=url)
@@ -398,48 +398,48 @@ def batch_classify():
 
     # URL 목록 파싱 (줄바꿈이나 쉼표로 구분)
     urls = [url.strip() for url in urls_text.replace(',', '\n').split('\n') if url.strip()]
-    
+
     if not urls:
         return render_template('index.html', prediction={'error': '유효한 URL이 없습니다.'})
 
     action = request.form.get('action')
-    
+
     if action == 'wav2vec2':
         if wav2vec2_model:
             # 고유한 작업 ID 생성
             task_id = str(uuid.uuid4())
-            
+
             # 진행률 초기화
             update_progress(task_id, 'starting', '배치 분류 작업을 시작합니다...', 0)
-            
+
             # 백그라운드에서 실행
             def run_batch_classification():
                 try:
                     # 진행률 콜백 함수 정의
                     def progress_callback(stage, message, progress):
                         update_progress(task_id, stage, message, progress)
-                    
+
                     results = batch_classify_urls_wav2vec2(
-                        wav2vec2_model, 
-                        wav2vec2_processor, 
+                        wav2vec2_model,
+                        wav2vec2_processor,
                         urls,
                         progress_callback=progress_callback
                     )
-                    
+
                     # 결과 저장
                     save_url_classification_results(results)
                     save_classification_result(task_id, {'batch_results': results, 'urls': urls})
-                    
+
                 except Exception as e:
                     error_result = {'error': str(e), 'success': False}
                     update_progress(task_id, 'error', f'배치 분류 중 오류 발생: {str(e)}', 0)
                     save_classification_result(task_id, error_result)
-            
+
             # 백그라운드 스레드에서 실행
             thread = threading.Thread(target=run_batch_classification)
             thread.daemon = True
             thread.start()
-            
+
             # 진행률 페이지로 리다이렉트
             return redirect(url_for('progress_page', task_id=task_id))
         else:
@@ -453,7 +453,7 @@ def validate_url_api():
     url = request.json.get('url', '').strip()
     if not url:
         return jsonify({'valid': False, 'message': 'URL을 입력해주세요.'})
-    
+
     try:
         is_valid, message = validate_url(url)
         return jsonify({'valid': is_valid, 'message': message})
@@ -466,7 +466,7 @@ def link_preview_api():
     url = request.json.get('url', '').strip()
     if not url:
         return jsonify({'error': 'URL을 입력해주세요.'})
-    
+
     try:
         preview = get_link_preview(url)
         return jsonify(preview)
@@ -478,7 +478,7 @@ def get_progress_api(task_id):
     """분류 진행률 조회 API"""
     progress = get_progress(task_id)
     result = get_classification_result(task_id)
-    
+
     response = {
         'task_id': task_id,
         'stage': progress['stage'],
@@ -486,11 +486,11 @@ def get_progress_api(task_id):
         'progress': progress['progress'],
         'timestamp': progress['timestamp']
     }
-    
+
     # 완료된 경우 결과도 포함
     if result:
         response['result'] = result
-    
+
     return jsonify(response)
 
 @app.route('/api/progress_stream/<task_id>')
@@ -500,7 +500,7 @@ def progress_stream(task_id):
         while True:
             progress = get_progress(task_id)
             result = get_classification_result(task_id)
-            
+
             # JSON 데이터를 SSE 형식으로 전송
             data = {
                 'task_id': task_id,
@@ -509,19 +509,19 @@ def progress_stream(task_id):
                 'progress': progress['progress'],
                 'timestamp': progress['timestamp']
             }
-            
+
             # 완료된 경우 결과도 포함
             if result:
                 data['result'] = result
-            
+
             yield f"data: {json.dumps(data)}\n\n"
-            
+
             # 완료되면 종료
             if progress['stage'] in ['completed', 'error']:
                 break
-                
+
             time.sleep(0.5)  # 0.5초마다 업데이트
-    
+
     return Response(generate(), mimetype='text/event-stream', headers={
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
@@ -540,7 +540,7 @@ def clear_uploads():
                 file_path = os.path.join(uploads_dir, filename)
                 if os.path.isfile(file_path):
                     os.remove(file_path)
-            
+
             return jsonify({
                 'success': True,
                 'message': '업로드 폴더가 성공적으로 비워졌습니다.'
@@ -562,11 +562,11 @@ def get_model_status():
     try:
         model_loaded = wav2vec2_model is not None
         status = "로드됨" if model_loaded else "로드되지 않음"
-        
+
         # 모델 이름 결정 - 저장된 모델 이름 사용
         model_name = wav2vec2_model_name if model_loaded else None
         print(f"API 호출 - 모델 로드됨: {model_loaded}, 모델명: {model_name}")
-        
+
         # 추가 정보
         info = {
             'model_loaded': model_loaded,
@@ -575,10 +575,10 @@ def get_model_status():
             'model_name': model_name,  # 호환성을 위해 추가
             'gpu_available': torch.cuda.is_available() if 'torch' in globals() else False
         }
-        
+
         if model_loaded and hasattr(wav2vec2_model, 'config'):
             info['supported_genres'] = list(wav2vec2_model.config.id2label.values())
-        
+
         return jsonify({
             'success': True,
             'model_status': info
@@ -597,7 +597,7 @@ def get_uploads_info():
         if os.path.exists(uploads_dir):
             files = []
             total_size = 0
-            
+
             for filename in os.listdir(uploads_dir):
                 file_path = os.path.join(uploads_dir, filename)
                 if os.path.isfile(file_path):
@@ -608,7 +608,7 @@ def get_uploads_info():
                         'size_formatted': format_file_size(file_size)
                     })
                     total_size += file_size
-            
+
             return jsonify({
                 'success': True,
                 'file_count': len(files),
@@ -634,13 +634,13 @@ def format_file_size(size_bytes):
     """파일 크기를 사람이 읽기 쉬운 형태로 변환"""
     if size_bytes == 0:
         return "0 B"
-    
+
     size_names = ["B", "KB", "MB", "GB"]
     i = 0
     while size_bytes >= 1024 and i < len(size_names) - 1:
         size_bytes /= 1024.0
         i += 1
-    
+
     return f"{size_bytes:.1f} {size_names[i]}"
 
 if __name__ == '__main__':
