@@ -20,7 +20,7 @@ from werkzeug.serving import make_server
 
 from music_classification.app_paths import default_settings_path
 from music_classification.settings import ModelSettings
-from music_classification.youtube_input import canonical_url
+from music_classification.youtube_input import canonical_url, environment_status, YoutubeInputError
 
 ROOT = Path(__file__).resolve().parent
 EXTENSIONS = {'.wav', '.mp3', '.flac', '.ogg', '.m4a', '.aac'}
@@ -108,6 +108,9 @@ class Jobs:
             final = {'status': 'completed' if code == 0 else 'partial',
                      'message': f'{successful}/{len(result["results"])}개 분류 완료', 'result': result,
                      'downloads': {name: f'/api/jobs/{job_id}/downloads/{name}' for name in sorted(EXPORTS)}}
+        except YoutubeInputError as exc:
+            logging.exception('Local YouTube job %s failed', job_id)
+            final = {'status': 'failed', 'message': str(exc)}
         except Exception:
             logging.exception('Local web tagging job %s failed', job_id)
             final = {'status': 'failed', 'message': '분류하지 못했습니다. 모델 설정과 입력한 음원·공개 링크를 확인해주세요.'}
@@ -187,7 +190,8 @@ def create_app(settings_path=None, *, root=ROOT, runner=None, youtube_runner=Non
     def status():
         with jobs.lock:
             active = jobs.active
-        return jsonify(application='music-classification-local-web-v1', model=model_status(settings_path), active_job=active)
+        return jsonify(application='music-classification-local-web-v1', model=model_status(settings_path),
+                       youtube=environment_status(), active_job=active)
 
     def ready():
         state = model_status(settings_path)
@@ -245,6 +249,9 @@ def create_app(settings_path=None, *, root=ROOT, runner=None, youtube_runner=Non
             url = canonical_url(data.get('url'))
         except ValueError as exc:
             abort(400, description=str(exc))
+        youtube_state = environment_status()
+        if not youtube_state['ready']:
+            abort(503, description=youtube_state['message'])
         job_id = jobs.reserve()
         try:
             jobs.start(job_id, url=url)

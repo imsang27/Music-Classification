@@ -2,6 +2,7 @@
 from contextlib import contextmanager
 from dataclasses import dataclass
 from hashlib import sha256
+import importlib.util
 import math
 import os
 from pathlib import Path
@@ -19,6 +20,22 @@ MAX_BYTES=100*1024*1024
 
 class YoutubeInputError(ValueError):
     pass
+
+
+def ffmpeg_executable(ffmpeg_path=None):
+    bundled=ROOT/'ffmpeg-master-latest-win64-gpl/bin/ffmpeg.exe'
+    return Path(ffmpeg_path or os.environ.get('MUSIC_CLASSIFICATION_FFMPEG') or
+                (str(bundled) if bundled.is_file() else shutil.which('ffmpeg') or bundled))
+
+
+def environment_status():
+    """Check the actual application interpreter, separately from model readiness."""
+    missing=[name for name in ('yt_dlp','soundfile') if importlib.util.find_spec(name) is None]
+    if missing:
+        return {'ready':False,'message':'YouTube용 연결 도구가 없습니다. 웹 실행 환경에 .[web] 설치가 필요합니다.'}
+    if not ffmpeg_executable().is_file():
+        return {'ready':False,'message':'YouTube 오디오 변환 도구(FFmpeg)가 없습니다. 설치 안내에 따라 FFmpeg 경로를 설정해주세요.'}
+    return {'ready':True,'message':'YouTube 링크로 분류할 수 있습니다.'}
 
 
 def canonical_url(value):
@@ -75,9 +92,7 @@ class _QuietLogger:
 @contextmanager
 def temporary_audio(url,*,work_directory=None,ffmpeg_path=None):
     canonical=canonical_url(url);video_id=canonical.rsplit('=',1)[1]
-    bundled=ROOT/'ffmpeg-master-latest-win64-gpl/bin/ffmpeg.exe'
-    executable=Path(ffmpeg_path or os.environ.get('MUSIC_CLASSIFICATION_FFMPEG') or
-                    (str(bundled) if bundled.is_file() else shutil.which('ffmpeg') or bundled))
+    executable=ffmpeg_executable(ffmpeg_path)
     if not executable.is_file():raise YoutubeInputError('오디오 변환 도구가 없습니다. 프로그램 실행 환경을 확인해주세요.')
     try:
         import yt_dlp

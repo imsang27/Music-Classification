@@ -36,6 +36,12 @@ YouTube 입력은 로그인 없이 열리는 20분 이하 영상 한 곡입니�
 
 ## 다른 포트 또는 기존 모델 설정 사용
 
+YouTube 연결 도구가 없다는 메시지가 보이면 **서버를 실행하는 Python 환경**에 다음 명령을 실행하고 화면을 새로고침합니다. 모델용 별도 Python 환경에만 설치하면 웹 서버에서 사용할 수 없습니다. `web` 설치 옵션에는 yt-dlp와 soundfile도 포함됩니다. FFmpeg는 별도로 준비해야 합니다.
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -e ".[web]"
+```
+
 ```powershell
 .\.venv\Scripts\python.exe local_tagging_server.py --port 8766
 .\.venv\Scripts\python.exe local_tagging_server.py --settings "C:\path\model_paths.local.json"
